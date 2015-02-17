@@ -1,0 +1,78 @@
+package us.bridgeses.Minder;
+
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteDatabase;
+
+import java.util.concurrent.ScheduledExecutorService;
+
+
+public class ReminderReceiver extends BroadcastReceiver {
+
+    private ScheduledExecutorService scheduleTaskExecutor;
+
+    public ReminderReceiver() {
+    }
+
+    @Override
+    public void onReceive(Context context, Intent alarmIntent) {
+        //TODO check if location required, and then test location
+        //use getLastKnownLocation for fastest results. Check lastKnown.getTime() and lastKnown.getAccuracy()
+        //for freshness. If not fresh, use requestSingleUpdate for new result
+        //Receive result in singleUpdateReceiver and update alarm accordingly
+        final PendingResult result = goAsync();                         //Move off UI thread
+        ReminderDBHelper dbHelper = ReminderDBHelper.getInstance(context);
+        SQLiteDatabase database = dbHelper.openDatabase();
+
+        int id = alarmIntent.getIntExtra("Id", -1);                     //These lines create an intent
+        Boolean snoozed = (alarmIntent.getIntExtra("Snooze",0) == 0);   //for the alarm screen based
+        Intent newIntent = new Intent(context, AlarmScreen.class);      //on the reminder in the triggering
+        newIntent.putExtra("Id",id);                                    //intent
+        newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);              //
+
+        Reminder reminder = Reminder.getReminder(database,id);          //Retrieve the reminder from the triggering intent
+        Reminder.nextRepeat(database,reminder);                         //Set the next alarm time for repeating alarms
+
+        Reminder nextReminder = Reminder.getNextReminder(database);     //Get which alarm comes next
+        dbHelper.closeDatabase();
+
+        SharedPreferences preferences = context.getSharedPreferences(Reminder.PREFS_NAME, 0);
+
+        if (snoozed){   //If this alarm was a snoozed alarm, clear snoozed alarm from preferences
+
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putInt("Snooze",-1);
+            editor.apply();
+        }
+
+        if (nextReminder.getId() != -1) {                                       //If we are getting a real reminder
+            Intent intentAlarm = new Intent(context, ReminderReceiver.class);   //Create alarm intent
+            intentAlarm.putExtra("Id", nextReminder.getId());                   //Associate intent with specific reminder
+            intentAlarm.putExtra("Snooze",0);                                   //This intent is not for a snoozed alarm
+
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putInt("Alarm",reminder.getId());                            //Store that an alarm exists for restarting on reboot
+            editor.apply();
+
+            AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+            alarmManager.set(AlarmManager.RTC_WAKEUP,                           //Set next alarm
+                    nextReminder.getDate().getTimeInMillis(),
+                    PendingIntent.getBroadcast(context, 1,
+                            intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
+        }
+        result.finish();                                                        //Return to UI thread
+        context.startActivity(newIntent);                                       //Start alarm screen
+    }
+
+
+    protected BroadcastReceiver singleUpdateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            //TODO receive location broadcast and update alarm
+        }
+    };
+}

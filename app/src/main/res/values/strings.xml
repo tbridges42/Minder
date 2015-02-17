@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- TODO: Replace test strings -->
+    <string name="app_name">Minder</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="title_activity_main">Minder</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="new_reminder">New Reminder</string>
+    <string name="set_location">Set Location</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Edit Reminder Activity strings -->
+    <string name="title_activity_edit">Edit Reminder</string>
+    <string name="edit_name">Name</string>
+    <string name="name_summary">Give your reminder a name</string>
+    <string name="edit_description">Description</string>
+    <string name="description_summary">What do you need to be reminded about?</string>
+    <string name="edit_confirm">Save</string>
+    <string name="edit_delete">Delete</string>
+    <string name="edit_cancel">Cancel</string>
+    <string name="title_activity_alarm_screen">AlarmScreen</string>
+    <string name="title_activity_repeat">Repeat Settings</string>
+    <string name="loading">Loading&#8230;</string>
+    <string name="time_code">"h:mm aa"</string>
+    <string name="full_date_code">EEEE, MMMM d, yyyy</string>
+    <string name="full_date_time_code">"h:mm aa EEEE, MMMM d, yyyy"</string>
+    <string name="delete_title">Delete Reminder</string>
+    <string name="delete_message">This Reminder will be deleted</string>
+    <string name="invalid_location">A location must be set to use Location Restriction</string>
+    <string name="reminder_deleted">Reminder deleted</string>
+    <string name="ok">OK</string>
+    <string name="code_set">Code set</string>
+    <string name="silent">Silent</string>
+
+    <!-- Repeat Activity strings -->
+    <string name="short_sat">S</string>
+    <string name="short_mon">M</string>
+    <string name="short_tues">T</string>
+    <string name="short_wed">W</string>
+    <string name="short_thurs">T</string>
+    <string name="short_fri">F</string>
+    <string name="short_sun">S</string>
+
+    <!-- About screen strings -->
+    <string name="app_url">http://app.bridgeses.us</string>
+    <string name="support_url">http://support.bridgeses.us</string>
+    <string name="email">tbridges42@gmail.com</string>
+    <string name="monster_shop">https://www.etsy.com/shop/TravelingMonsterShop</string>
+    <string name="mailto">mailto:</string>
+    <string name="subject_code">"?subject="</string>
+    <string name="feedback_subject">Minder Feedback</string>
+
+    <string-array name="repeat_period">
+        <item>None</item>
+        <item>Daily</item>
+        <item>Weekly</item>
+        <item>Monthly</item>
+        <item>Yearly</item>
+    </string-array>
+    <string-array name="repeat_index">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+    </string-array>
+    <string-array name="monthly_type">
+        <item>By Date</item>
+        <item>By Day of Week</item>
+        <item>Count From End of Month</item>
+    </string-array>
+    <string-array name="monthly_index">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="location_type">
+        <item>None</item>
+        <item>Only at location</item>
+        <item>Only away from location</item>
+    </string-array>
+    <string-array name="location_index">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="wifi_type">
+        <item>None</item>
+        <item>Only when connected</item>
+        <item>Only when not connected</item>
+    </string-array>
+    <string-array name="wifi_index">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="bt_type">
+        <item>None</item>
+        <item>Only when connected</item>
+        <item>Only when not connected</item>
+    </string-array>
+    <string-array name="bt_index">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="code_type">
+        <item>None</item>
+        <item>Require code</item>
+    </string-array>
+    <string-array name="code_index">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+
+    <string name="title_activity_edit_conditions">Edit Conditions</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_edit_persistence">Edit Persistence</string>
+
+</resources>

@@ -1,0 +1,148 @@
+package us.bridgeses.Minder;
+
+import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
+/**
+ * Created by Tony on 7/23/2014.
+ */
+public class ReminderDBHelper extends SQLiteOpenHelper {
+
+    public AtomicInteger openCounter = new AtomicInteger();
+    private static ReminderDBHelper singleInstance;
+    private SQLiteDatabase database;
+
+    public static final String TABLE_NAME = "Reminders";
+    public static final String COLUMN_ID = "_id";
+    public static final String COLUMN_ACTIVE = "Active";
+    public static final String COLUMN_LATITUDE = "Latitude";
+    public static final String COLUMN_LONGITUDE = "Longitude";
+    public static final String COLUMN_NAME = "Name";
+    public static final String COLUMN_REPEATTYPE = "RepeatType";
+    public static final String COLUMN_REPEATLENGTH = "RepeatLength";
+    public static final String COLUMN_DAYSOFWEEK = "DaysOfWeek";
+    public static final String COLUMN_DAYSOFMONTH = "DaysOfMonth";
+    public static final String COLUMN_MONTHTYPE = "MonthType";
+    public static final String COLUMN_ONLYATLOCATION = "OnlyAtLocation";
+    public static final String COLUMNN_UNTILLOCATION = "untilLocation";
+    public static final String COLUMN_PERSISTENCE = "Persistence";
+    public static final String COLUMN_DATE = "Date";
+    public static final String COLUMN_DESCRIPTION = "Description";
+    public static final String COLUMN_OUTLOUD = "OutLoud";
+    public static final String COLUMN_QR = "Qr";
+    public static final String COLUMN_SNOOZEDURATION = "SnoozeDuration";
+    public static final String COLUMN_UNSILENCE = "UnSilence";
+    public static final String COLUMN_VIBRATE = "Vibrate";
+    public static final String COLUMN_LED = "Led";
+    public static final String COLUMN_LEDCOLOR = "LedColor";
+    public static final String COLUMN_LEDPATTERN = "LedPattern";
+    public static final String COLUMN_RINGTONE = "Ringtone";
+    public static final String COLUMN_RADIUS = "Radius";
+
+    private static final String SQL_CREATE_ENTRIES =
+            "CREATE TABLE " + TABLE_NAME + " (" +
+                    COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
+                    COLUMN_ACTIVE + " INTEGER, " +
+                    COLUMN_NAME + " TEXT, " +
+                    COLUMN_LATITUDE + " INTEGER, " +
+                    COLUMN_LONGITUDE + " INTEGER, " +
+                    COLUMN_REPEATTYPE + " INTEGER, " +
+                    COLUMN_REPEATLENGTH + " INTEGER, " +
+                    COLUMN_DAYSOFWEEK + " INTEGER, " +
+                    COLUMN_DAYSOFMONTH + " TEXT, " +
+                    COLUMN_MONTHTYPE + " TEXT, " +
+                    COLUMN_ONLYATLOCATION + " INTEGER, " +
+                    COLUMNN_UNTILLOCATION + " INTEGER, " +
+                    COLUMN_PERSISTENCE + " INTEGER, " +
+                    COLUMN_DATE + " INTEGER, " +
+                    COLUMN_DESCRIPTION + " TEXT, " +
+                    COLUMN_OUTLOUD + " INTEGER, " +
+                    COLUMN_QR + " TEXT, " +
+                    COLUMN_SNOOZEDURATION + " INTEGER, " +
+                    COLUMN_UNSILENCE + " INTEGER, " +
+                    COLUMN_VIBRATE + " INTEGER, " +
+                    COLUMN_LED + " INTEGER, " +
+                    COLUMN_LEDCOLOR + " INTEGER, " +
+                    COLUMN_LEDPATTERN + " INTEGER, " +
+                    COLUMN_RINGTONE + " TEXT, " +
+                    COLUMN_RADIUS + " INTEGER " + ")";
+
+    private static final String SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS " + TABLE_NAME;
+
+    public static final int DATABASE_VERSION = 8;
+    public static final String DATABASE_NAME = "Reminders.db";
+
+    public static synchronized ReminderDBHelper getInstance(Context context){
+        if (singleInstance == null) {
+            singleInstance = new ReminderDBHelper(context.getApplicationContext());
+        }
+        return singleInstance;
+    }
+
+    private ReminderDBHelper(Context context) {
+        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+    }
+
+    public void onUpgrade(SQLiteDatabase database, int oldVersion, int newVersion) {
+        /********************************************
+         * This method will include every incremental
+         * change ever made to the db. See example
+         * here http://tiny.cc/ohahjx
+         ********************************************/
+        if (oldVersion <= 3) {
+            database.execSQL(SQL_DELETE_ENTRIES);     //Versions less than 3 are incompatible and need to be rewritten
+            database.execSQL(SQL_CREATE_ENTRIES);
+        }
+        if (oldVersion == 4) {
+            database.execSQL("ALTER TABLE " + TABLE_NAME +              //Version 4 did not have repeatType
+                    " ADD COLUMN " + COLUMN_REPEATTYPE +
+                    " INTEGER DEFAULT " + Reminder.REPEATTYPEDEFAULT);
+            oldVersion++;
+        }
+        if (oldVersion == 5) {
+            database.execSQL("ALTER TABLE " + TABLE_NAME +              //Version 5 did not have active or monthType
+                    " ADD COLUMN " + COLUMN_ACTIVE +
+                    " INTEGER DEFAULT " + Reminder.ACTIVEDEFAULT);
+            database.execSQL("ALTER TABLE " + TABLE_NAME +
+                    " ADD COLUMN " + COLUMN_MONTHTYPE +
+                    " INTEGER DEFAULT" + Reminder.MONTHTYPEDEFAULT);
+            oldVersion++;
+        }
+        if (oldVersion == 6) {
+            database.execSQL("ALTER TABLE " + TABLE_NAME +
+                    " ADD COLUMN " + COLUMN_RADIUS +
+                    " INTEGER DEFAULT " + Reminder.RADIUSDEFAULT);
+            oldVersion++;
+        }
+        if (oldVersion == 7) {
+            database.execSQL(SQL_DELETE_ENTRIES);
+            database.execSQL(SQL_CREATE_ENTRIES);
+        }
+        Log.i("Minder Database","Database Upgraded");
+    }
+
+    public void onCreate(SQLiteDatabase database) {
+
+        database.execSQL(SQL_CREATE_ENTRIES);
+    }
+
+    public synchronized SQLiteDatabase openDatabase() {
+        if(openCounter.incrementAndGet() == 1) {
+            // Opening new database
+            database = singleInstance.getWritableDatabase();
+        }
+        return database;
+    }
+
+    public synchronized void closeDatabase() {
+        if(openCounter.decrementAndGet() == 0) {
+            // Closing database
+            database.close();
+
+        }
+    }
+}

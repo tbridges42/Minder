@@ -1,0 +1,320 @@
+package us.bridgeses.Minder;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.location.Location;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
+import android.os.Bundle;
+
+import android.preference.CheckBoxPreference;
+import android.preference.EditTextPreference;
+import android.preference.Preference;
+import android.preference.PreferenceFragment;
+import android.preference.PreferenceManager;
+import android.preference.PreferenceScreen;
+import android.preference.RingtonePreference;
+import android.widget.BaseAdapter;
+import android.widget.Toast;
+
+import com.google.android.gms.maps.model.LatLng;
+
+import java.text.SimpleDateFormat;
+
+import us.bridgeses.Minder.util.DatePreference;
+import us.bridgeses.Minder.util.TimePreference;
+
+/**
+ * Created by Tony on 8/27/2014.
+ */
+
+//TODO: Get ringtone summary to update
+public class ReminderPreferenceFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener, Preference.OnPreferenceClickListener {
+
+    Reminder reminder = new Reminder();
+    SimpleDateFormat dateFormat = new SimpleDateFormat("EEEE, MMMM d, yyyy");
+    SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm aa");
+
+    SharedPreferences sharedPreferences;
+
+    PreferenceScreen preferenceScreen;
+    EditTextPreference namePreference;
+    EditTextPreference descriptionPreference;
+    TimePreference timePreference;
+    DatePreference datePreference;
+    PreferenceScreen repeatScreenPreference;
+    CheckBoxPreference vibratePreference;
+    RingtonePreference ringtonePreference;
+    PreferenceScreen locationScreenPreference;
+
+    @Override
+    public boolean onPreferenceClick(Preference preference) {
+        String key = preference.getKey();
+        if (key.equals("button_repeat_menu_key")) {
+            Intent intent = new Intent(getActivity(), EditRepeat.class);
+            Bundle bundle = new Bundle();
+            bundle.putParcelable("Reminder", reminder);
+            intent.putExtras(bundle);
+            startActivityForResult(intent, 1);
+        }
+        if (key.equals("button_location_key")) {
+            Intent intent = new Intent(getActivity(), MapsActivity.class);
+            Bundle bundle = new Bundle();
+            bundle.putParcelable("Location", reminder.getLocation());
+            intent.putExtras(bundle);
+            startActivityForResult(intent, 2);
+        }
+        return false;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode,resultCode,data);
+        if ((requestCode == 1)){
+            Bundle incoming = data.getExtras();
+            if (incoming != null) {
+                reminder = incoming.getParcelable("Reminder");
+                if (reminder.getId()==-1){
+                    reminder = new Reminder();
+                }
+            }
+            else
+                reminder = new Reminder();
+            setRepeatSummary();
+        }
+        else
+        {
+            if ((resultCode == Activity.RESULT_OK) && (requestCode == 2)){
+                Bundle incoming = data.getExtras();
+                if (incoming != null) {
+                    LatLng location = incoming.getParcelable("Location");
+                    reminder.setLocation(location);
+                }
+            }
+            else
+            if (resultCode == Activity.RESULT_CANCELED) {
+
+            }
+        }
+    }
+
+    public static ReminderPreferenceFragment newInstance(Reminder reminder){
+        ReminderPreferenceFragment fragment = new ReminderPreferenceFragment();
+        Bundle args = new Bundle();
+        args.putParcelable("Reminder", reminder);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    private void initWeekly() {
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        byte daysOfWeek = reminder.getDaysOfWeek();
+        if (Reminder.checkDayOfWeek(daysOfWeek, 1)) {
+            editor.putBoolean("temp_sunday",true);
+        }
+        if (Reminder.checkDayOfWeek(daysOfWeek, 2)) {
+            editor.putBoolean("temp_monday",true);
+        }
+        if (Reminder.checkDayOfWeek(daysOfWeek, 3)) {
+            editor.putBoolean("temp_tuesday",true);
+        }
+        if (Reminder.checkDayOfWeek(daysOfWeek, 4)) {
+            editor.putBoolean("temp_wednesday",true);
+        }
+        if (Reminder.checkDayOfWeek(daysOfWeek, 5)) {
+            editor.putBoolean("temp_thursday",true);
+        }
+        if (Reminder.checkDayOfWeek(daysOfWeek, 6)) {
+            editor.putBoolean("temp_friday",true);
+        }
+        if (Reminder.checkDayOfWeek(daysOfWeek, 7)) {
+            editor.putBoolean("temp_saturday",true);
+        }
+        editor.apply();
+    }
+
+    private void initValues(){
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.clear().commit();
+        editor.putString("temp_name",reminder.getName());
+        editor.putString("temp_description",reminder.getDescription());
+        editor.putString("temp_time",timeFormat.format(reminder.getDate().getTime()));
+        editor.putString("temp_date",dateFormat.format(reminder.getDate().getTime()));
+        editor.putBoolean("temp_vibrate",reminder.getVibrate());
+        editor.putString("temp_ringtone",reminder.getRingtone());
+        int repeatTypeIndex = reminder.getRepeatType();
+        editor.putString("temp_repeat_type", Integer.toString(repeatTypeIndex));
+        switch (repeatTypeIndex) {
+            case 1: {
+                editor.putString("temp_days", Integer.toString(reminder.getRepeatLength()));
+                break;
+            }
+            case 2: {
+                editor.putString("temp_weeks", Integer.toString(reminder.getRepeatLength()));
+                initWeekly();
+                break;
+            }
+            case 3: {
+                editor.putString("temp_months", Integer.toString(reminder.getRepeatLength()));
+                editor.putString("temp_monthly_type", Integer.toString(reminder.getMonthType()));
+                break;
+            }
+            case 4: {
+                editor.putString("temp_years", Integer.toString(reminder.getRepeatLength()));
+                break;
+            }
+        }
+
+        editor.apply();
+    }
+
+    private void initSummaries(){
+        preferenceScreen = (PreferenceScreen) super.findPreference("preference_screen");
+        namePreference = (EditTextPreference) super.findPreference("temp_name");
+        descriptionPreference = (EditTextPreference) super.findPreference("temp_description");
+        timePreference = (TimePreference) super.findPreference("temp_time");
+        datePreference = (DatePreference) super.findPreference("temp_date");
+        repeatScreenPreference = (PreferenceScreen) super.findPreference("button_repeat_menu_key");
+        repeatScreenPreference.setOnPreferenceClickListener(this);
+        vibratePreference = (CheckBoxPreference) super.findPreference("temp_vibrate");
+        ringtonePreference = (RingtonePreference) super.findPreference("temp_ringtone");
+        locationScreenPreference = (PreferenceScreen) super.findPreference("button_location_key");
+        locationScreenPreference.setOnPreferenceClickListener(this);
+
+        namePreference.setSummary(reminder.getName());
+        descriptionPreference.setSummary(reminder.getDescription());
+        timePreference.setSummary(timeFormat.format(reminder.getDate().getTime()));
+        datePreference.setSummary(dateFormat.format(reminder.getDate().getTime()));
+        setRepeatSummary();
+        if (reminder.getRingtone().equals("")){
+            ringtonePreference.setSummary("Silent");
+        }
+        else {
+            Ringtone ringtone = RingtoneManager.getRingtone(getActivity(), Uri.parse(reminder.getRingtone()));
+            String ringtoneTitle = ringtone.getTitle(getActivity());
+            ringtonePreference.setSummary(ringtoneTitle);
+        }
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        reminder = getArguments().getParcelable("Reminder");
+
+        initValues();
+
+        addPreferencesFromResource(R.xml.reminder_preference);
+
+        initSummaries();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        getPreferenceScreen().getSharedPreferences()
+                .registerOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public void onPause() {
+    //    getPreferenceScreen().getSharedPreferences()
+    //            .unregisterOnSharedPreferenceChangeListener(this);
+        super.onPause();
+    }
+
+    private void setRepeatSummary(){
+        int repeatType = Integer.parseInt(sharedPreferences.getString("temp_repeat_type","0"));
+        switch (repeatType) {
+            case 0: {
+                repeatScreenPreference.setSummary("Do not repeat");
+                ((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
+                break;
+            }
+            case 1: {
+                if (sharedPreferences.getString("temp_days","0").equals("1")) {
+                    repeatScreenPreference.setSummary("Repeat every day");
+                }
+                else
+                    repeatScreenPreference.setSummary("Repeat every " + Integer.parseInt(sharedPreferences.getString("temp_days", "0")) + " days");
+                ((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
+                break;
+            }
+            case 2: {
+                if (sharedPreferences.getString("temp_weeks","0").equals("1")) {
+                    repeatScreenPreference.setSummary("Repeat every week");
+                }
+                else
+                    repeatScreenPreference.setSummary("Repeat every " + Integer.parseInt(sharedPreferences.getString("temp_weeks", "0")) + " weeks");
+                ((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
+                break;
+            }
+            case 3: {
+                if (sharedPreferences.getString("temp_months","0").equals("1")) {
+                    repeatScreenPreference.setSummary("Repeat every month");
+                }
+                else
+                    repeatScreenPreference.setSummary("Repeat every " + Integer.parseInt(sharedPreferences.getString("temp_months", "0")) + " months");
+                ((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
+                break;
+            }
+            case 4: {
+                if (sharedPreferences.getString("temp_years","0").equals("1")) {
+                    repeatScreenPreference.setSummary("Repeat every year");
+                }
+                else
+                    repeatScreenPreference.setSummary("Repeat every " + Integer.parseInt(sharedPreferences.getString("temp_years", "0")) + " years");
+                ((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
+                break;
+            }
+        }
+    }
+
+    private Boolean setPeriodTitle(String key) {
+        EditTextPreference textPreference = (EditTextPreference) findPreference(key);
+        if (textPreference == null){
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences preference, String key) {
+        Preference mPreference = findPreference(key);
+        if (mPreference instanceof  EditTextPreference){
+            EditTextPreference textPreference = (EditTextPreference) mPreference;
+                textPreference.setSummary(textPreference.getText());
+
+        }
+        if (mPreference instanceof RingtonePreference) {
+
+            String strRingtonePreference = preference.getString(key,"");
+
+
+            if (strRingtonePreference.equals("")){
+                ringtonePreference.setSummary("Silent");
+            }
+            else {
+                Uri ringtoneUri = Uri.parse(strRingtonePreference);
+                Ringtone ringtone = RingtoneManager.getRingtone(getActivity(), ringtoneUri);
+                try {
+                    String title = ringtone.getTitle(getActivity());
+
+                    ringtonePreference.setSummary(title);
+                    String toastText = title;
+                    int duration = Toast.LENGTH_SHORT;
+                    Toast toast = Toast.makeText(getActivity(), toastText, duration);
+                    toast.show();
+                }
+                catch(NullPointerException e){
+
+                }
+            }
+
+        }
+        ((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
+    }
+}

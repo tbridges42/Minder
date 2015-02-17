@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:key="preference_screen">
+
+    <EditTextPreference android:title="Name"
+        android:key="temp_name"
+        android:summary="@string/name_summary"
+        android:inputType="textCapWords"
+        android:singleLine="true"/>
+
+    <EditTextPreference android:title="Description"
+        android:key="temp_description"
+        android:summary="@string/description_summary"
+        android:inputType="textCapSentences|textMultiLine"/>
+
+    <us.bridgeses.Minder.util.TimePreference android:title="Time"
+        android:key="temp_time"
+        android:inputType="time"/>
+
+    <us.bridgeses.Minder.util.DatePreference android:title="Date"
+        android:key="temp_date"
+        android:inputType="date"/>
+
+    <PreferenceScreen android:title="Repeat"
+        android:key="button_repeat_menu_key"
+        android:persistent="false" >
+    </PreferenceScreen>
+
+    <CheckBoxPreference android:title="Vibrate"
+        android:key="temp_vibrate"
+        android:summaryOn="Alarm will vibrate"
+        android:summaryOff="Alarm will not vibrate"/>
+
+    <RingtonePreference android:title="Ringtone"
+        android:key="temp_ringtone"
+        android:ringtoneType="all"/>
+
+    <PreferenceCategory android:title="Advanced">
+        <!--TODO: Implement Snooze Options -->
+        <PreferenceScreen android:key="button_conditions"
+            android:title="Conditions">
+        </PreferenceScreen>
+        <!--TODO: Implement persistence options -->
+        <PreferenceScreen android:key="button_style"
+            android:title="Style"
+            android:enabled="false">
+        </PreferenceScreen>
+        <!--TODO: Implement LED Options -->
+        <PreferenceScreen android:key="button_persistence"
+            android:title="Persistence"
+            android:enabled="false">
+        </PreferenceScreen>
+        <!--TODO: Implement Vibrate Options -->
+        <!--TODO: Open arbitrary app?-->
+        <!--TODO: When wifi/BT connected/disconnected-->
+    </PreferenceCategory>
+
+
+
+</PreferenceScreen>

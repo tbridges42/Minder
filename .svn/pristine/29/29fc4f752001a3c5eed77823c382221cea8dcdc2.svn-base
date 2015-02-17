@@ -1,0 +1,340 @@
+package us.bridgeses.Minder;
+
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
+
+import com.google.android.gms.maps.model.LatLng;
+
+import java.util.Calendar;
+
+/**
+ * Created by Overseer on 7/13/2014.
+ */
+public class Reminder{
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    //TODO ADD QR Functionality
+    //TODO Add database class
+    private Integer id;
+    private LatLng location;
+    private String name;
+    private Integer repeatLength;
+    private Boolean onlyAtLocation;
+    private Boolean untilLocation;
+    private Integer persistence;
+    private Calendar date;
+    private String description;
+    private Boolean outLoud;
+    private String qr;
+    private Integer snoozeDuration;
+    private Boolean unSilence;
+    private Boolean vibrate;
+    private Boolean led;
+    private Integer ledColor;
+    private Integer ledPattern;
+    private Uri ringtone;
+
+    public final LatLng LOCATIONDEFAULT = null;
+    public final String NAMEDEFAULT = null;
+    public final Integer REPEATLENGTHDEFAULT = null;
+    public final Boolean ONLYATLOCATIONDEFAULT = null;
+    public final Boolean UNTILLOCATIONDEFAULT = null;
+    public final Integer PERSISTENCEDEFAULT = null;
+    public final Calendar DATEDEFAULT = null;
+    public final String DESCRIPTIONDEFAULT = null;
+    public final Boolean OUTLOUDDEFAULT = null;
+    public final Boolean SNOOZEABLEDEFAULT = null;
+    public final String QRDEFAULT = null;
+    public final Boolean UNSILENCEDEFAULT = null;
+    public final Boolean VIBRATEDEFAULT = null;
+    public final Boolean RINGDEFAULT = null;
+    public final Boolean LEDDEFAULT = null;
+    public final Integer LEDCOLORDEFAULT = null;
+    public final Integer LEDPATTERNDEFAULT = null;
+
+    public final Integer HOUR = 3600000;
+    public final Integer DAY = 86400000;
+    public final Integer WEEK = 604800000;
+
+    public LatLng getLocation() {
+        return location;
+    }
+
+    public void setLocation(LatLng location) {
+        this.location = location;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Integer getRepeatLength() {
+        return repeatLength;
+    }
+
+    public void setRepeatLength(Integer repeatLength) {
+        this.repeatLength = repeatLength;
+    }
+
+    public Boolean getOnlyAtLocation() {
+        return onlyAtLocation;
+    }
+
+    public void setOnlyAtLocation(Boolean onlyAtLocation) {
+        this.onlyAtLocation = onlyAtLocation;
+    }
+
+    public Boolean getUntilLocation() {
+        return untilLocation;
+    }
+
+    public void setUntilLocation(Boolean untilLocation) {
+        this.untilLocation = untilLocation;
+    }
+
+    public Integer getPersistence() {
+        return persistence;
+    }
+
+    public void setPersistence(Integer persistence) {
+        this.persistence = persistence;
+    }
+
+    public Calendar getDate() {
+        return date;
+    }
+
+    public void setDate(Calendar date) {
+        this.date = date;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Boolean getOutLoud() {
+        return outLoud;
+    }
+
+    public void setOutLoud(Boolean outLoud) {
+        this.outLoud = outLoud;
+    }
+
+    public String getQr() {
+        return qr;
+    }
+
+    public void setQr(String qr) {
+        this.qr = qr;
+    }
+
+    public Integer getSnoozeDuration() {
+        return snoozeDuration;
+    }
+
+    public void setSnoozeDuration(Integer snoozeDuration) {
+        this.snoozeDuration = snoozeDuration;
+    }
+
+    public Boolean getUnSilence() {
+        return unSilence;
+    }
+
+    public void setUnSilence(Boolean unSilence) {
+        this.unSilence = unSilence;
+    }
+
+    public Boolean getVibrate() {
+        return vibrate;
+    }
+
+    public void setVibrate(Boolean vibrate) {
+        this.vibrate = vibrate;
+    }
+
+    public Boolean getLed() {
+        return led;
+    }
+
+    public void setLed(Boolean led) {
+        this.led = led;
+    }
+
+    public Integer getLedColor() {
+        return ledColor;
+    }
+
+    public void setLedColor(Integer ledColor) {
+        this.ledColor = ledColor;
+    }
+
+    public Integer getLedPattern() {
+        return ledPattern;
+    }
+
+    public void setLedPattern(Integer ledPattern) {
+        this.ledPattern = ledPattern;
+    }
+
+    public Uri getRingtone() {
+        return ringtone;
+    }
+
+    public void setRingtone(Uri ringtone) {
+        this.ringtone = ringtone;
+    }
+
+    public Reminder() {
+        location = null;
+        name = "";
+        repeatLength = null;
+        onlyAtLocation = false;
+        untilLocation = false;
+        persistence = 0;
+        date = null;
+        description = "";
+        outLoud = false;
+        qr = null;
+        snoozeDuration = 5;
+        unSilence = false;
+        vibrate = false;
+        ringtone = null;
+        id = -1;
+    }
+
+    private static Reminder[] cursorToReminders(Cursor cursor){
+        int numReminders = cursor.getCount();
+        cursor.moveToFirst();
+        Reminder[] reminders = new Reminder[numReminders];
+        for (int i=0; i<numReminders; i++) {
+            Reminder reminder = new Reminder();
+            reminder.setId(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_ID)));
+            int index = cursor.getColumnIndex(ReminderDBHelper.COLUMN_NAME);
+            String name = cursor.getString(index);
+            reminder.setName(name);
+            reminder.setDescription(cursor.getString(cursor.getColumnIndex(ReminderDBHelper.COLUMN_DESCRIPTION)));
+            Calendar calendar = Calendar.getInstance();
+            long time = cursor.getLong(cursor.getColumnIndex(ReminderDBHelper.COLUMN_DATE))*1000;
+            calendar.setTimeInMillis(time);
+            reminder.setDate(calendar);
+            reminders[i] = reminder;
+            cursor.moveToNext();
+        }
+        cursor.close();
+        return reminders;
+    }
+
+    public static Cursor getCursor(SQLiteDatabase database){
+        String[] projection = {
+                ReminderDBHelper.COLUMN_ID,
+                ReminderDBHelper.COLUMN_NAME,
+                ReminderDBHelper.COLUMN_DESCRIPTION,
+                ReminderDBHelper.COLUMN_DATE
+        };
+        String sortOrder = ReminderDBHelper.COLUMN_DATE + " DESC";
+
+        return database.query(
+                ReminderDBHelper.TABLE_NAME,
+                projection,
+                null,
+                null,
+                null,
+                null,
+                sortOrder,
+                null
+        );
+    }
+
+    public static Reminder[] readReminders(SQLiteDatabase database){
+        Cursor cursor = getCursor(database);
+        return cursorToReminders(cursor);
+    }
+
+    public static Reminder getReminder(SQLiteDatabase database, int id){
+        Cursor cursor = database.rawQuery("select * from " + ReminderDBHelper.TABLE_NAME
+                                            + " where " + ReminderDBHelper.COLUMN_ID + "="
+                                            + id,null);
+        if (cursor.getCount()>=1) {
+            Reminder[] reminders = cursorToReminders(cursor);
+            return reminders[0];
+        }
+        else {
+            Reminder reminder = new Reminder();
+            return reminder;
+        }
+    }
+
+    public static long saveReminder(SQLiteDatabase database, Reminder reminder) {
+        Cursor cursor = database.rawQuery("select "+ReminderDBHelper.COLUMN_ID+" from " + ReminderDBHelper.TABLE_NAME
+                                             + " where " + ReminderDBHelper.COLUMN_DATE + "="
+                                             + reminder.getDate().getTimeInMillis()/1000,null);
+
+        if (cursor.getCount() > 0) {
+            cursor.moveToFirst();
+            int id = cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_ID));
+            if (id != reminder.getId()){
+                Calendar date = Calendar.getInstance();
+                date.setTimeInMillis(reminder.getDate().getTimeInMillis()+30000);
+                reminder.setDate(date);
+            }
+        }
+        ContentValues values = new ContentValues();
+        if (reminder.getId() != -1)
+            values.put(ReminderDBHelper.COLUMN_ID,reminder.getId());
+        values.put(ReminderDBHelper.COLUMN_NAME,reminder.getName());
+        values.put(ReminderDBHelper.COLUMN_DESCRIPTION,reminder.getDescription());
+        values.put(ReminderDBHelper.COLUMN_DATE,reminder.getDate().getTimeInMillis()/1000);
+
+        long newRowId;
+        newRowId = database.replace(
+                ReminderDBHelper.TABLE_NAME,
+                null,
+                values);
+        return newRowId;
+    }
+
+    public static Boolean deleteReminder(SQLiteDatabase database, int id){
+        String[] args = { String.valueOf(id) };
+        int result = database.delete(ReminderDBHelper.TABLE_NAME,ReminderDBHelper.COLUMN_ID+" LIKE ?",args);
+        return result != 0;
+    }
+
+    public static Reminder getNextReminder(SQLiteDatabase database){
+        Calendar currentDate = Calendar.getInstance();
+        long currentTime = (currentDate.getTimeInMillis()/60000)*60;
+        String[] args = { String.valueOf(currentTime) };
+        Cursor cursor = database.query(ReminderDBHelper.TABLE_NAME,
+                                        null,
+                                        ReminderDBHelper.COLUMN_DATE + " > ?",
+                                        args,
+                                        null,
+                                        null,
+                                        ReminderDBHelper.COLUMN_DATE + " ASC",
+                                        "1");
+        if (cursor.getCount()>=1) {
+            Reminder[] reminders = cursorToReminders(cursor);
+            return reminders[0];
+        }
+        else {
+            Reminder reminder = new Reminder();
+            return reminder;
+        }
+    }
+
+}

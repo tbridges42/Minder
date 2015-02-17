@@ -1,0 +1,154 @@
+package us.bridgeses.Minder;
+
+import android.content.Context;
+import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
+import android.text.TextUtils;
+import android.util.TypedValue;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+
+//TODO Display existing reminders
+public class MainActivity extends ActionBarActivity {
+
+
+    ReminderDBHelper dbHelper;
+    SQLiteDatabase database;
+
+    public void editReminder(View view) {
+        Intent intent = new Intent(this, EditActivity.class);
+        startActivity(intent);
+    }
+
+    private class CreateList extends AsyncTask<SQLiteDatabase,Void,Reminder[]> {
+
+        protected Reminder[] doInBackground(SQLiteDatabase... databases) {
+            return Reminder.readReminders(databases[0]);
+        }
+
+        protected void onPostExecute(Reminder[] reminders) {
+            LinearLayout linearLayout = (LinearLayout) findViewById(R.id.linearLayout);
+            Context context = getApplicationContext();
+            TypedValue listItemHeight = new TypedValue();
+            context.getTheme().resolveAttribute(
+                    android.R.attr.listPreferredItemHeight, listItemHeight, true);
+            android.util.DisplayMetrics metrics = new android.util.DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(metrics);
+            float itemHeight = listItemHeight.getDimension(metrics);
+            float scale = metrics.density;
+            // LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT);
+            for (Reminder r : reminders) {
+
+
+
+                RelativeLayout bar = new RelativeLayout(context);
+                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, (int) itemHeight);
+                int padding = (int)  (6*scale+0.5f);
+                bar.setPadding(padding,padding,padding,padding);
+                bar.setOnClickListener(btnclick);
+                bar.setId(r.getId()*3+2);
+                bar.setLayoutParams(params);
+
+                ImageView image = new ImageView(context);
+                RelativeLayout.LayoutParams imageParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
+                imageParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+                imageParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+                imageParams.rightMargin = padding;
+                image.setImageResource(R.drawable.ic_bw);
+                image.setTag("icon_"+r.getId());
+                image.setId(r.getId()*3);
+                image.setLayoutParams(imageParams);
+
+                TextView description = new TextView(context);
+                int descHeight = (int)  (26*scale+0.5f);
+                RelativeLayout.LayoutParams descriptionParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, descHeight);
+                descriptionParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+                descriptionParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+                descriptionParams.addRule(RelativeLayout.RIGHT_OF,r.getId() * 3);
+                description.setSingleLine(true);
+                description.setEllipsize(TextUtils.TruncateAt.MARQUEE);
+                description.setText(r.getDescription());
+                description.setId(r.getId() * 3 + 1);
+                description.setLayoutParams(descriptionParams);
+
+                TextView name = new TextView(context);
+                RelativeLayout.LayoutParams nameParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
+                nameParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
+                if (r.getDescription().equals("") ) {
+                    nameParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
+                }
+                else {
+                    nameParams.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+                }
+                nameParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+                nameParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+                nameParams.addRule(RelativeLayout.RIGHT_OF, r.getId() * 3);
+                nameParams.addRule(RelativeLayout.ABOVE, r.getId() * 3 + 1);
+                name.setText(r.getName());
+                name.setLayoutParams(nameParams);
+
+                bar.addView(image);
+                bar.addView(description);
+                bar.addView(name);
+                linearLayout.addView(bar);
+            }
+        }
+    }
+
+    Button.OnClickListener btnclick = new RelativeLayout.OnClickListener(){
+
+        @Override
+        public void onClick(View v) {
+            RelativeLayout button = (RelativeLayout)v;
+            Intent intent = new Intent(v.getContext(), EditActivity.class);
+            intent.putExtra("ID", (button.getId()-2)/3);
+            startActivity(intent);
+        }
+
+    };
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        dbHelper = ReminderDBHelper.getInstance(this);
+        database = dbHelper.openDatabase();
+        new CreateList().execute(database);
+
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        switch (item.getItemId()) {
+            case R.id.action_new:
+                editReminder(findViewById(android.R.id.content));
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+
+    }
+}

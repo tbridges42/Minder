@@ -1,0 +1,61 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0099cc"
+    tools:context="us.bridgeses.Minder.AlarmScreen">
+    <!-- TODO: Make pretty -->
+    <!-- The primary full-screen view. This can be replaced with whatever view
+         is needed to present your content, e.g. VideoView, SurfaceView,
+         TextureView, etc. -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:weightSum="20"
+        android:background="@drawable/screen_bg">
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="3"
+            android:onClick="snoozeButton"
+            android:text="Snooze"
+            android:background="#00000000"
+            android:textSize="25sp"
+            android:textStyle="bold"/>
+        <TextView android:id="@+id/fullscreen_name"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="5"
+            android:keepScreenOn="true"
+            android:textColor="#000"
+            android:textStyle="bold"
+            android:textSize="50sp"
+            android:gravity="center"
+            android:text="@string/title_activity_alarm_screen" />
+        <TextView android:id="@+id/fullscreen_description"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="9"
+            android:keepScreenOn="true"
+            android:textColor="#000"
+            android:textStyle="bold"
+            android:textSize="40sp"
+            android:gravity="center"
+            android:text="@string/title_activity_alarm_screen" />
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="3"
+            android:text="Dismiss"
+            android:onClick="dismissButton"
+            android:background="#00000000"
+            android:textSize="25sp"
+            android:textStyle="bold"/>
+    </LinearLayout>
+
+    <!-- This FrameLayout insets its children based on system windows using
+         android:fitsSystemWindows. -->
+
+
+</FrameLayout>

@@ -1,0 +1,64 @@
+package us.bridgeses.Minder;
+
+import android.app.Activity;
+import android.app.FragmentManager;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+
+public class EditPersistence extends Activity {
+
+	PersistenceFragment mFragment;
+	private static final String TAG_LOCATION_FRAGMENT = "location_fragment";
+
+	public void save(View view) {
+		Intent intent = new Intent();
+		//Verify code set if needed
+		setResult(RESULT_OK, intent);
+		finish();
+	}
+
+	public void cancel(View view) {
+		Intent intent = new Intent();
+		setResult(RESULT_CANCELED, intent);
+		finish();
+	}
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.edit_frame);
+		PersistenceFragment fragment = (PersistenceFragment) PersistenceFragment.newInstance();
+		FragmentManager fragmentManager = getFragmentManager();
+		mFragment = (PersistenceFragment) fragmentManager.findFragmentByTag(TAG_LOCATION_FRAGMENT);
+
+		if (mFragment == null) {
+			fragmentManager.beginTransaction().replace(R.id.reminder_frame, fragment,TAG_LOCATION_FRAGMENT).commit();
+		}
+	}
+
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.menu_edit_persistence, menu);
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		// Handle action bar item clicks here. The action bar will
+		// automatically handle clicks on the Home/Up button, so long
+		// as you specify a parent activity in AndroidManifest.xml.
+		int id = item.getItemId();
+
+		//noinspection SimplifiableIfStatement
+		/*if (id == R.id.action_settings) {
+			return true;
+		}*/
+
+		return super.onOptionsItemSelected(item);
+	}
+}

@@ -1,0 +1,62 @@
+<ScrollView  xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="wrap_content"
+    android:layout_width="match_parent"
+    android:scrollbars="none">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:orientation="vertical"
+        xmlns:tools="http://schemas.android.com/tools"
+        tools:context="us.bridgeses.Minder.EditActivity"
+        android:weightSum="1">
+
+        <!--TODO: move strings to string.xml-->
+
+        <EditText
+            android:id="@+id/name"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textCapWords"
+            android:hint="@string/edit_name"
+            android:imeOptions="actionNext"
+            android:imeActionLabel="Next" />
+
+        <EditText
+            android:id="@+id/description"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textMultiLine|textCapSentences"
+            android:hint="@string/edit_description"
+            android:imeOptions="actionNext"
+            android:imeActionLabel="Next" />
+
+        <TimePicker
+            android:id="@+id/timePicker"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" />
+
+        <DatePicker
+            android:id="@+id/datePicker"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:calendarViewShown="false" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <Button
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="@string/edit_confirm"
+              android:onClick="publishReminder"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/edit_delete"
+                android:onClick="removeReminder"/>
+        </LinearLayout>
+
+</LinearLayout>
+</ScrollView>

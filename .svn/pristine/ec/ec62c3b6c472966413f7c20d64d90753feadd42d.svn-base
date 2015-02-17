@@ -1,0 +1,58 @@
+package us.bridgeses.Minder;
+
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteDatabase;
+
+/**
+ * Created by Tony on 8/25/2014.
+ */
+public class BootReceiver extends BroadcastReceiver{
+
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        final PendingResult result = goAsync();
+        ReminderDBHelper dbHelper = ReminderDBHelper.getInstance(context);
+        SQLiteDatabase database = dbHelper.openDatabase();
+        SharedPreferences preferences = context.getSharedPreferences(Reminder.PREFS_NAME, 0);
+        int alarmId = preferences.getInt("Alarm",-1);
+        if (alarmId != -1) {    //If alarm exists
+            //Restart next alarm
+            Reminder reminder = Reminder.getReminder(database, alarmId);    //Get reminder associated with alarm
+            if (reminder.getId() != -1) {   //If we are getting a real reminder
+                Intent intentAlarm = new Intent(context, ReminderReceiver.class);//Create alarm intent
+                intentAlarm.putExtra("Id", reminder.getId());           //Associate intent with specific reminder
+                intentAlarm.putExtra("Snooze",0);                       //Indicate this is not a snoozed alarm
+
+                SharedPreferences.Editor editor = preferences.edit();   //Open up the preferences editor
+                editor.putInt("Alarm",reminder.getId());                //Note that there is currently an alarm
+                editor.apply();                                         //Commit
+
+                AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+                alarmManager.set(AlarmManager.RTC_WAKEUP, reminder.getDate().getTimeInMillis(), PendingIntent.getBroadcast(context, 1, intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
+            }
+        }
+
+        int snoozeId = preferences.getInt("Snooze",-1);
+        if (snoozeId != -1) {
+            //Restart snoozeButton
+            Reminder reminder = Reminder.getReminder(database, snoozeId);
+            Intent intentAlarm = new Intent(context, ReminderReceiver.class);//Create alarm intent
+            intentAlarm.putExtra("Id", reminder.getId());           //Associate intent with specific reminder
+            intentAlarm.putExtra("Snooze",1);
+
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putInt("Snooze",reminder.getId());
+            editor.apply();
+
+            AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+            alarmManager.set(AlarmManager.RTC_WAKEUP, reminder.getDate().getTimeInMillis() + reminder.getSnoozeDuration(), PendingIntent.getBroadcast(context, 2, intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
+        }
+        dbHelper.closeDatabase();
+        result.finish();
+    }
+}

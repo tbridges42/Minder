@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--TODO: Enable default settings-->
+    <Preference
+        android:key="Reset"
+        android:title="Reset faulty alarms"
+        android:summary="If you're getting random alarms, try this"
+        />
+</PreferenceScreen>

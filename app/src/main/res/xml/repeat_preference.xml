@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:title="Repeat"
+    android:key="button_repeat_menu_key">
+    <ListPreference
+        android:key="temp_repeat_type"
+        android:title="Repeat"
+        android:summary="None"
+        android:entries="@array/repeat_period"
+        android:entryValues="@array/repeat_index"/>
+
+    <PreferenceCategory android:title="Daily"
+        android:key="daily_repeat_menu">
+
+        <EditTextPreference android:title="Period"
+            android:key="temp_days"
+            android:inputType="number"/>
+
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Weekly"
+        android:key="weekly_repeat_menu">
+
+        <EditTextPreference android:title="Period"
+            android:key="temp_weeks"
+            android:inputType="number"/>
+        <CheckBoxPreference android:title="Sunday"
+            android:key="temp_sunday" />
+        <CheckBoxPreference android:title="Monday"
+            android:key="temp_monday" />
+        <CheckBoxPreference android:title="Tuesday"
+            android:key="temp_tuesday" />
+        <CheckBoxPreference android:title="Wednesday"
+            android:key="temp_wednesday" />
+        <CheckBoxPreference android:title="Thursday"
+            android:key="temp_thursday" />
+        <CheckBoxPreference android:title="Friday"
+            android:key="temp_friday" />
+        <CheckBoxPreference android:title="Saturday"
+            android:key="temp_saturday" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Monthly"
+        android:key="monthly_repeat_menu">
+        <ListPreference
+            android:key="temp_monthly_type"
+            android:title="Repeat"
+            android:summary=""
+            android:entries="@array/monthly_type"
+            android:entryValues="@array/monthly_index"/>
+        <EditTextPreference android:title="Period"
+            android:key="temp_months"
+            android:inputType="number"/>
+
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Yearly"
+        android:key="yearly_repeat_menu">
+
+        <EditTextPreference android:title="Period"
+            android:key="temp_years"
+            android:inputType="number"/>
+
+    </PreferenceCategory>
+</PreferenceScreen>

@@ -1,0 +1,165 @@
+package us.bridgeses.Minder;
+
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
+import android.os.Bundle;
+import android.support.v4.app.NavUtils;
+import android.support.v7.app.ActionBarActivity;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.DatePicker;
+import android.widget.EditText;
+import android.widget.TimePicker;
+import android.widget.Toast;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
+
+//TODO comment everything
+//TODO check for incoming intent with reminder
+/**********************************************************
+ * Creates new reminder or edits reminder carried by intent
+ * (edit reminder not yet implemented)
+ *********************************************************/
+public class EditActivity extends ActionBarActivity {
+
+    ReminderDBHelper dbHelper;
+    SQLiteDatabase database;
+    private Reminder reminder = new Reminder(); //Star of the show
+    private DatePicker datePicker;
+    private TimePicker timePicker;
+
+    public void setLocation(View view) {        //Open MapsActivity to select a geolocation. May be moved to another activity later. Not currently used
+        Intent intent = new Intent(this, MapsActivity.class);
+        startActivity(intent);
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_edit);
+
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);             //Add back button to actionbar
+        }
+        Intent intent = getIntent();
+        int id = -1;
+        id = intent.getIntExtra("ID",-1);
+        datePicker = (DatePicker) findViewById(R.id.datePicker);    //Associate datePicker data object with visual object
+        timePicker = (TimePicker) findViewById(R.id.timePicker);    //Associate TimePicker data object with visual object
+        dbHelper = ReminderDBHelper.getInstance(this);
+        database = dbHelper.openDatabase();
+        if (id != -1) {
+            reminder = Reminder.getReminder(database, id);
+            EditText name = (EditText) findViewById(R.id.name);
+            EditText desciption = (EditText) findViewById(R.id.description);
+            name.setText(reminder.getName());
+            desciption.setText(reminder.getDescription());
+            datePicker.updateDate(reminder.getDate().get(Calendar.YEAR),reminder.getDate().get(Calendar.MONTH),reminder.getDate().get(Calendar.DAY_OF_MONTH));
+            timePicker.setCurrentHour(reminder.getDate().get(Calendar.HOUR_OF_DAY));
+            timePicker.setCurrentMinute(reminder.getDate().get(Calendar.MINUTE));
+        }
+    }
+
+    public void publishReminder(View view) {                        //Run when user is done making changes
+
+        //TODO Validation
+        EditText text = (EditText)findViewById(R.id.name);          //Retrieve reminder title
+        String name = text.getText().toString();
+        if (name.equals("")) {                                      //Validate that name is not blank
+            Context context = getApplicationContext();
+            String toastText = "Name is required";
+            int duration = Toast.LENGTH_SHORT;
+            Toast toast = Toast.makeText(context, toastText, duration);
+            toast.show();
+            return;
+        }
+        text = (EditText)findViewById(R.id.description);            //Retrieve reminder description
+        String description = text.getText().toString();
+        reminder.setName(name);                                     //Store reminder title
+        reminder.setDescription(description);                       //Store reminder description
+        int year = datePicker.getYear();                            //Retrieve reminder date
+        int month = datePicker.getMonth();                          //
+        int day = datePicker.getDayOfMonth();                       //
+        int hour = timePicker.getCurrentHour();                     //Retrieve reminder time
+        int minute = timePicker.getCurrentMinute();                 //
+        Calendar date = Calendar.getInstance();
+        switch (month) {                                            //This monstrosity makes AS stop throwing an error that I wasn't using Calendar's month constants
+            case 0: date.set(year, Calendar.JANUARY, day, hour, minute);
+                break;
+            case 1: date.set(year, Calendar.FEBRUARY, day, hour, minute);
+                break;
+            case 2: date.set(year, Calendar.MARCH, day, hour, minute);
+                break;
+            case 3: date.set(year, Calendar.APRIL, day, hour, minute);
+                break;
+            case 4: date.set(year, Calendar.MAY, day, hour, minute);
+                break;
+            case 5: date.set(year, Calendar.JUNE, day, hour, minute);
+                break;
+            case 6: date.set(year, Calendar.JULY, day, hour, minute);
+                break;
+            case 7: date.set(year, Calendar.AUGUST, day, hour, minute);
+                break;
+            case 8: date.set(year, Calendar.SEPTEMBER, day, hour, minute);
+                break;
+            case 9: date.set(year, Calendar.OCTOBER, day, hour, minute);
+                break;
+            case 10: date.set(year, Calendar.NOVEMBER, day, hour, minute);
+                break;
+            case 11: date.set(year, Calendar.DECEMBER, day, hour, minute);
+                break;
+        }
+        reminder.setDate(date);                                     //Store reminder date + time
+
+        long time = reminder.getDate().getTimeInMillis();           //Retrieve reminder date + time in milliseconds
+        Intent intentAlarm = new Intent(this, ReminderReceiver.class);//Create alarm intent
+        intentAlarm.putExtra("Id",reminder.getId());           //Associate intent with specific reminder
+
+        //TODO check for existing alarm and compare times (apparently need to check against database, can not query alarm manager)
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        alarmManager.set(AlarmManager.RTC_WAKEUP, time, PendingIntent.getBroadcast(this, 1, intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
+
+        long rowId = Reminder.saveReminder(database, reminder);
+        Context context = getApplicationContext();
+        DateFormat df = new SimpleDateFormat("HH:mm:ss");
+        String toastText = "Reminder will sound at "+df.format(time);
+        int duration = Toast.LENGTH_SHORT;
+        Toast toast = Toast.makeText(context, toastText, duration);
+        toast.show();                                               //Let the user know everything went fine
+        dbHelper.closeDatabase();
+        NavUtils.navigateUpFromSameTask(this);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.edit, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+        if (id == R.id.action_settings) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    public void removeReminder(View view) {
+        Reminder.deleteReminder(database,reminder.getId());
+        dbHelper.closeDatabase();
+        NavUtils.navigateUpFromSameTask(this);
+    }
+}

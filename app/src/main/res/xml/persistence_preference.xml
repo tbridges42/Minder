@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:title="QR/Bar Code Settings">
+        <ListPreference
+            android:key="code_type"
+            android:title="Code Restrictions"
+            android:summary="None"
+            android:entries="@array/code_type"
+            android:entryValues="@array/code_index"/>
+
+        <PreferenceScreen android:key="button_code"
+                          android:title="Set Code"/>
+    </PreferenceCategory>
+</PreferenceScreen>
