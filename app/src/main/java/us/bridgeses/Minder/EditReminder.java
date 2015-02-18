@@ -194,7 +194,7 @@ public class EditReminder extends Activity implements DeleteDialogFragment.Notic
 	    reminder.setActive(reminder.getDate().after(Calendar.getInstance()));
 	    reminder.setQr(sharedPreferences.getString("temp_code","0"));
 		reminder.setNeedQr(sharedPreferences.getString("code_type","0").equals("1"));
-	    reminder.setVolumeOverride(sharedPreferences.getString("volume_override","0").equals("1"));
+        reminder.setOutLoud(sharedPreferences.getBoolean("out_loud",false));
 
         ReminderDBHelper dbHelper = ReminderDBHelper.getInstance(this);
         SQLiteDatabase database = dbHelper.openDatabase();

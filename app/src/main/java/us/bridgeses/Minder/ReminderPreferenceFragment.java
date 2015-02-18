@@ -33,8 +33,8 @@ import us.bridgeses.Minder.util.TimePreference;
 public class ReminderPreferenceFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener, Preference.OnPreferenceClickListener {
 
     private Reminder reminder;
-    private SimpleDateFormat dateFormat = new SimpleDateFormat(getResources().getString(R.string.full_date_time_code));
-    private SimpleDateFormat timeFormat = new SimpleDateFormat(getResources().getString(R.string.time_code));
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("EEEE, MMMM d, yyyy");
+    private SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm aa");
 
     private SharedPreferences sharedPreferences;
 
@@ -49,6 +49,7 @@ public class ReminderPreferenceFragment extends PreferenceFragment implements Sh
     private PreferenceScreen conditionsPreference;
 	private PreferenceScreen stylePreference;
 	private PreferenceScreen persistencePreference;
+    private CheckBoxPreference outLoudPreference;
 	private CheckBoxPreference volumeOverridePreference;
 	private ProgressDialog progressDialog;
 
@@ -164,6 +165,9 @@ public class ReminderPreferenceFragment extends PreferenceFragment implements Sh
 		else {
 			editor.putString("code_type","0");
 		}
+
+        editor.putBoolean("out_loud",reminder.getOutLoud());
+
 		return editor;
 	}
 
@@ -204,6 +208,7 @@ public class ReminderPreferenceFragment extends PreferenceFragment implements Sh
 		persistencePreference = (PreferenceScreen) super.findPreference("button_persistence");
 		persistencePreference.setOnPreferenceClickListener(this);
 		volumeOverridePreference = (CheckBoxPreference) super.findPreference("volume_override");
+        outLoudPreference = (CheckBoxPreference) super.findPreference("out_loud");
 	}
 
     private void initSummaries(){
@@ -229,7 +234,8 @@ public class ReminderPreferenceFragment extends PreferenceFragment implements Sh
             ringtonePreference.setSummary(ringtoneTitle);
         }
 	    vibratePreference.setChecked(reminder.getVibrate());
-	    volumeOverridePreference.setChecked(reminder.getVolumeOverride());
+	    //volumeOverridePreference.setChecked(reminder.getVolumeOverride());
+        //outLoudPreference.setChecked(reminder.getOutLoud());
     }
 
     @Override

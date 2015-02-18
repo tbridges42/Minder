@@ -8,11 +8,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
+import android.media.AudioAttributes;
+import android.media.AudioManager;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Vibrator;
+import android.provider.MediaStore;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.View;
@@ -45,6 +49,8 @@ public class AlarmScreen extends Activity implements GoogleApiClient.ConnectionC
 	private Context context;
 	private int snooze;
 	private GoogleApiClient mGoogleApiClient;
+    private int curVolume;
+    private int curRingMode;
 
 	@Override
 	public void onConnectionSuspended(int i){
@@ -180,8 +186,35 @@ public class AlarmScreen extends Activity implements GoogleApiClient.ConnectionC
 			}
 		}
 		if (!reminder.getRingtone().equals("")) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+                if (reminder.getOutLoud()) {
+                    AudioManager manager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+                    Log.e("Minder", "Maxing out volume");
+                    curVolume = manager.getStreamVolume(AudioManager.STREAM_ALARM);
+                    manager.setStreamVolume(AudioManager.STREAM_ALARM, manager.getStreamMaxVolume(AudioManager.STREAM_ALARM), 0);
+                    curRingMode = manager.getRingerMode();
+                    manager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
+                } else
+                    Log.e("Minder", "Not maxing volume");
+                ringtone = RingtoneManager.getRingtone(context, Uri.parse(reminder.getRingtone()));
+                ringtone.setStreamType(AudioManager.STREAM_ALARM);
 
-			ringtone = RingtoneManager.getRingtone(context, Uri.parse(reminder.getRingtone()));
+            }
+            else {
+                if (reminder.getOutLoud()) {
+                    AudioManager manager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+                    Log.e("Minder", "Maxing out volume, Lollipop");
+                    curVolume = manager.getStreamVolume(AudioManager.STREAM_ALARM);
+                    AudioAttributes.Builder builder = new AudioAttributes.Builder();
+                    builder.setUsage(AudioAttributes.USAGE_ALARM);
+                    builder.setFlags(AudioAttributes.FLAG_AUDIBILITY_ENFORCED);
+                    curRingMode = manager.getRingerMode();
+                    manager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
+                } else
+                    Log.e("Minder", "Not maxing volume, Lollipop");
+                ringtone = RingtoneManager.getRingtone(context, Uri.parse(reminder.getRingtone()));
+                ringtone.setStreamType(AudioManager.STREAM_ALARM);
+            }
 			ringtone.play();
 		}
 
@@ -311,6 +344,11 @@ public class AlarmScreen extends Activity implements GoogleApiClient.ConnectionC
 	public void dismissButton(View view) {
 		if (!reminder.getRingtone().equals("")) {
 			ringtone.stop();
+            if (reminder.getOutLoud()) {
+                AudioManager manager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+                manager.setStreamVolume(AudioManager.STREAM_ALARM, curVolume,0);
+                manager.setRingerMode(curRingMode);
+            }
 		}
 		if (reminder.getVibrate() && (vibrator != null)) {
 			vibrator.cancel();
@@ -337,6 +375,11 @@ public class AlarmScreen extends Activity implements GoogleApiClient.ConnectionC
         }
         if (!reminder.getRingtone().equals("")) {
             ringtone.stop();
+            if (reminder.getOutLoud()) {
+                AudioManager manager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+                manager.setStreamVolume(AudioManager.STREAM_ALARM, curVolume,0);
+                manager.setRingerMode(curRingMode);
+            }
         }
         scheduleTaskExecutor.shutdownNow();
         finish();

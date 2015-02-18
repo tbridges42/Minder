@@ -12,4 +12,13 @@
         <PreferenceScreen android:key="button_code"
                           android:title="Set Code"/>
     </PreferenceCategory>
+    <PreferenceCategory
+        android:title="Volume Override">
+        <CheckBoxPreference
+            android:key="out_loud"
+            android:title="Override Volume Settings"
+            android:summaryOff="Reminder will use system settings"
+            android:summaryOn="Reminder will override system settings" />
+
+    </PreferenceCategory>
 </PreferenceScreen>

@@ -389,6 +389,7 @@ public class Reminder implements Parcelable{
 	        reminder.setQr(cursor.getString(cursor.getColumnIndex(ReminderDBHelper.COLUMN_QR)));
 	        reminder.setNeedQr(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_NEEDQR)) == 1);
 	        reminder.setPersistence((byte)cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_PERSISTENCE)));
+            reminder.setOutLoud(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_OUTLOUD)) == 1);
             try {
                 reminder.setRingtone(cursor.getString(cursor.getColumnIndex(ReminderDBHelper.COLUMN_RINGTONE)));
             }
@@ -510,7 +511,12 @@ public class Reminder implements Parcelable{
 	    else {
 		    values.put(ReminderDBHelper.COLUMN_UNTILLOCATION,"0");
 	    }
-
+        if (reminder.getOutLoud()) {
+            values.put(ReminderDBHelper.COLUMN_OUTLOUD,"1");
+        }
+        else {
+            values.put(ReminderDBHelper.COLUMN_OUTLOUD, "0");
+        }
         long newRowId;
         newRowId = database.replace(
                 ReminderDBHelper.TABLE_NAME,

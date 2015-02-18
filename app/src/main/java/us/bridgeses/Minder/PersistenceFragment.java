@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
@@ -81,6 +82,7 @@ public class PersistenceFragment extends PreferenceFragment implements SharedPre
 		ListPreference codeType = (ListPreference) super.findPreference("code_type");
 		PreferenceScreen codeButton = (PreferenceScreen) super.findPreference("button_code");
 		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        CheckBoxPreference outLoudPreference = (CheckBoxPreference) super.findPreference("out_loud");
 		codeType.setSummary(codeType.getEntry());
 		codeButton.setEnabled(!codeType.getValue().equals("0"));
 		if (sharedPreferences.getString("button_code","").equals("")){
@@ -88,6 +90,7 @@ public class PersistenceFragment extends PreferenceFragment implements SharedPre
 		}
 		else
 			super.findPreference("button_code").setSummary(getResources().getString(R.string.code_set));
+        outLoudPreference.setChecked(sharedPreferences.getBoolean("out_loud",false));
 	}
 
 	@Override
