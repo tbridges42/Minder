@@ -332,11 +332,24 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
 			startActivityForResult(intent, 0);
 		}
 		catch (Exception e) {
-			//TODO: Create confirmation dialog
-			Uri marketUri = Uri.parse("market://details?id=com.google.zxing.client.android");
-			Intent marketIntent = new Intent(Intent.ACTION_VIEW,marketUri);
-			startActivity(marketIntent);
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
+            builder.setTitle("No QR scanner");
+            builder.setMessage("This function requires the ZXing Bar Code Scanner");
+            builder.setPositiveButton("Play Store", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    Uri marketUri = Uri.parse("market://details?id=com.google.zxing.client.android");
+                    Intent marketIntent = new Intent(Intent.ACTION_VIEW,marketUri);
+                    startActivity(marketIntent);
+                }
+            });
+            builder.setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+
+                }
+            });
+            builder.create();
+            builder.show();
 		}
 	}
 

@@ -1,6 +1,8 @@
 package us.bridgeses.Minder;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -50,11 +52,24 @@ public class PersistenceFragment extends PreferenceFragment implements SharedPre
 				startActivityForResult(intent, 0);
 
 			} catch (Exception e) {
-				//TODO: Create confirmation dialog
-				Uri marketUri = Uri.parse("market://details?id=com.google.zxing.client.android");
-				Intent marketIntent = new Intent(Intent.ACTION_VIEW,marketUri);
-				startActivity(marketIntent);
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity() );
 
+                builder.setTitle("No QR scanner");
+                builder.setMessage("This function requires the ZXing Bar Code Scanner");
+                builder.setPositiveButton("Play Store", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        Uri marketUri = Uri.parse("market://details?id=com.google.zxing.client.android");
+                        Intent marketIntent = new Intent(Intent.ACTION_VIEW, marketUri);
+                        startActivity(marketIntent);
+                    }
+                });
+                builder.setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                    }
+                });
+                builder.create();
+                builder.show();
 			}
 		}
 		return false;
@@ -62,10 +77,8 @@ public class PersistenceFragment extends PreferenceFragment implements SharedPre
 
 	public void onSharedPreferenceChanged(SharedPreferences preference, String key){
 		if (key.equals("code_type")){
-			ListPreference mPreference = (ListPreference) findPreference(key);
-			mPreference.setSummary(mPreference.getEntry());
-			int value = Integer.valueOf(mPreference.getValue());
-			super.findPreference("button_code").setEnabled(value != 0);
+			CheckBoxPreference mPreference = (CheckBoxPreference) findPreference(key);
+			super.findPreference("button_code").setEnabled(mPreference.isChecked());
 		}
 		((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
 	}
@@ -79,12 +92,11 @@ public class PersistenceFragment extends PreferenceFragment implements SharedPre
 	}
 
 	private void initSummaries() {
-		ListPreference codeType = (ListPreference) super.findPreference("code_type");
+		CheckBoxPreference codeType = (CheckBoxPreference) super.findPreference("code_type");
 		PreferenceScreen codeButton = (PreferenceScreen) super.findPreference("button_code");
 		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         CheckBoxPreference outLoudPreference = (CheckBoxPreference) super.findPreference("out_loud");
-		codeType.setSummary(codeType.getEntry());
-		codeButton.setEnabled(!codeType.getValue().equals("0"));
+		codeButton.setEnabled(codeType.isChecked());
 		if (sharedPreferences.getString("button_code","").equals("")){
 			super.findPreference("button_code").setSummary("");
 		}

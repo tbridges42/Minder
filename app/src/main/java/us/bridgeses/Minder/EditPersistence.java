@@ -3,10 +3,13 @@ package us.bridgeses.Minder;
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 public class EditPersistence extends Activity {
 
@@ -14,10 +17,19 @@ public class EditPersistence extends Activity {
 	private static final String TAG_LOCATION_FRAGMENT = "location_fragment";
 
 	public void save(View view) {
-		Intent intent = new Intent();
-		//Verify code set if needed
-		setResult(RESULT_OK, intent);
-		finish();
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        if ((!sharedPreferences.getBoolean("code_type",false)) &&
+                (sharedPreferences.getString("temp_code","").equals(""))){
+            String toastText = getResources().getString(R.string.invalid_location);
+            int duration = Toast.LENGTH_SHORT;
+            Toast toast = Toast.makeText(this, toastText, duration);
+            toast.show();
+        }
+        else {
+            Intent intent = new Intent();
+            setResult(RESULT_OK, intent);
+            finish();
+        }
 	}
 
 	public void cancel(View view) {

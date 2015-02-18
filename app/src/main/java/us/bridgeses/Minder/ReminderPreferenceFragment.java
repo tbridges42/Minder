@@ -159,12 +159,7 @@ public class ReminderPreferenceFragment extends PreferenceFragment implements Sh
 
 	private SharedPreferences.Editor initPersistenceValues(SharedPreferences.Editor editor) {
 		editor.putString("temp_code",reminder.getQr());
-		if (reminder.getNeedQr()) {
-			editor.putString("code_type","1");
-		}
-		else {
-			editor.putString("code_type","0");
-		}
+		editor.putBoolean("code_type",reminder.getNeedQr());
 
         editor.putBoolean("out_loud",reminder.getOutLoud());
 

@@ -193,7 +193,7 @@ public class EditReminder extends Activity implements DeleteDialogFragment.Notic
         reminder.setRingtone(sharedPreferences.getString("temp_ringtone", ""));
 	    reminder.setActive(reminder.getDate().after(Calendar.getInstance()));
 	    reminder.setQr(sharedPreferences.getString("temp_code","0"));
-		reminder.setNeedQr(sharedPreferences.getString("code_type","0").equals("1"));
+		reminder.setNeedQr(sharedPreferences.getBoolean("code_type",false));
         reminder.setOutLoud(sharedPreferences.getBoolean("out_loud",false));
 
         ReminderDBHelper dbHelper = ReminderDBHelper.getInstance(this);
