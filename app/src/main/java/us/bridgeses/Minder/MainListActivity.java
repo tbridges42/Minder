@@ -72,6 +72,10 @@ public class MainListActivity extends Activity implements AsyncFragment.TaskCall
 	public void onBackPressed()
 	{
 		FragmentManager fm = getFragmentManager();
+        Fragment fragment = fm.findFragmentByTag(TAG_ASYNC_FRAGMENT);
+        if (!(fragment instanceof AboutFragment)){
+            finish();
+        }
 		fm.popBackStack();
 	}
 
@@ -96,6 +100,7 @@ public class MainListActivity extends Activity implements AsyncFragment.TaskCall
         // retained across a configuration change.
         if (fragment == null) {
 	        // create new fragment
+            setTracker();
             mAsyncFragment = new AsyncFragment();
 	        fm.beginTransaction().replace(R.id.list,mAsyncFragment,TAG_ASYNC_FRAGMENT).commit();
         }
