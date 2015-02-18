@@ -2,9 +2,11 @@ package us.bridgeses.Minder;
 
 import android.app.Activity;
 import android.app.AlarmManager;
+import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
@@ -21,6 +23,8 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.NumberPicker;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -38,7 +42,7 @@ import java.util.concurrent.TimeUnit;
 import us.bridgeses.Minder.receivers.ReminderReceiver;
 
 
-public class AlarmScreen extends Activity implements GoogleApiClient.ConnectionCallbacks,
+public class AlarmScreen extends Activity implements View.OnLongClickListener, GoogleApiClient.ConnectionCallbacks,
 		GoogleApiClient.OnConnectionFailedListener, LocationListener{
 
     private ReminderDBHelper dbHelper;
@@ -60,6 +64,60 @@ public class AlarmScreen extends Activity implements GoogleApiClient.ConnectionC
 	public void onConnectionFailed(ConnectionResult result){
 		Log.w("Minder","Connection Failed");
 	}
+
+    public void silence() {
+        if (!reminder.getRingtone().equals("")) {
+            ringtone.stop();
+            if (reminder.getOutLoud()) {
+                AudioManager manager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+                manager.setStreamVolume(AudioManager.STREAM_ALARM, curVolume,0);
+                manager.setRingerMode(curRingMode);
+            }
+        }
+        if (reminder.getVibrate() && (vibrator != null)) {
+            vibrator.cancel();
+        }
+    }
+
+    public void makeNoise() {
+        if (reminder.getVibrate()) {
+            if (vibrator.hasVibrator()) {
+                vibrator.vibrate(1000);
+            }
+        }
+        if (!reminder.getRingtone().equals("")) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+                if (reminder.getOutLoud()) {
+                    AudioManager manager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+                    Log.e("Minder", "Maxing out volume");
+                    curVolume = manager.getStreamVolume(AudioManager.STREAM_ALARM);
+                    manager.setStreamVolume(AudioManager.STREAM_ALARM, manager.getStreamMaxVolume(AudioManager.STREAM_ALARM), 0);
+                    curRingMode = manager.getRingerMode();
+                    manager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
+                } else
+                    Log.e("Minder", "Not maxing volume");
+                ringtone = RingtoneManager.getRingtone(context, Uri.parse(reminder.getRingtone()));
+                ringtone.setStreamType(AudioManager.STREAM_ALARM);
+
+            }
+            else {
+                if (reminder.getOutLoud()) {
+                    AudioManager manager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+                    Log.e("Minder", "Maxing out volume, Lollipop");
+                    curVolume = manager.getStreamVolume(AudioManager.STREAM_ALARM);
+                    AudioAttributes.Builder builder = new AudioAttributes.Builder();
+                    builder.setUsage(AudioAttributes.USAGE_ALARM);
+                    builder.setFlags(AudioAttributes.FLAG_AUDIBILITY_ENFORCED);
+                    curRingMode = manager.getRingerMode();
+                    manager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
+                } else
+                    Log.e("Minder", "Not maxing volume, Lollipop");
+                ringtone = RingtoneManager.getRingtone(context, Uri.parse(reminder.getRingtone()));
+                ringtone.setStreamType(AudioManager.STREAM_ALARM);
+            }
+            ringtone.play();
+        }
+    }
 
 	@Override
 	public void onLocationChanged(Location mLastLocation) {
@@ -169,6 +227,12 @@ public class AlarmScreen extends Activity implements GoogleApiClient.ConnectionC
 		mNotifyMgr.notify(reminder.getId(), mBuilder.build());
 	}
 
+    @Override
+    public boolean onLongClick(View view){
+        customSnooze(view);
+        return true;
+    }
+
 	private void createScreen() {
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON |
 				WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
@@ -180,45 +244,10 @@ public class AlarmScreen extends Activity implements GoogleApiClient.ConnectionC
 		TextView descriptionText = (TextView) findViewById(R.id.fullscreen_description);
 		titleText.setText(reminder.getName());
 		descriptionText.setText(reminder.getDescription());
-		if (reminder.getVibrate()) {
-			if (vibrator.hasVibrator()) {
-				vibrator.vibrate(1000);
-			}
-		}
-		if (!reminder.getRingtone().equals("")) {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-                if (reminder.getOutLoud()) {
-                    AudioManager manager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-                    Log.e("Minder", "Maxing out volume");
-                    curVolume = manager.getStreamVolume(AudioManager.STREAM_ALARM);
-                    manager.setStreamVolume(AudioManager.STREAM_ALARM, manager.getStreamMaxVolume(AudioManager.STREAM_ALARM), 0);
-                    curRingMode = manager.getRingerMode();
-                    manager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
-                } else
-                    Log.e("Minder", "Not maxing volume");
-                ringtone = RingtoneManager.getRingtone(context, Uri.parse(reminder.getRingtone()));
-                ringtone.setStreamType(AudioManager.STREAM_ALARM);
 
-            }
-            else {
-                if (reminder.getOutLoud()) {
-                    AudioManager manager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-                    Log.e("Minder", "Maxing out volume, Lollipop");
-                    curVolume = manager.getStreamVolume(AudioManager.STREAM_ALARM);
-                    AudioAttributes.Builder builder = new AudioAttributes.Builder();
-                    builder.setUsage(AudioAttributes.USAGE_ALARM);
-                    builder.setFlags(AudioAttributes.FLAG_AUDIBILITY_ENFORCED);
-                    curRingMode = manager.getRingerMode();
-                    manager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
-                } else
-                    Log.e("Minder", "Not maxing volume, Lollipop");
-                ringtone = RingtoneManager.getRingtone(context, Uri.parse(reminder.getRingtone()));
-                ringtone.setStreamType(AudioManager.STREAM_ALARM);
-            }
-			ringtone.play();
-		}
+        findViewById(R.id.snooze_button).setOnLongClickListener(this);
 
-
+        makeNoise();
 
 		scheduleTaskExecutor.schedule(new Runnable() {
 			public void run() {
@@ -342,17 +371,7 @@ public class AlarmScreen extends Activity implements GoogleApiClient.ConnectionC
     }
 
 	public void dismissButton(View view) {
-		if (!reminder.getRingtone().equals("")) {
-			ringtone.stop();
-            if (reminder.getOutLoud()) {
-                AudioManager manager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-                manager.setStreamVolume(AudioManager.STREAM_ALARM, curVolume,0);
-                manager.setRingerMode(curRingMode);
-            }
-		}
-		if (reminder.getVibrate() && (vibrator != null)) {
-			vibrator.cancel();
-		}
+		silence();
 		if (reminder.getNeedQr()){
 			checkQr();
 		}
@@ -370,19 +389,34 @@ public class AlarmScreen extends Activity implements GoogleApiClient.ConnectionC
 				    PendingIntent.getBroadcast(context, id, intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
 
 	    Log.v("us.bridgeses.minder", "Alarm " + id + " set");
-        if (reminder.getVibrate() && (vibrator != null)) {
-            vibrator.cancel();
-        }
-        if (!reminder.getRingtone().equals("")) {
-            ringtone.stop();
-            if (reminder.getOutLoud()) {
-                AudioManager manager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-                manager.setStreamVolume(AudioManager.STREAM_ALARM, curVolume,0);
-                manager.setRingerMode(curRingMode);
-            }
-        }
+        silence();
         scheduleTaskExecutor.shutdownNow();
         finish();
+    }
+
+    public void customSnooze(View view) {
+        silence();
+        final View dLayout = View.inflate(this, R.layout.snooze_dialog,null);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        builder.setTitle("Set Snooze Duration");
+        final NumberPicker picker = (NumberPicker) dLayout.findViewById(R.id.snooze_length);
+        picker.setMinValue(1);
+        picker.setMaxValue(480);
+        picker.setValue(reminder.getSnoozeDuration()/Reminder.MINUTE);
+        builder.setPositiveButton("Snooze", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                snooze(picker.getValue()*Reminder.MINUTE);
+            }
+        });
+        builder.setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                makeNoise();
+            }
+        });
+        builder.setView(dLayout);
+        builder.create();
+        builder.show();
     }
 
     public void snoozeButton(View view) {
