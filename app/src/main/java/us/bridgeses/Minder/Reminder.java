@@ -1,14 +1,18 @@
 package us.bridgeses.Minder;
 
 import android.content.ContentValues;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 /**
@@ -47,6 +51,86 @@ public class Reminder implements Parcelable{
         led = LEDDEFAULT;
         id = IDDEFAULT;
         radius = RADIUSDEFAULT;
+    }
+
+    public static Reminder reminderFactory(SharedPreferences sharedPreferences){
+        Reminder reminder = new Reminder();
+        reminder.setName(sharedPreferences.getString("temp_name",""));
+        reminder.setDescription(sharedPreferences.getString("temp_description", ""));
+        reminder.setRepeatType(Integer.parseInt(sharedPreferences.getString("temp_repeat_type", "0")));
+        switch (reminder.getRepeatType()) {
+            case 1: {
+                reminder.setRepeatLength(Integer.parseInt(sharedPreferences.getString("temp_days", "1")));
+                break;
+            }
+            case 2: {
+                reminder.setRepeatLength(Integer.parseInt(sharedPreferences.getString("temp_weeks", "1")));
+                byte daysOfWeek = 0;
+                if (sharedPreferences.getBoolean("temp_sunday",false)) {
+                    daysOfWeek += Reminder.SUNDAY;
+                }
+                if (sharedPreferences.getBoolean("temp_monday",false)) {
+                    daysOfWeek += Reminder.MONDAY;
+                }
+                if (sharedPreferences.getBoolean("temp_tuesday",false)) {
+                    daysOfWeek += Reminder.TUESDAY;
+                }
+                if (sharedPreferences.getBoolean("temp_wednesday",false)) {
+                    daysOfWeek += Reminder.WEDNESDAY;
+                }
+                if (sharedPreferences.getBoolean("temp_thursday",false)) {
+                    daysOfWeek += Reminder.THURSDAY;
+                }
+                if (sharedPreferences.getBoolean("temp_friday",false)) {
+                    daysOfWeek += Reminder.FRIDAY;
+                }
+                if (sharedPreferences.getBoolean("temp_saturday",false)) {
+                    daysOfWeek += Reminder.SATURDAY;
+                }
+                reminder.setDaysOfWeek(daysOfWeek);
+                break;
+            }
+            case 3: {
+                reminder.setRepeatLength(Integer.parseInt(sharedPreferences.getString("temp_months", "1")));
+                reminder.setMonthType((byte) Integer.parseInt(sharedPreferences.getString("temp_monthly_type","0")));
+                break;
+            }
+            case 4: {
+                reminder.setRepeatLength(Integer.parseInt(sharedPreferences.getString("temp_years", "1")));
+                break;
+            }
+        }
+        int locationType = Integer.parseInt(sharedPreferences.getString("location_type", "0"));
+        switch (locationType){
+            case 0: {
+                reminder.setOnlyAtLocation(false);
+                reminder.setUntilLocation(false);
+                break;
+            }
+            case 1: {
+                reminder.setOnlyAtLocation(true);
+                reminder.setUntilLocation(false);
+                break;
+            }
+            case 2: {
+                reminder.setOnlyAtLocation(false);
+                reminder.setUntilLocation(true);
+                break;
+            }
+        }
+
+        LatLng location = new LatLng(sharedPreferences.getFloat("Latitude",0),sharedPreferences.getFloat("Longitude",0));
+        reminder.setLocation(location);
+        reminder.setRadius(Integer.valueOf(sharedPreferences.getString("radius",Integer.toString(Reminder.RADIUSDEFAULT))));
+        reminder.setVibrate(sharedPreferences.getBoolean("temp_vibrate", true));
+        reminder.setRingtone(sharedPreferences.getString("temp_ringtone", ""));
+        reminder.setActive(reminder.getDate().after(Calendar.getInstance()));
+        reminder.setQr(sharedPreferences.getString("temp_code","0"));
+        reminder.setNeedQr(sharedPreferences.getBoolean("code_type",false));
+        reminder.setVolumeOverride(sharedPreferences.getBoolean("out _loud",false));
+        reminder.setDisplayScreen(sharedPreferences.getBoolean("display_screen",false));
+        reminder.setWakeUp(sharedPreferences.getBoolean("wake_up",false));
+        return reminder;
     }
 
     public Reminder(Parcel in){
@@ -489,8 +573,6 @@ public class Reminder implements Parcelable{
         values.put(ReminderDBHelper.COLUMN_DESCRIPTION,reminder.getDescription());
         values.put(ReminderDBHelper.COLUMN_DATE,reminder.getDate().getTimeInMillis()/1000);
         values.put(ReminderDBHelper.COLUMN_DAYSOFWEEK,reminder.getDaysOfWeek());
-        //Gson gson = new Gson();
-        //values.put(ReminderDBHelper.COLUMN_DAYSOFMONTH,gson.toJson(reminder.getDaysOfMonth()));
         values.put(ReminderDBHelper.COLUMN_MONTHTYPE,reminder.getMonthType());
         values.put(ReminderDBHelper.COLUMN_LATITUDE,reminder.getLocation().latitude);
         values.put(ReminderDBHelper.COLUMN_LONGITUDE,reminder.getLocation().longitude);
@@ -833,5 +915,68 @@ public class Reminder implements Parcelable{
             }
         }
         return appendix;
+    }
+
+    public static void saveDefaults(SharedPreferences sharedPreferences, Reminder reminder){
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEEE, MMMM d, yyyy");
+        SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm aa");
+
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("temp_name",reminder.getName());
+        editor.putString("temp_description",reminder.getDescription());
+        editor.putBoolean("temp_vibrate",reminder.getVibrate());
+        editor.putString("temp_ringtone",reminder.getRingtone());
+        editor.putString("volume_override",reminder.getVolumeOverride().toString());
+        if (reminder.getOnlyAtLocation()){
+            editor.putString("location_type", Integer.toString(1));
+        }
+        else {
+            if (reminder.getUntilLocation()) {
+                editor.putString("location_type", Integer.toString(2));
+            }
+            else {
+                editor.putString("location_type",Integer.toString(0));
+            }
+        }
+        LatLng location = reminder.getLocation();
+        editor.putFloat("Latitude",(float) location.latitude);
+        editor.putFloat("Longitude",(float) location.longitude);
+        editor.putString("radius",Integer.toString(reminder.getRadius()));
+        editor.putString("temp_code",reminder.getQr());
+        editor.putBoolean("code_type",reminder.getNeedQr());
+
+        editor.putBoolean("out_loud",reminder.getVolumeOverride());
+        editor.putBoolean("display_screen",reminder.getDisplayScreen());
+        editor.putBoolean("wake_up",reminder.getWakeUp());
+        int repeatTypeIndex = reminder.getRepeatType();
+        editor.putString("temp_repeat_type", Integer.toString(repeatTypeIndex));
+        editor.putString("temp_days", Integer.toString(reminder.getRepeatLength()));
+        editor.putString("temp_weeks", Integer.toString(reminder.getRepeatLength()));
+        byte daysOfWeek = reminder.getDaysOfWeek();
+        if (Reminder.checkDayOfWeek(daysOfWeek, 1)) {
+            editor.putBoolean("temp_sunday",true);
+        }
+        if (Reminder.checkDayOfWeek(daysOfWeek, 2)) {
+            editor.putBoolean("temp_monday",true);
+        }
+        if (Reminder.checkDayOfWeek(daysOfWeek, 3)) {
+            editor.putBoolean("temp_tuesday",true);
+        }
+        if (Reminder.checkDayOfWeek(daysOfWeek, 4)) {
+            editor.putBoolean("temp_wednesday",true);
+        }
+        if (Reminder.checkDayOfWeek(daysOfWeek, 5)) {
+            editor.putBoolean("temp_thursday",true);
+        }
+        if (Reminder.checkDayOfWeek(daysOfWeek, 6)) {
+            editor.putBoolean("temp_friday",true);
+        }
+        if (Reminder.checkDayOfWeek(daysOfWeek, 7)) {
+            editor.putBoolean("temp_saturday",true);
+        }
+        editor.putString("temp_months", Integer.toString(reminder.getRepeatLength()));
+        editor.putString("temp_monthly_type", Integer.toString(reminder.getMonthType()));
+        editor.putString("temp_years", Integer.toString(reminder.getRepeatLength()));
+        editor.apply();
     }
 }

@@ -5,7 +5,9 @@ import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
@@ -68,6 +70,7 @@ public class MainListActivity extends Activity implements AsyncFragment.TaskCall
     //Called if the user creates a new reminder
     public void editReminder(View view) {
         Intent intent = new Intent(this, EditReminder.class);
+        intent.putExtra("New",true);
         startActivity(intent);
     }
 
@@ -143,6 +146,11 @@ public class MainListActivity extends Activity implements AsyncFragment.TaskCall
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId()) {
+            case R.id.defaults:
+                Intent intent = new Intent(this, EditReminder.class);
+                intent.putExtra("default",true);
+                startActivity(intent);
+                return true;
 	        case R.id.action_about:
 				FragmentManager fm = getFragmentManager();
 		        mAboutFragment = new AboutFragment();

@@ -33,6 +33,7 @@ public class EditReminder extends Activity implements DeleteDialogFragment.Notic
     Reminder reminder;
     ReminderPreferenceFragment mFragment;
     private static final String TAG_TASK_FRAGMENT = "task_fragment";
+    private Boolean defaults = false;
 
     @Override
     public void onDialogNegativeClick(DialogFragment dialog) {
@@ -205,18 +206,24 @@ public class EditReminder extends Activity implements DeleteDialogFragment.Notic
         reminder.setDisplayScreen(sharedPreferences.getBoolean("display_screen",false));
         reminder.setWakeUp(sharedPreferences.getBoolean("wake_up",false));
 
-        ReminderDBHelper dbHelper = ReminderDBHelper.getInstance(this);
-        SQLiteDatabase database = dbHelper.openDatabase();
-
-        int id = (int) Reminder.saveReminder(database,reminder);    //Save reminder to database
-		reminder.setId(id);
-
-		dbHelper.closeDatabase();
-
-        if ((id != -1) && (reminder.getActive())) {
-            setAlarm(id,reminder);
+        if (defaults) {
+            SharedPreferences defaultPreferences = getApplication().
+                    getSharedPreferences("Defaults", Context.MODE_PRIVATE);
+            Reminder.saveDefaults(defaultPreferences, reminder);
         }
+        else {
+            ReminderDBHelper dbHelper = ReminderDBHelper.getInstance(this);
+            SQLiteDatabase database = dbHelper.openDatabase();
 
+            int id = (int) Reminder.saveReminder(database, reminder);    //Save reminder to database
+            reminder.setId(id);
+
+            dbHelper.closeDatabase();
+
+            if ((id != -1) && (reminder.getActive())) {
+                setAlarm(id, reminder);
+            }
+        }
         NavUtils.navigateUpFromSameTask(this);
     }
 
@@ -242,9 +249,15 @@ public class EditReminder extends Activity implements DeleteDialogFragment.Notic
         Intent intent = getIntent();
         Bundle incoming = intent.getExtras();
         if (incoming != null) {
-            reminder = incoming.getParcelable("Reminder");
-            if (reminder.getId()==-1){
-                reminder = new Reminder();
+            Boolean isNew = incoming.getBoolean("New");
+            if (!isNew) {
+                reminder = incoming.getParcelable("Reminder");
+            }
+            defaults = incoming.getBoolean("default",false);
+            if ((defaults)||(isNew)){
+                SharedPreferences defaultPreferences = getApplication().
+                        getSharedPreferences("Defaults", Context.MODE_PRIVATE);
+                reminder = Reminder.reminderFactory(defaultPreferences);
             }
         }
         else
