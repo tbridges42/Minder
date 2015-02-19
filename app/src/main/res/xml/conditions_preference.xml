@@ -23,12 +23,13 @@
         <ListPreference
             android:key="wifi_type"
             android:title="WiFi Restriction"
-            android:summary="None"
+            android:summary="Coming soon"
             android:entries="@array/wifi_type"
             android:entryValues="@array/wifi_index"/>
 
         <PreferenceScreen android:key="button_wifi"
                           android:title="Select WiFi"
+                          android:summary="Coming soon"
                           android:enabled="false"/>
     </PreferenceCategory>
 
@@ -38,13 +39,14 @@
         <ListPreference
             android:key="bt_type"
             android:title="Bluetooth Restriction"
-            android:summary="None"
+            android:summary="Coming soon"
             android:entries="@array/bt_type"
             android:entryValues="@array/bt_index"/>
 
 
         <PreferenceScreen android:key="button_bt"
                           android:title="Select Bluetooth"
+                          android:summary="Coming soon"
                           android:enabled="false"/>
     </PreferenceCategory>
 </PreferenceScreen>
