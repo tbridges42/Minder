@@ -37,11 +37,9 @@ public class Reminder implements Parcelable{
         persistence = PERSISTENCEDEFAULT;
         date = Calendar.getInstance();
         description = DESCRIPTIONDEFAULT;
-        outLoud = OUTLOUDDEFAULT;
         qr = QRDEFAULT;
 	    needQr = NEEDQRDEFAULT;
         snoozeDuration = SNOOZEDURATIONDEFAULT;
-        unSilence = UNSILENCEDEFAULT;
         vibrate = VIBRATEDEFAULT;
         ringtone = RINGTONEDEFAULT;
         ledPattern = LEDPATTERNDEFAULT;
@@ -73,18 +71,15 @@ public class Reminder implements Parcelable{
     private int repeatType;
     private int repeatLength;
     private byte daysOfWeek;                    //Bitwise byte
-    //private Set daysOfMonth;
     private byte monthType;
     private Boolean onlyAtLocation;
     private Boolean untilLocation;
     private byte persistence;                   //Bitwise byte
     private Calendar date;
     private String description;
-    private Boolean outLoud;
     private String qr;
 	private Boolean needQr;
     private int snoozeDuration;
-    private Boolean unSilence;
     private Boolean vibrate;
     private Boolean led;
     private int ledColor;
@@ -102,14 +97,11 @@ public class Reminder implements Parcelable{
     public static final byte MONTHTYPEDEFAULT = 0;
     public static final Boolean ONLYATLOCATIONDEFAULT = false;
     public static final Boolean UNTILLOCATIONDEFAULT = false;
-    public static final int PERSISTENCEDEFAULT = -1;
-    public static final Calendar DATEDEFAULT = Calendar.getInstance();
+    public static final int PERSISTENCEDEFAULT = 12;
     public static final String DESCRIPTIONDEFAULT = "";
-    public static final Boolean OUTLOUDDEFAULT = false;
     public static final int SNOOZEDURATIONDEFAULT = 300000;
     public static final String QRDEFAULT = "";
 	public static final Boolean NEEDQRDEFAULT = false;
-    public static final Boolean UNSILENCEDEFAULT = true;
     public static final Boolean VIBRATEDEFAULT = false;
     public static final String RINGTONEDEFAULT = "";
     public static final Boolean LEDDEFAULT = false;
@@ -139,6 +131,8 @@ public class Reminder implements Parcelable{
 	//Persistence constants
 	public static final byte VOLUME_OVERRIDE = 1;
 	public static final byte REQUIRE_CODE = 2;
+    public static final byte DISPLAY_SCREEN = 4;
+    public static final byte WAKE_UP = 8;
 
     public static final String PREFS_NAME = "ReminderPrefs";
 
@@ -207,18 +201,6 @@ public class Reminder implements Parcelable{
         this.daysOfWeek = daysOfWeek;
     }
 
-   // public Set getDaysOfMonth() {
-   //     return daysOfMonth;
-   // }
-
-    /*public void setDaysOfMonth(Set daysOfMonth) {
-        this.daysOfMonth = daysOfMonth;
-    }
-
-    public void clearDaysOfMonth() {
-        this.daysOfMonth.clear();
-    }*/
-
     public Boolean getOnlyAtLocation() {
         return onlyAtLocation;
     }
@@ -259,14 +241,6 @@ public class Reminder implements Parcelable{
         this.description = description;
     }
 
-    public Boolean getOutLoud() {
-        return outLoud;
-    }
-
-    public void setOutLoud(Boolean outLoud) {
-        this.outLoud = outLoud;
-    }
-
     public String getQr() {
         return qr;
     }
@@ -275,9 +249,21 @@ public class Reminder implements Parcelable{
         this.qr = qr;
     }
 
-	public Boolean getNeedQr() { return needQr; }
+	public Boolean getNeedQr() {
+        return (this.getPersistence() & REQUIRE_CODE) == REQUIRE_CODE;
+    }
 
-	public void setNeedQr(Boolean needQr) { this.needQr = needQr; }
+	public void setNeedQr(Boolean needQr) {
+        byte mask = Reminder.REQUIRE_CODE;
+        if (active && !this.getNeedQr()){
+            this.setPersistence((byte)(this.getPersistence()+mask));
+        }
+        else {
+            if (!active && this.getNeedQr()){
+                this.setPersistence((byte)(this.getPersistence()-mask));
+            }
+        }
+    }
 
     public int getSnoozeDuration() {
         return snoozeDuration;
@@ -285,14 +271,6 @@ public class Reminder implements Parcelable{
 
     public void setSnoozeDuration(int snoozeDuration) {
         this.snoozeDuration = snoozeDuration;
-    }
-
-    public Boolean getUnSilence() {
-        return unSilence;
-    }
-
-    public void setUnSilence(Boolean unSilence) {
-        this.unSilence = unSilence;
     }
 
     public Boolean getVibrate() {
@@ -350,14 +328,47 @@ public class Reminder implements Parcelable{
 	public void setVolumeOverride(Boolean active){
 		byte mask = Reminder.VOLUME_OVERRIDE;
 		if (active && !this.getVolumeOverride()){
-			this.setPersistence((byte)(this.getPersistence()+Reminder.VOLUME_OVERRIDE));
+			this.setPersistence((byte)(this.getPersistence()+mask));
 		}
 		else {
 			if (!active && this.getVolumeOverride()){
-				this.setPersistence((byte)(this.getPersistence()-Reminder.VOLUME_OVERRIDE));
+				this.setPersistence((byte)(this.getPersistence()-mask));
 			}
 		}
 	}
+
+    public Boolean getDisplayScreen(){
+        return (this.getPersistence() & DISPLAY_SCREEN) == DISPLAY_SCREEN;
+    }
+
+    public void setDisplayScreen(Boolean active){
+        byte mask = Reminder.DISPLAY_SCREEN;
+        if (active && !this.getDisplayScreen()){
+            this.setPersistence((byte)(this.getPersistence()+mask));
+        }
+        else {
+            if (!active && this.getDisplayScreen()){
+                this.setPersistence((byte)(this.getPersistence()-mask));
+            }
+        }
+    }
+
+    public Boolean getWakeUp(){
+        return (this.getPersistence() & WAKE_UP) == WAKE_UP;
+
+    }
+
+    public void setWakeUp(Boolean wakeUp){
+        byte mask = Reminder.WAKE_UP;
+        if (active && !this.getDisplayScreen()){
+            this.setPersistence((byte)(this.getPersistence()+mask));
+        }
+        else {
+            if (!active && this.getDisplayScreen()){
+                this.setPersistence((byte)(this.getPersistence()-mask));
+            }
+        }
+    }
 
     private static Reminder[] cursorToReminders(Cursor cursor){
         int numReminders = cursor.getCount();
@@ -376,8 +387,6 @@ public class Reminder implements Parcelable{
             calendar.setTimeInMillis(time);
             reminder.setDate(calendar);
             reminder.setDaysOfWeek((byte) cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_DAYSOFWEEK)));
-            //Gson gson = new Gson();
-            //reminder.setDaysOfMonth(gson.fromJson(cursor.getString(cursor.getColumnIndex(ReminderDBHelper.COLUMN_DAYSOFMONTH)),HashSet.class));
             reminder.setMonthType((byte) cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_MONTHTYPE)));
             reminder.setLocation(new LatLng(cursor.getFloat(cursor.getColumnIndex(ReminderDBHelper.COLUMN_LATITUDE)),cursor.getFloat(cursor.getColumnIndex(ReminderDBHelper.COLUMN_LONGITUDE))));
             reminder.setRepeatLength(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_REPEATLENGTH)));
@@ -389,7 +398,6 @@ public class Reminder implements Parcelable{
 	        reminder.setQr(cursor.getString(cursor.getColumnIndex(ReminderDBHelper.COLUMN_QR)));
 	        reminder.setNeedQr(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_NEEDQR)) == 1);
 	        reminder.setPersistence((byte)cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_PERSISTENCE)));
-            reminder.setOutLoud(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_OUTLOUD)) == 1);
             try {
                 reminder.setRingtone(cursor.getString(cursor.getColumnIndex(ReminderDBHelper.COLUMN_RINGTONE)));
             }
@@ -511,7 +519,7 @@ public class Reminder implements Parcelable{
 	    else {
 		    values.put(ReminderDBHelper.COLUMN_UNTILLOCATION,"0");
 	    }
-        if (reminder.getOutLoud()) {
+        if (reminder.getVolumeOverride()) {
             values.put(ReminderDBHelper.COLUMN_OUTLOUD,"1");
         }
         else {
@@ -565,18 +573,14 @@ public class Reminder implements Parcelable{
         out.writeInt(repeatType);
         out.writeInt(repeatLength);
         out.writeByte(daysOfWeek);
-        //Gson gson = new Gson();
-        //out.writeString(gson.toJson(daysOfMonth));
         out.writeByte((byte) (onlyAtLocation ? 1 : 0));
         out.writeByte((byte) (untilLocation ? 1 : 0));
         out.writeByte(persistence);
         Log.d("Minder", String.valueOf(date.getTimeInMillis()));
         out.writeSerializable(date);
         out.writeString(description);
-        out.writeByte((byte) (outLoud ? 1 : 0));
         out.writeString(qr);
         out.writeInt(snoozeDuration);
-        out.writeByte((byte) (unSilence ? 1 : 0));
         out.writeByte((byte) (vibrate ? 1 : 0));
         out.writeByte((byte) (led ? 1 : 0));
         out.writeInt(ledColor);
@@ -598,17 +602,13 @@ public class Reminder implements Parcelable{
         repeatType = in.readInt();
         repeatLength = in.readInt();
         daysOfWeek = in.readByte();
-        //Gson gson = new Gson();
-        //daysOfMonth = gson.fromJson(in.readString(),HashSet.class);
         onlyAtLocation = in.readByte() != 0;
         untilLocation = in.readByte() != 0;
         persistence = in.readByte();
         date = (Calendar) in.readSerializable();
         description = in.readString();
-        outLoud = in.readByte() != 0;
         qr = in.readString();
         snoozeDuration = in.readInt();
-        unSilence = in.readByte() != 0;
         vibrate = in.readByte() != 0;
         led = in.readByte() != 0;
         ledColor = in.readInt();

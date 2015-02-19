@@ -49,8 +49,6 @@ public class ReminderPreferenceFragment extends PreferenceFragment implements Sh
     private PreferenceScreen conditionsPreference;
 	private PreferenceScreen stylePreference;
 	private PreferenceScreen persistencePreference;
-    private CheckBoxPreference outLoudPreference;
-	private CheckBoxPreference volumeOverridePreference;
 	private ProgressDialog progressDialog;
 
     @Override
@@ -161,7 +159,9 @@ public class ReminderPreferenceFragment extends PreferenceFragment implements Sh
 		editor.putString("temp_code",reminder.getQr());
 		editor.putBoolean("code_type",reminder.getNeedQr());
 
-        editor.putBoolean("out_loud",reminder.getOutLoud());
+        editor.putBoolean("out_loud",reminder.getVolumeOverride());
+        editor.putBoolean("display_screen",reminder.getDisplayScreen());
+        editor.putBoolean("wake_up",reminder.getWakeUp());
 
 		return editor;
 	}
@@ -202,8 +202,6 @@ public class ReminderPreferenceFragment extends PreferenceFragment implements Sh
 		stylePreference.setOnPreferenceClickListener(this);
 		persistencePreference = (PreferenceScreen) super.findPreference("button_persistence");
 		persistencePreference.setOnPreferenceClickListener(this);
-		volumeOverridePreference = (CheckBoxPreference) super.findPreference("volume_override");
-        outLoudPreference = (CheckBoxPreference) super.findPreference("out_loud");
 	}
 
     private void initSummaries(){

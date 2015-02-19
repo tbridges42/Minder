@@ -3,11 +3,13 @@ package us.bridgeses.Minder;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
 import android.media.AudioAttributes;
@@ -56,6 +58,12 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
     private int curVolume;
     private int curRingMode;
 
+    @Override
+    public void onConfigurationChanged(Configuration newConfig)
+    {
+        super.onConfigurationChanged(newConfig);
+    }
+
 	@Override
 	public void onConnectionSuspended(int i){
 		Log.w("Minder","Connection Suspended");
@@ -65,10 +73,10 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
 		Log.w("Minder","Connection Failed");
 	}
 
-    public void silence() {
+    private void silence() {
         if (!reminder.getRingtone().equals("")) {
             ringtone.stop();
-            if (reminder.getOutLoud()) {
+            if (reminder.getVolumeOverride()) {
                 AudioManager manager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
                 manager.setStreamVolume(AudioManager.STREAM_ALARM, curVolume,0);
                 manager.setRingerMode(curRingMode);
@@ -79,7 +87,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
         }
     }
 
-    public void makeNoise() {
+    private void makeNoise() {
         if (reminder.getVibrate()) {
             if (vibrator.hasVibrator()) {
                 vibrator.vibrate(1000);
@@ -87,23 +95,23 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
         }
         if (!reminder.getRingtone().equals("")) {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-                if (reminder.getOutLoud()) {
+                if (reminder.getVolumeOverride()) {
                     AudioManager manager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-                    Log.e("Minder", "Maxing out volume");
+                    Log.d("Minder", "Maxing out volume");
                     curVolume = manager.getStreamVolume(AudioManager.STREAM_ALARM);
                     manager.setStreamVolume(AudioManager.STREAM_ALARM, manager.getStreamMaxVolume(AudioManager.STREAM_ALARM), 0);
                     curRingMode = manager.getRingerMode();
                     manager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
                 } else
-                    Log.e("Minder", "Not maxing volume");
+                    Log.d("Minder", "Not maxing volume");
                 ringtone = RingtoneManager.getRingtone(context, Uri.parse(reminder.getRingtone()));
                 ringtone.setStreamType(AudioManager.STREAM_ALARM);
 
             }
             else {
-                if (reminder.getOutLoud()) {
+                if (reminder.getVolumeOverride()) {
                     AudioManager manager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-                    Log.e("Minder", "Maxing out volume, Lollipop");
+                    Log.d("Minder", "Maxing out volume, Lollipop");
                     curVolume = manager.getStreamVolume(AudioManager.STREAM_ALARM);
                     AudioAttributes.Builder builder = new AudioAttributes.Builder();
                     builder.setUsage(AudioAttributes.USAGE_ALARM);
@@ -111,12 +119,17 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
                     curRingMode = manager.getRingerMode();
                     manager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
                 } else
-                    Log.e("Minder", "Not maxing volume, Lollipop");
+                    Log.d("Minder", "Not maxing volume, Lollipop");
                 ringtone = RingtoneManager.getRingtone(context, Uri.parse(reminder.getRingtone()));
-                ringtone.setStreamType(AudioManager.STREAM_ALARM);
             }
             ringtone.play();
         }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        //silence();
     }
 
 	@Override
@@ -129,7 +142,8 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
 				,location.latitude,location.longitude,results);
 		if (results[0] <= reminder.getRadius()){
 			Log.i("Minder","At Location");
-			createScreen();
+			makeNoise();
+            createScreen();
 		}
 		else{
 			Log.i("Minder","Not at Location");
@@ -176,7 +190,8 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
 		if (results[0] <= reminder.getRadius()){
 			Log.i("Minder","At Location");
 			if (reminder.getOnlyAtLocation()){
-				createScreen();
+				makeNoise();
+                createScreen();
 			}
 			else {
 				if (reminder.getUntilLocation()) {
@@ -187,6 +202,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
 		}
 		else{
 			if (reminder.getUntilLocation()){
+                makeNoise();
 				createScreen();
 			}
 			else {
@@ -199,12 +215,6 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
 	}
 
 	private void createNotification() {
-		NotificationCompat.Builder mBuilder =
-				new NotificationCompat.Builder(this)
-				.setSmallIcon(R.drawable.ic_launcher)
-				.setContentTitle(reminder.getName())
-				.setContentText(reminder.getDescription())
-				.setOngoing(true);
 
 		Intent resultIntent = new Intent(this, AlarmScreen.class);
 		resultIntent.putExtra("Id",reminder.getId());
@@ -219,6 +229,31 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
 						resultIntent,
 						PendingIntent.FLAG_UPDATE_CURRENT
 				);
+
+        Intent dismissIntent = new Intent(this, AlarmScreen.class);
+        dismissIntent.putExtra("Id",reminder.getId());
+        dismissIntent.putExtra("Dismiss",true);
+
+        PendingIntent dismissPendingIntent =
+                PendingIntent.getActivity(
+                        this,
+                        reminder.getId(),
+                        dismissIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                );
+
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.ic_launcher)
+                        .setContentTitle(reminder.getName())
+                        .setContentText(reminder.getDescription())
+                        .setOngoing(true)
+                        .setPriority(Notification.PRIORITY_MAX)
+                        .setCategory(Notification.CATEGORY_ALARM)
+                        .setStyle(new NotificationCompat.BigTextStyle()
+                                .bigText(reminder.getDescription()))
+                        .addAction(R.drawable.ic_stat_content_clear, "Dismiss", dismissPendingIntent);
+
 		mBuilder.setContentIntent(resultPendingIntent);
 		// Gets an instance of the NotificationManager service
 		NotificationManager mNotifyMgr =
@@ -234,27 +269,27 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
     }
 
 	private void createScreen() {
-		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON |
-				WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
-				WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
-				WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-		setContentView(R.layout.activity_alarm_screen);
+        if (reminder.getDisplayScreen()) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON |
+                    WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
+                    WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+            setContentView(R.layout.activity_alarm_screen);
 
-		TextView titleText = (TextView) findViewById(R.id.fullscreen_name);
-		TextView descriptionText = (TextView) findViewById(R.id.fullscreen_description);
-		titleText.setText(reminder.getName());
-		descriptionText.setText(reminder.getDescription());
+            TextView titleText = (TextView) findViewById(R.id.fullscreen_name);
+            TextView descriptionText = (TextView) findViewById(R.id.fullscreen_description);
+            titleText.setText(reminder.getName());
+            descriptionText.setText(reminder.getDescription());
 
-        findViewById(R.id.snooze_button).setOnLongClickListener(this);
+            findViewById(R.id.snooze_button).setOnLongClickListener(this);
 
-        makeNoise();
+            scheduleTaskExecutor.schedule(new Runnable() {
+                public void run() {
+                    snooze(reminder.getSnoozeDuration());
+                }
 
-		scheduleTaskExecutor.schedule(new Runnable() {
-			public void run() {
-				snooze(reminder.getSnoozeDuration()+5*Reminder.MINUTE);
-			}
-
-		}, 5, TimeUnit.MINUTES);
+            }, 5, TimeUnit.MINUTES);
+        }
 	}
 
 	protected synchronized void buildGoogleApiClient() {
@@ -276,15 +311,17 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
 	    scheduleTaskExecutor = Executors.newScheduledThreadPool(2);
 
         Intent intent = getIntent();
+        Boolean snooze = intent.getBooleanExtra("Snooze",false);
+        Boolean dismiss = intent.getBooleanExtra("Dismiss",false);
         int id = intent.getIntExtra("Id",-1);
 	    Boolean override = intent.getBooleanExtra("Override",false);
-
+        Log.d("Minder",Integer.toString(id));
         if (id == -1){
 			Log.w("Minder","Invalid ID");
             finish();
         }
 
-	    int snooze = intent.getIntExtra("Snooze",0);   //TODO: Implement limited number of snoozes
+	    int snoozeNum = intent.getIntExtra("Snooze",0);   //TODO: Implement limited number of snoozes
 
 	    dbHelper  = ReminderDBHelper.getInstance(this);
 	    SQLiteDatabase database = dbHelper.openDatabase();
@@ -293,12 +330,23 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
 
         dbHelper.closeDatabase();
 
+        if (snooze){
+            snooze(reminder.getSnoozeDuration());
+            return;
+        }
+        if (dismiss){
+            dismiss();
+            finish();
+            return;
+        }
+
 	    if (reminder.getVibrate()) {
 		    vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
 	    }
 
 	    if (override){
-		    createScreen();
+		    makeNoise();
+            createScreen();
 	    }
 	    else {
 
@@ -307,8 +355,10 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
 		    if (reminder.getOnlyAtLocation() || reminder.getUntilLocation()) {
 			    Log.i("Minder", "Checking Location");
 			    buildGoogleApiClient();
-		    } else
-			    createScreen();
+		    } else {
+                makeNoise();
+                createScreen();
+            }
 	    }
     }
 
@@ -321,12 +371,13 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
 				dismiss();
 			}
 			if(resultCode == Activity.RESULT_CANCELED){
-				createScreen();
+				makeNoise();
+                createScreen();
 			}
 		}
 	}
 
-	public void checkQr(){
+	private void checkQr(){
 		try {
 			Intent intent = new Intent("com.google.zxing.client.android.SCAN");
 			startActivityForResult(intent, 0);
@@ -353,7 +404,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
 		}
 	}
 
-    public void dismiss() {
+    private void dismiss() {
 	    int id = reminder.getId();
 	    Intent intentAlarm = new Intent(this, ReminderReceiver.class);      //Create alarm intent
 	    AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
@@ -362,10 +413,11 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
 	    SQLiteDatabase database = dbHelper.openDatabase();
 	    reminder = Reminder.nextRepeat(database,reminder);
 	    dbHelper.closeDatabase();
-	    intentAlarm = new Intent(context, ReminderReceiver.class);//Create alarm intent
+
 
 	    if (reminder.getActive()) {
-		    intentAlarm.putExtra("Id", id);           //Associate intent with specific reminder
+            intentAlarm = new Intent(context, ReminderReceiver.class);//Create alarm intent
+            intentAlarm.putExtra("Id", id);           //Associate intent with specific Reminder
 		    intentAlarm.putExtra("Snooze", 0);                       //This alarm has not been snoozed
 		    alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 		    alarmManager.set(AlarmManager.RTC_WAKEUP, reminder.getDate().getTimeInMillis(),
@@ -392,14 +444,14 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
 			dismiss();
 	}
 
-    public void snooze(int duration) {
+    private void snooze(int duration) {
 	    Intent intentAlarm = new Intent(context, ReminderReceiver.class);//Create alarm intent
 	    int id = reminder.getId();
 	    intentAlarm.putExtra("Id", id);           //Associate intent with specific reminder
 	    intentAlarm.putExtra("Snooze",snooze++);                       //Increment snooze count
 	    AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-		    alarmManager.set(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis() + duration,
-				    PendingIntent.getBroadcast(context, id, intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
+        alarmManager.set(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis() + duration,
+                PendingIntent.getBroadcast(context, id, intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
 
 	    Log.v("us.bridgeses.minder", "Alarm " + id + " set");
         silence();
@@ -407,7 +459,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
         finish();
     }
 
-    public void customSnooze(View view) {
+    private void customSnooze(View view) {
         silence();
         final View dLayout = View.inflate(this, R.layout.snooze_dialog,null);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);

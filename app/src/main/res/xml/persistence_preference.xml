@@ -2,12 +2,11 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory
         android:title="QR/Bar Code Settings">
-        <ListPreference
+        <CheckBoxPreference
             android:key="code_type"
-            android:title="Code Restrictions"
-            android:summary="None"
-            android:entries="@array/code_type"
-            android:entryValues="@array/code_index"/>
+            android:title="Require Code"
+            android:summaryOn="A code must be scanned to dismiss"
+            android:summaryOff="No code required"/>
 
         <PreferenceScreen android:key="button_code"
                           android:title="Set Code"/>
@@ -19,6 +18,21 @@
             android:title="Override Volume Settings"
             android:summaryOff="Reminder will use system settings"
             android:summaryOn="Reminder will override system settings" />
+
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:title="Notification Options">
+        <CheckBoxPreference
+            android:key="display_screen"
+            android:title="Display Reminder Screen"
+            android:summaryOn="Reminder screen will be displayed"
+            android:summaryOff="Only notification will be created" />
+        <CheckBoxPreference
+            android:key="wake_up"
+            android:title="Wake Up For Reminder"
+            android:summaryOn="Phone will wake up for reminder"
+            android:summaryOff="Reminder will only trigger is screen is on"
+            android:enabled="false"/>
 
     </PreferenceCategory>
 </PreferenceScreen>

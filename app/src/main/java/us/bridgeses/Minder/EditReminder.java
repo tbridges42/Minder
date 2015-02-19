@@ -127,8 +127,8 @@ public class EditReminder extends Activity implements DeleteDialogFragment.Notic
 		catch (ParseException e){
 			Log.e("Minder","Parse Error");
 		}
-		if (!Reminder.checkDayOfWeek(reminder.getDaysOfWeek(),          //If initial day is not in
-				date.get(Calendar.DAY_OF_WEEK))){                       //repeat pattern, skip
+		if ((!Reminder.checkDayOfWeek(reminder.getDaysOfWeek(),          //If initial day is not in
+				date.get(Calendar.DAY_OF_WEEK)))&&(reminder.getRepeatType()==2)){                       //repeat pattern, skip
 			ReminderDBHelper dbHelper = ReminderDBHelper.getInstance(this);
 			SQLiteDatabase database = dbHelper.openDatabase();
 			Reminder.nextRepeat(database,reminder);
@@ -194,7 +194,9 @@ public class EditReminder extends Activity implements DeleteDialogFragment.Notic
 	    reminder.setActive(reminder.getDate().after(Calendar.getInstance()));
 	    reminder.setQr(sharedPreferences.getString("temp_code","0"));
 		reminder.setNeedQr(sharedPreferences.getBoolean("code_type",false));
-        reminder.setOutLoud(sharedPreferences.getBoolean("out_loud",false));
+        reminder.setVolumeOverride(sharedPreferences.getBoolean("out_loud",false));
+        reminder.setDisplayScreen(sharedPreferences.getBoolean("display_screen",false));
+        reminder.setWakeUp(sharedPreferences.getBoolean("wake_up",false));
 
         ReminderDBHelper dbHelper = ReminderDBHelper.getInstance(this);
         SQLiteDatabase database = dbHelper.openDatabase();
@@ -207,8 +209,6 @@ public class EditReminder extends Activity implements DeleteDialogFragment.Notic
         if ((id != -1) && (reminder.getActive())) {
             setAlarm(id,reminder);
         }
-
-
 
         NavUtils.navigateUpFromSameTask(this);
     }

@@ -16,8 +16,7 @@ public class AboutFragment extends PreferenceFragment implements Preference.OnPr
 
 
 	public static AboutFragment ewInstance() {
-		AboutFragment fragment = new AboutFragment();
-		return fragment;
+		return new AboutFragment();
 	}
 
 	@Override

@@ -47,6 +47,9 @@ public class MainListActivity extends Activity implements AsyncFragment.TaskCall
 		mNotifyMgr.cancel(reminder.getId());
 		mAsyncFragment.update();
 		dbHelper.closeDatabase();
+        mAsyncFragment = new AsyncFragment();
+        FragmentManager fm = getFragmentManager();
+        fm.beginTransaction().replace(R.id.list,mAsyncFragment,TAG_ASYNC_FRAGMENT).commit();
 	}
 
 	private void setTracker(){

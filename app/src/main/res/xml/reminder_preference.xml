@@ -40,7 +40,6 @@
         <PreferenceScreen android:key="button_conditions"
             android:title="Conditions">
         </PreferenceScreen>
-        <!--TODO: Implement persistence options -->
         <PreferenceScreen android:key="button_style"
             android:title="Style"
             android:enabled="false">

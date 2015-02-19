@@ -96,6 +96,8 @@ public class PersistenceFragment extends PreferenceFragment implements SharedPre
 		PreferenceScreen codeButton = (PreferenceScreen) super.findPreference("button_code");
 		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         CheckBoxPreference outLoudPreference = (CheckBoxPreference) super.findPreference("out_loud");
+        CheckBoxPreference displayScreenPreference = (CheckBoxPreference) super.findPreference("display_screen");
+        CheckBoxPreference wakeUpPreference = (CheckBoxPreference) super.findPreference("wake_up");
 		codeButton.setEnabled(codeType.isChecked());
 		if (sharedPreferences.getString("button_code","").equals("")){
 			super.findPreference("button_code").setSummary("");
@@ -103,6 +105,9 @@ public class PersistenceFragment extends PreferenceFragment implements SharedPre
 		else
 			super.findPreference("button_code").setSummary(getResources().getString(R.string.code_set));
         outLoudPreference.setChecked(sharedPreferences.getBoolean("out_loud",false));
+        displayScreenPreference.setChecked(sharedPreferences.getBoolean("display_screen",false));
+        wakeUpPreference.setChecked(sharedPreferences.getBoolean("wake_up",false));
+
 	}
 
 	@Override
