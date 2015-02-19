@@ -255,11 +255,11 @@ public class Reminder implements Parcelable{
 
 	public void setNeedQr(Boolean needQr) {
         byte mask = Reminder.REQUIRE_CODE;
-        if (active && !this.getNeedQr()){
+        if (needQr && !this.getNeedQr()){
             this.setPersistence((byte)(this.getPersistence()+mask));
         }
         else {
-            if (!active && this.getNeedQr()){
+            if (!needQr && this.getNeedQr()){
                 this.setPersistence((byte)(this.getPersistence()-mask));
             }
         }
@@ -360,11 +360,11 @@ public class Reminder implements Parcelable{
 
     public void setWakeUp(Boolean wakeUp){
         byte mask = Reminder.WAKE_UP;
-        if (active && !this.getDisplayScreen()){
+        if (wakeUp && !this.getWakeUp()){
             this.setPersistence((byte)(this.getPersistence()+mask));
         }
         else {
-            if (!active && this.getDisplayScreen()){
+            if (!wakeUp && this.getWakeUp()){
                 this.setPersistence((byte)(this.getPersistence()-mask));
             }
         }

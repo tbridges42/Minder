@@ -19,9 +19,9 @@ public class EditPersistence extends Activity {
 
 	public void save(View view) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        if ((!sharedPreferences.getBoolean("code_type",false)) &&
+        if ((sharedPreferences.getBoolean("code_type",false)) &&
                 (sharedPreferences.getString("temp_code","").equals(""))){
-            String toastText = getResources().getString(R.string.invalid_location);
+            String toastText = "A code must be set to use Code Restriction";
             int duration = Toast.LENGTH_SHORT;
             Toast toast = Toast.makeText(this, toastText, duration);
             toast.show();

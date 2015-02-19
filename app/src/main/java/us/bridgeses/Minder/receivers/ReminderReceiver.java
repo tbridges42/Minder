@@ -17,6 +17,9 @@ public class ReminderReceiver extends BroadcastReceiver {
         final PendingResult result = goAsync();                         //Move off UI thread
 
         int id = alarmIntent.getIntExtra("Id", -1);                     //These lines create an intent
+        if (id == -1){
+            return;
+        }
 	    int snooze = alarmIntent.getIntExtra("Snooze",0);               //for the alarm screen based
 	    Intent newIntent = new Intent(context, AlarmScreen.class);      //on the reminder in the triggering
 	    newIntent.putExtra("Id",id);                                    //intent

@@ -170,7 +170,14 @@ public class EditReminder extends Activity implements DeleteDialogFragment.Notic
 		Intent intentAlarm = new Intent(this, ReminderReceiver.class);      //Create alarm intent
 		intentAlarm.putExtra("Id", reminder.getId());                    //Associate intent with specific reminder
 		AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-		alarmManager.set(AlarmManager.RTC_WAKEUP, reminder.getDate().getTimeInMillis(),
+        int alarmType;
+        if (reminder.getWakeUp()){
+            alarmType = AlarmManager.RTC_WAKEUP;
+        }
+        else {
+            alarmType = AlarmManager.RTC;
+        }
+		alarmManager.set(alarmType, reminder.getDate().getTimeInMillis(),
 				PendingIntent.getBroadcast(getApplicationContext(), id, intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
 		SimpleDateFormat timeFormat = new SimpleDateFormat(getResources().getString(R.string.time_code));
 		String time = timeFormat.format(reminder.getDate().getTime());
@@ -194,7 +201,7 @@ public class EditReminder extends Activity implements DeleteDialogFragment.Notic
 	    reminder.setActive(reminder.getDate().after(Calendar.getInstance()));
 	    reminder.setQr(sharedPreferences.getString("temp_code","0"));
 		reminder.setNeedQr(sharedPreferences.getBoolean("code_type",false));
-        reminder.setVolumeOverride(sharedPreferences.getBoolean("out_loud",false));
+        reminder.setVolumeOverride(sharedPreferences.getBoolean("out _loud",false));
         reminder.setDisplayScreen(sharedPreferences.getBoolean("display_screen",false));
         reminder.setWakeUp(sharedPreferences.getBoolean("wake_up",false));
 

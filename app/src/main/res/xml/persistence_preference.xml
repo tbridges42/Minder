@@ -31,8 +31,7 @@
             android:key="wake_up"
             android:title="Wake Up For Reminder"
             android:summaryOn="Phone will wake up for reminder"
-            android:summaryOff="Reminder will only trigger is screen is on"
-            android:enabled="false"/>
+            android:summaryOff="Reminder will only trigger is screen is on"/>
 
     </PreferenceCategory>
 </PreferenceScreen>
