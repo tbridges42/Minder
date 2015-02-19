@@ -26,7 +26,7 @@ public class MainListActivity extends Activity implements AsyncFragment.TaskCall
     private static final String TAG_ASYNC_FRAGMENT = "Async_fragment";
     private AsyncFragment mAsyncFragment;
 	private AboutFragment mAboutFragment;
-	public int mId;
+	private Boolean firstRun;
 
 
 	@Override
@@ -91,6 +91,17 @@ public class MainListActivity extends Activity implements AsyncFragment.TaskCall
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mainlist);
+
+        SharedPreferences defaultPreferences = getApplication().
+                getSharedPreferences("Defaults", Context.MODE_PRIVATE);
+        firstRun = defaultPreferences.getBoolean("first_run",true);
+
+        if (firstRun){
+            Reminder reminder = new Reminder();
+            Reminder.saveDefaults(defaultPreferences,reminder);
+            SharedPreferences.Editor editor = defaultPreferences.edit();
+            editor.putBoolean("first_run",false);
+        }
 
         FragmentManager fm = getFragmentManager();
 	    Fragment fragment = fm.findFragmentByTag(TAG_ASYNC_FRAGMENT);

@@ -33,7 +33,6 @@ public class Reminder implements Parcelable{
         repeatType = REPEATTYPEDEFAULT;
         repeatLength = REPEATLENGTHDEFAULT;
         daysOfWeek = DAYSOFWEEKDEFAULT;
-        //daysOfMonth = new HashSet();
         monthType = MONTHTYPEDEFAULT;
         onlyAtLocation = ONLYATLOCATIONDEFAULT;
         untilLocation = UNTILLOCATIONDEFAULT;
