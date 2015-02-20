@@ -182,7 +182,15 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
 		if ((mLastLocation == null) ||  (timeDelta > (Reminder.MINUTE * 10))
 				||mLastLocation.getAccuracy() > 1.5*reminder.getRadius()){
 			Log.i("Minder","Location is stale");
-			startLocationUpdates(createLocationRequest());
+			try {
+                startLocationUpdates(createLocationRequest());
+            }
+            catch (Exception e){
+                createNotification();
+                makeNoise();
+                createScreen();
+                Log.e("Minder","Unable to start location updates");
+            }
 		}
 
 		float results[] = new float[1];
@@ -294,13 +302,21 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
 	}
 
 	protected synchronized void buildGoogleApiClient() {
-		mGoogleApiClient = new GoogleApiClient.Builder(this)
-				.addConnectionCallbacks(this)
-				.addOnConnectionFailedListener(this)
-				.addApi(LocationServices.API)
-				.build();
-		mGoogleApiClient.connect();
-		Log.i("Minder","API Client built");
+		try {
+            mGoogleApiClient = new GoogleApiClient.Builder(this)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(LocationServices.API)
+                    .build();
+            mGoogleApiClient.connect();
+            Log.i("Minder","API Client built");
+        }
+        catch (Exception e) {
+            makeNoise();
+            createNotification();
+            createScreen();
+            Log.e("Minder","API Client failed to build");
+        }
 	}
 
     private Boolean checkWake(){

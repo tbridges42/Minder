@@ -6,10 +6,13 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -41,6 +44,41 @@ public class MapsActivity extends Activity implements GoogleMap.OnMapLongClickLi
     Circle myCircle;
 	int radius=0;
 
+    public boolean isGoogleMapsInstalled()
+    {
+        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+        if(resultCode != ConnectionResult.SUCCESS) {
+            GooglePlayServicesUtil.showErrorDialogFragment(resultCode,this,0);
+            return false;
+        }
+        try
+        {
+            ApplicationInfo info = getPackageManager().getApplicationInfo("com.google.android.apps.maps", 0 );
+            return true;
+        }
+        catch(PackageManager.NameNotFoundException e)
+        {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this );
+            builder.setTitle("Google Maps Not Installed");
+            builder.setMessage("This function requires Google Maps");
+            builder.setPositiveButton("Play Store", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    Uri marketUri = Uri.parse("market://details?id=com.google.android.apps.maps");
+                    Intent marketIntent = new Intent(Intent.ACTION_VIEW, marketUri);
+                    startActivity(marketIntent);
+                }
+            });
+            builder.setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    finish();
+                }
+            });
+            builder.create();
+            builder.show();
+            return false;
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,12 +88,9 @@ public class MapsActivity extends Activity implements GoogleMap.OnMapLongClickLi
 	    location = new LatLng(sharedPreferences.getFloat("Latitude",0),sharedPreferences.getFloat("Longitude",0));
 	    radius = Integer.valueOf(sharedPreferences.getString("radius","0"));
 
-        /*Intent intent = getIntent();
-        Bundle incoming = intent.getExtras();
-        if (incoming != null) {
-            location = incoming.getParcelable("Location");
-        }*/
-        setUpMapIfNeeded();
+        if (isGoogleMapsInstalled()) {
+            setUpMapIfNeeded();
+        }
     }
 
     @Override
