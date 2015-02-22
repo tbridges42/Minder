@@ -39,9 +39,11 @@ public class EditConditions extends Activity {
 	public void cancel(View view) {
 		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 		SharedPreferences.Editor editor = sharedPreferences.edit();
-		editor.putString("location_type", saved.getString("location_type", "0"));
-		editor.putFloat("Latitude", saved.getFloat("Latitude", 0));
-		editor.putFloat("Longitude", saved.getFloat("Longitude", 0));
+		editor.putString("location_type", saved.getString("location_type", "-1"));
+		editor.putFloat("Latitude",
+                saved.getFloat("Latitude",(float) Reminder.LOCATIONDEFAULT.latitude));
+		editor.putFloat("Longitude",
+                saved.getFloat("Longitude", (float) Reminder.LOCATIONDEFAULT.longitude));
 		editor.apply();
 		Intent intent = new Intent();
 		setResult(RESULT_CANCELED, intent);
@@ -55,9 +57,12 @@ public class EditConditions extends Activity {
 		if (savedInstanceState == null) {
 			savedInstanceState = new Bundle();
 			SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-			savedInstanceState.putString("location_type", sharedPreferences.getString("location_type", "0"));
-			savedInstanceState.putFloat("Latitude", sharedPreferences.getFloat("Latitude", 0));
-			savedInstanceState.putFloat("Longitude", sharedPreferences.getFloat("Longitude", 0));
+			savedInstanceState.putString("location_type",
+                    sharedPreferences.getString("location_type", "-1"));
+			savedInstanceState.putFloat("Latitude",
+                    sharedPreferences.getFloat("Latitude", (float)Reminder.LOCATIONDEFAULT.latitude));
+			savedInstanceState.putFloat("Longitude",
+                    sharedPreferences.getFloat("Longitude", (float)Reminder.LOCATIONDEFAULT.longitude));
 		}
 		saved = savedInstanceState;
 		Intent intent = getIntent();

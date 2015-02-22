@@ -138,22 +138,32 @@ public class ReminderPreferenceFragment extends PreferenceFragment implements Sh
 
 	private SharedPreferences.Editor initConditionsValues(SharedPreferences.Editor editor) {
 		if (reminder.getOnlyAtLocation()){
-			editor.putString("location_type", Integer.toString(1));
+			editor.putString("location_type", "1");
 		}
 		else {
 			if (reminder.getUntilLocation()) {
-				editor.putString("location_type", Integer.toString(2));
+				editor.putString("location_type", "2");
 			}
 			else {
-				editor.putString("location_type",Integer.toString(0));
+				editor.putString("location_type","0");
 			}
 		}
 		LatLng location = reminder.getLocation();
 		editor.putFloat("Latitude",(float) location.latitude);
 		editor.putFloat("Longitude",(float) location.longitude);
-		editor.putString("radius",Integer.toString(reminder.getRadius()));
+		editor.putInt("radius",reminder.getRadius());
+        editor.putBoolean("wifi",reminder.getNeedWifi());
+        editor.putString("ssid",reminder.getSSID());
 		return editor;
 	}
+
+    private SharedPreferences.Editor initStyleValues(SharedPreferences.Editor editor){
+        editor.putString("snooze_duration",Integer.toString(reminder.getSnoozeDuration()));
+        editor.putBoolean("led",reminder.getLed());
+        editor.putString("led_pattern",Integer.toString(reminder.getLedPattern()));
+        editor.putInt("led_color",reminder.getLedColor());
+        return editor;
+    }
 
 	private SharedPreferences.Editor initPersistenceValues(SharedPreferences.Editor editor) {
 		editor.putString("temp_code",reminder.getQr());
@@ -176,10 +186,12 @@ public class ReminderPreferenceFragment extends PreferenceFragment implements Sh
         editor.putString("temp_date",dateFormat.format(reminder.getDate().getTime()));
         editor.putBoolean("temp_vibrate",reminder.getVibrate());
         editor.putString("temp_ringtone",reminder.getRingtone());
-		editor.putString("volume_override",reminder.getVolumeOverride().toString());
+		editor.putBoolean("volume_override",reminder.getVolumeOverride());
 	    editor = initConditionsValues(editor);
 
 	    editor = initRepeatValues(editor);
+
+        editor = initStyleValues(editor);
 
 	    editor = initPersistenceValues(editor);
 
@@ -263,7 +275,8 @@ public class ReminderPreferenceFragment extends PreferenceFragment implements Sh
     }
 
     private void setRepeatSummary(){
-        int repeatType = Integer.parseInt(sharedPreferences.getString("temp_repeat_type","0"));
+        int repeatType = Integer.parseInt(sharedPreferences.getString("temp_repeat_type",
+                Integer.toString(Reminder.REPEATTYPEDEFAULT)));
         switch (repeatType) {
             case 0: {
                 repeatScreenPreference.setSummary("Do not repeat");
@@ -271,38 +284,42 @@ public class ReminderPreferenceFragment extends PreferenceFragment implements Sh
                 break;
             }
             case 1: {
-                if (sharedPreferences.getString("temp_days","0").equals("1")) {
+                if (sharedPreferences.getString("temp_days",Integer.toString(Reminder.REPEATLENGTHDEFAULT)).equals("1")) {
                     repeatScreenPreference.setSummary("Repeat every day");
                 }
                 else
-                    repeatScreenPreference.setSummary("Repeat every " + Integer.parseInt(sharedPreferences.getString("temp_days", "0")) + " days");
+                    repeatScreenPreference.setSummary("Repeat every " +
+                            sharedPreferences.getString("temp_days", Integer.toString(Reminder.REPEATLENGTHDEFAULT)) + " days");
                 ((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
                 break;
             }
             case 2: {
-                if (sharedPreferences.getString("temp_weeks","0").equals("1")) {
+                if (sharedPreferences.getString("temp_weeks",Integer.toString(Reminder.REPEATLENGTHDEFAULT)).equals("1")) {
                     repeatScreenPreference.setSummary("Repeat every week");
                 }
                 else
-                    repeatScreenPreference.setSummary("Repeat every " + Integer.parseInt(sharedPreferences.getString("temp_weeks", "0")) + " weeks");
+                    repeatScreenPreference.setSummary("Repeat every " +
+                            sharedPreferences.getString("temp_weeks", Integer.toString(Reminder.REPEATLENGTHDEFAULT)) + " weeks");
                 ((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
                 break;
             }
             case 3: {
-                if (sharedPreferences.getString("temp_months","0").equals("1")) {
+                if (sharedPreferences.getString("temp_months",Integer.toString(Reminder.REPEATLENGTHDEFAULT)).equals("1")) {
                     repeatScreenPreference.setSummary("Repeat every month");
                 }
                 else
-                    repeatScreenPreference.setSummary("Repeat every " + Integer.parseInt(sharedPreferences.getString("temp_months", "0")) + " months");
+                    repeatScreenPreference.setSummary("Repeat every " +
+                            sharedPreferences.getString("temp_months", Integer.toString(Reminder.REPEATLENGTHDEFAULT)) + " months");
                 ((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
                 break;
             }
             case 4: {
-                if (sharedPreferences.getString("temp_years","0").equals("1")) {
+                if (sharedPreferences.getString("temp_years",Integer.toString(Reminder.REPEATLENGTHDEFAULT)).equals("1")) {
                     repeatScreenPreference.setSummary("Repeat every year");
                 }
                 else
-                    repeatScreenPreference.setSummary("Repeat every " + Integer.parseInt(sharedPreferences.getString("temp_years", "0")) + " years");
+                    repeatScreenPreference.setSummary("Repeat every " +
+                            sharedPreferences.getString("temp_years", Integer.toString(Reminder.REPEATLENGTHDEFAULT)) + " years");
                 ((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
                 break;
             }

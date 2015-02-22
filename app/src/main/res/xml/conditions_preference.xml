@@ -18,19 +18,16 @@
     </PreferenceCategory>
 
     <PreferenceCategory
-        android:title="WiFi Settings"
-        android:enabled="false">
-        <ListPreference
-            android:key="wifi_type"
+        android:title="WiFi Settings">
+        <CheckBoxPreference
+            android:key="wifi"
             android:title="WiFi Restriction"
-            android:summary="Coming soon"
-            android:entries="@array/wifi_type"
-            android:entryValues="@array/wifi_index"/>
+            android:summaryOn="WiFi Connection Required"
+            android:summaryOff="No WiFi Required"/>
 
         <PreferenceScreen android:key="button_wifi"
                           android:title="Select WiFi"
-                          android:summary="Coming soon"
-                          android:enabled="false"/>
+                          android:summary="Coming soon"/>
     </PreferenceCategory>
 
     <PreferenceCategory

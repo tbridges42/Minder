@@ -85,8 +85,9 @@ public class MapsActivity extends Activity implements GoogleMap.OnMapLongClickLi
         setContentView(R.layout.activity_maps);
 
 	    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-	    location = new LatLng(sharedPreferences.getFloat("Latitude",0),sharedPreferences.getFloat("Longitude",0));
-	    radius = Integer.valueOf(sharedPreferences.getString("radius","0"));
+	    location = new LatLng(sharedPreferences.getFloat("Latitude",(float)Reminder.LOCATIONDEFAULT.latitude),
+                sharedPreferences.getFloat("Longitude",(float)Reminder.LOCATIONDEFAULT.longitude));
+	    radius = Integer.valueOf(sharedPreferences.getInt("radius",Reminder.RADIUSDEFAULT));
 
         if (isGoogleMapsInstalled()) {
             setUpMapIfNeeded();
@@ -105,7 +106,7 @@ public class MapsActivity extends Activity implements GoogleMap.OnMapLongClickLi
 	    SharedPreferences.Editor editor = sharedPreferences.edit();
 	    editor.putFloat("Latitude",(float) location.latitude);
 	    editor.putFloat("Longitude",(float) location.longitude);
-	    editor.putString("radius",Integer.toString(radius));
+	    editor.putInt("radius",radius);
 		editor.apply();
 
         Intent intent = new Intent();
@@ -213,8 +214,6 @@ public class MapsActivity extends Activity implements GoogleMap.OnMapLongClickLi
 
         return location;
     }
-
-
 
     @Override
     public void onMapLongClick(final LatLng point) {

@@ -17,6 +17,8 @@ import android.media.AudioManager;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
@@ -340,6 +342,25 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
         return true;
     }
 
+    private void checkWifi(){
+        WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
+        if (wifiManager.isWifiEnabled()){
+            WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+            if (wifiInfo.getSSID().equals(reminder.getSSID())){
+                if (reminder.getOnlyAtLocation() || reminder.getUntilLocation()) {
+                    Log.i("Minder", "Checking Location");
+                    buildGoogleApiClient();
+                } else {
+                    makeNoise();
+                    createScreen();
+                }
+            }
+        }
+        else {
+            snooze(reminder.getSnoozeDuration());
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -395,6 +416,10 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
 	    else {
 
 		    createNotification();
+
+            if (reminder.getNeedWifi()){
+                checkWifi();
+            }
 
 		    if (reminder.getOnlyAtLocation() || reminder.getUntilLocation()) {
 			    Log.i("Minder", "Checking Location");

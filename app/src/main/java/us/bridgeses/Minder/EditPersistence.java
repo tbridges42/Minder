@@ -36,11 +36,11 @@ public class EditPersistence extends Activity {
 	public void cancel(View view) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("code_button", saved.getString("code_button", ""));
-        editor.putBoolean("code_type", saved.getBoolean("code_type", false));
-        editor.putBoolean("out_loud", saved.getBoolean("out_loud", false));
-        editor.putBoolean("display_screen", saved.getBoolean("display_screen", false));
-        editor.putBoolean("wake_up", saved.getBoolean("wake_up", false));
+        editor.putString("code_button", saved.getString("code_button", Reminder.QRDEFAULT));
+        editor.putBoolean("code_type", saved.getBoolean("code_type", Reminder.NEEDQRDEFAULT));
+        editor.putBoolean("out_loud", saved.getBoolean("out_loud", Reminder.VOLUMEOVERRIDEDEFAULT));
+        editor.putBoolean("display_screen", saved.getBoolean("display_screen", Reminder.DISPLAYSCREENDEFAULT));
+        editor.putBoolean("wake_up", saved.getBoolean("wake_up", Reminder.WAKEUPDEFAULT));
         editor.apply();
 		Intent intent = new Intent();
 		setResult(RESULT_CANCELED, intent);
@@ -55,11 +55,16 @@ public class EditPersistence extends Activity {
         if (savedInstanceState == null) {
             savedInstanceState = new Bundle();
             SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-            savedInstanceState.putString("button_code", sharedPreferences.getString("button_code", ""));
-            savedInstanceState.putBoolean("code_type", sharedPreferences.getBoolean("code_type", false));
-            savedInstanceState.putBoolean("out_loud", sharedPreferences.getBoolean("out_loud", false));
-            savedInstanceState.putBoolean("display_screen", sharedPreferences.getBoolean("display_screen", false));
-            savedInstanceState.putBoolean("wake_up", sharedPreferences.getBoolean("wake_up", false));
+            savedInstanceState.putString("button_code",
+                    sharedPreferences.getString("button_code", Reminder.QRDEFAULT));
+            savedInstanceState.putBoolean("code_type",
+                    sharedPreferences.getBoolean("code_type", Reminder.NEEDQRDEFAULT));
+            savedInstanceState.putBoolean("out_loud",
+                    sharedPreferences.getBoolean("out_loud", Reminder.VOLUMEOVERRIDEDEFAULT));
+            savedInstanceState.putBoolean("display_screen",
+                    sharedPreferences.getBoolean("display_screen", Reminder.DISPLAYSCREENDEFAULT));
+            savedInstanceState.putBoolean("wake_up",
+                    sharedPreferences.getBoolean("wake_up", Reminder.WAKEUPDEFAULT));
         }
         saved = savedInstanceState;
 

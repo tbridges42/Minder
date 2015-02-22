@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -94,13 +95,18 @@ public class MainListActivity extends Activity implements AsyncFragment.TaskCall
 
         SharedPreferences defaultPreferences = getApplication().
                 getSharedPreferences("Defaults", Context.MODE_PRIVATE);
-        firstRun = defaultPreferences.getBoolean("first_run",true);
+        firstRun = defaultPreferences.getBoolean("first_run-0.7.3",true);
 
         if (firstRun){
+            SharedPreferences.Editor editor = defaultPreferences.edit();
+            editor.clear().commit();
             Reminder reminder = new Reminder();
             Reminder.saveDefaults(defaultPreferences,reminder);
-            SharedPreferences.Editor editor = defaultPreferences.edit();
-            editor.putBoolean("first_run",false);
+
+            editor.putBoolean("first_run-0.7.1", false);
+            editor.apply();
+            editor =  PreferenceManager.getDefaultSharedPreferences(this).edit();
+            editor.clear().commit();
         }
 
         FragmentManager fm = getFragmentManager();

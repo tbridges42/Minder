@@ -68,105 +68,6 @@ public class EditReminder extends Activity implements DeleteDialogFragment.Notic
         df.show(getFragmentManager(),"DeleteDialogFragment");
     }
 
-    private void setDaysOfWeek(SharedPreferences sharedPreferences, Reminder reminder) {
-        byte daysOfWeek = 0;
-        if (sharedPreferences.getBoolean("temp_sunday",false)) {
-            daysOfWeek += Reminder.SUNDAY;
-        }
-        if (sharedPreferences.getBoolean("temp_monday",false)) {
-            daysOfWeek += Reminder.MONDAY;
-        }
-        if (sharedPreferences.getBoolean("temp_tuesday",false)) {
-            daysOfWeek += Reminder.TUESDAY;
-        }
-        if (sharedPreferences.getBoolean("temp_wednesday",false)) {
-            daysOfWeek += Reminder.WEDNESDAY;
-        }
-        if (sharedPreferences.getBoolean("temp_thursday",false)) {
-            daysOfWeek += Reminder.THURSDAY;
-        }
-        if (sharedPreferences.getBoolean("temp_friday",false)) {
-            daysOfWeek += Reminder.FRIDAY;
-        }
-        if (sharedPreferences.getBoolean("temp_saturday",false)) {
-            daysOfWeek += Reminder.SATURDAY;
-        }
-        reminder.setDaysOfWeek(daysOfWeek);
-    }
-
-	private void setRepeat(SharedPreferences sharedPreferences, Reminder reminder) {
-		reminder.setRepeatType(Integer.parseInt(sharedPreferences.getString("temp_repeat_type", "0")));
-		switch (reminder.getRepeatType()) {
-			case 1: {
-				reminder.setRepeatLength(Integer.parseInt(sharedPreferences.getString("temp_days", "1")));
-				break;
-			}
-			case 2: {
-				reminder.setRepeatLength(Integer.parseInt(sharedPreferences.getString("temp_weeks", "1")));
-				setDaysOfWeek(sharedPreferences,reminder);
-				break;
-			}
-			case 3: {
-				reminder.setRepeatLength(Integer.parseInt(sharedPreferences.getString("temp_months", "1")));
-				reminder.setMonthType((byte) Integer.parseInt(sharedPreferences.getString("temp_monthly_type","0")));
-				break;
-			}
-			case 4: {
-				reminder.setRepeatLength(Integer.parseInt(sharedPreferences.getString("temp_years", "1")));
-				break;
-			}
-		}
-	}
-
-	private void setDate(SharedPreferences sharedPreferences, Reminder reminder) {
-		Calendar date = Calendar.getInstance();
-		SimpleDateFormat timeFormat = new SimpleDateFormat(getResources().getString(R.string.full_date_time_code));
-		try {
-			String newDate = sharedPreferences.getString("temp_time", "") + " " + sharedPreferences.getString("temp_date", "");
-			date.setTime(timeFormat.parse(newDate));
-		}
-		catch (ParseException e){
-			Log.e("Minder","Parse Error");
-		}
-		if ((!Reminder.checkDayOfWeek(reminder.getDaysOfWeek(),          //If initial day is not in
-				date.get(Calendar.DAY_OF_WEEK)))&&(reminder.getRepeatType()==2)){                       //repeat pattern, skip
-			ReminderDBHelper dbHelper = ReminderDBHelper.getInstance(this);
-			SQLiteDatabase database = dbHelper.openDatabase();
-			Reminder.nextRepeat(database,reminder);
-			dbHelper.closeDatabase();
-		}
-		long time = date.getTimeInMillis();                             //Drop seconds
-		time = time/60000;                                              //
-		time = time*60000;                                              //
-		date.setTimeInMillis(time);                                     //
-		reminder.setDate(date);                                         //Store reminder date + time
-		//reminder.setActive(date.after(Calendar.getInstance()));
-	}
-
-	private void setLocation(SharedPreferences sharedPreferences, Reminder reminder){
-		int locationType = Integer.parseInt(sharedPreferences.getString("location_type", "0"));
-		switch (locationType){
-			case 0: {
-				reminder.setOnlyAtLocation(false);
-				reminder.setUntilLocation(false);
-				break;
-			}
-			case 1: {
-				reminder.setOnlyAtLocation(true);
-				reminder.setUntilLocation(false);
-				break;
-			}
-			case 2: {
-				reminder.setOnlyAtLocation(false);
-				reminder.setUntilLocation(true);
-				break;
-			}
-		}
-
-		LatLng location = new LatLng(sharedPreferences.getFloat("Latitude",0),sharedPreferences.getFloat("Longitude",0));
-		reminder.setLocation(location);
-	}
-
 	private void setAlarm(int id, Reminder reminder){
 		Intent intentAlarm = new Intent(this, ReminderReceiver.class);      //Create alarm intent
 		intentAlarm.putExtra("Id", reminder.getId());                    //Associate intent with specific reminder
@@ -191,20 +92,7 @@ public class EditReminder extends Activity implements DeleteDialogFragment.Notic
     public void save(View view){
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        reminder.setName(sharedPreferences.getString("temp_name",""));
-        reminder.setDescription(sharedPreferences.getString("temp_description", ""));
-        setDate(sharedPreferences,reminder);
-        setRepeat(sharedPreferences,reminder);
-	    setLocation(sharedPreferences,reminder);
-	    reminder.setRadius(Integer.valueOf(sharedPreferences.getString("radius",Integer.toString(Reminder.RADIUSDEFAULT))));
-        reminder.setVibrate(sharedPreferences.getBoolean("temp_vibrate", true));
-        reminder.setRingtone(sharedPreferences.getString("temp_ringtone", ""));
-	    reminder.setActive(reminder.getDate().after(Calendar.getInstance()));
-	    reminder.setQr(sharedPreferences.getString("temp_code","0"));
-		reminder.setNeedQr(sharedPreferences.getBoolean("code_type",false));
-        reminder.setVolumeOverride(sharedPreferences.getBoolean("out _loud",false));
-        reminder.setDisplayScreen(sharedPreferences.getBoolean("display_screen",false));
-        reminder.setWakeUp(sharedPreferences.getBoolean("wake_up",false));
+        reminder = Reminder.preferenceToReminder(sharedPreferences, reminder, this);
 
         if (defaults) {
             SharedPreferences defaultPreferences = getApplication().
@@ -212,6 +100,9 @@ public class EditReminder extends Activity implements DeleteDialogFragment.Notic
             Reminder.saveDefaults(defaultPreferences, reminder);
         }
         else {
+
+            reminder.setActive(reminder.getDate().after(Calendar.getInstance()));
+
             ReminderDBHelper dbHelper = ReminderDBHelper.getInstance(this);
             SQLiteDatabase database = dbHelper.openDatabase();
 
@@ -219,6 +110,7 @@ public class EditReminder extends Activity implements DeleteDialogFragment.Notic
             reminder.setId(id);
 
             dbHelper.closeDatabase();
+
 
             if ((id != -1) && (reminder.getActive())) {
                 setAlarm(id, reminder);
@@ -257,7 +149,7 @@ public class EditReminder extends Activity implements DeleteDialogFragment.Notic
             if ((defaults)||(isNew)){
                 SharedPreferences defaultPreferences = getApplication().
                         getSharedPreferences("Defaults", Context.MODE_PRIVATE);
-                reminder = Reminder.reminderFactory(defaultPreferences);
+                reminder = new Reminder();
             }
         }
         else

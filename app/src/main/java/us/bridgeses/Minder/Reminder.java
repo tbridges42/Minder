@@ -1,6 +1,7 @@
 package us.bridgeses.Minder;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -15,6 +16,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+import us.bridgeses.Minder.receivers.BootReceiver;
+
 /**
  * Created by Overseer on 7/13/2014.
  * Reminder class contains all settings for individual reminders
@@ -27,109 +30,35 @@ public class Reminder implements Parcelable{
 
     //Constructors
     public Reminder() {
-        active = ACTIVEDEFAULT;
+        setActive(ACTIVEDEFAULT);
         location = LOCATIONDEFAULT;
         name = NAMEDEFAULT;
         repeatType = REPEATTYPEDEFAULT;
         repeatLength = REPEATLENGTHDEFAULT;
         daysOfWeek = DAYSOFWEEKDEFAULT;
         monthType = MONTHTYPEDEFAULT;
-        onlyAtLocation = ONLYATLOCATIONDEFAULT;
-        untilLocation = UNTILLOCATIONDEFAULT;
-        untilLocation = UNTILLOCATIONDEFAULT;
-        persistence = PERSISTENCEDEFAULT;
+        setOnlyAtLocation(ONLYATLOCATIONDEFAULT);
+        setUntilLocation(UNTILLOCATIONDEFAULT);
         date = Calendar.getInstance();
         description = DESCRIPTIONDEFAULT;
         qr = QRDEFAULT;
-	    needQr = NEEDQRDEFAULT;
+	    setNeedQr(NEEDQRDEFAULT);
         snoozeDuration = SNOOZEDURATIONDEFAULT;
-        vibrate = VIBRATEDEFAULT;
+        setVibrate(VIBRATEDEFAULT);
         ringtone = RINGTONEDEFAULT;
         ledPattern = LEDPATTERNDEFAULT;
         ledColor = LEDCOLORDEFAULT;
-        led = LEDDEFAULT;
+        setLed(LEDDEFAULT);
         id = IDDEFAULT;
         radius = RADIUSDEFAULT;
+        ssid = SSIDDEFAULT;
+        setNeedWifi(WIFIDEFAULT);
+        bluetooth = BTDEFAULT;
+        setNeedBluetooth(BTNEEDEDDEFAULT);
     }
 
-    public static Reminder reminderFactory(SharedPreferences sharedPreferences){
-        Reminder reminder = new Reminder();
-        reminder.setName(sharedPreferences.getString("temp_name",""));
-        reminder.setDescription(sharedPreferences.getString("temp_description", ""));
-        reminder.setRepeatType(Integer.parseInt(sharedPreferences.getString("temp_repeat_type", "0")));
-        switch (reminder.getRepeatType()) {
-            case 1: {
-                reminder.setRepeatLength(Integer.parseInt(sharedPreferences.getString("temp_days", "1")));
-                break;
-            }
-            case 2: {
-                reminder.setRepeatLength(Integer.parseInt(sharedPreferences.getString("temp_weeks", "1")));
-                byte daysOfWeek = 0;
-                if (sharedPreferences.getBoolean("temp_sunday",false)) {
-                    daysOfWeek += Reminder.SUNDAY;
-                }
-                if (sharedPreferences.getBoolean("temp_monday",false)) {
-                    daysOfWeek += Reminder.MONDAY;
-                }
-                if (sharedPreferences.getBoolean("temp_tuesday",false)) {
-                    daysOfWeek += Reminder.TUESDAY;
-                }
-                if (sharedPreferences.getBoolean("temp_wednesday",false)) {
-                    daysOfWeek += Reminder.WEDNESDAY;
-                }
-                if (sharedPreferences.getBoolean("temp_thursday",false)) {
-                    daysOfWeek += Reminder.THURSDAY;
-                }
-                if (sharedPreferences.getBoolean("temp_friday",false)) {
-                    daysOfWeek += Reminder.FRIDAY;
-                }
-                if (sharedPreferences.getBoolean("temp_saturday",false)) {
-                    daysOfWeek += Reminder.SATURDAY;
-                }
-                reminder.setDaysOfWeek(daysOfWeek);
-                break;
-            }
-            case 3: {
-                reminder.setRepeatLength(Integer.parseInt(sharedPreferences.getString("temp_months", "1")));
-                reminder.setMonthType((byte) Integer.parseInt(sharedPreferences.getString("temp_monthly_type","0")));
-                break;
-            }
-            case 4: {
-                reminder.setRepeatLength(Integer.parseInt(sharedPreferences.getString("temp_years", "1")));
-                break;
-            }
-        }
-        int locationType = Integer.parseInt(sharedPreferences.getString("location_type", "0"));
-        switch (locationType){
-            case 0: {
-                reminder.setOnlyAtLocation(false);
-                reminder.setUntilLocation(false);
-                break;
-            }
-            case 1: {
-                reminder.setOnlyAtLocation(true);
-                reminder.setUntilLocation(false);
-                break;
-            }
-            case 2: {
-                reminder.setOnlyAtLocation(false);
-                reminder.setUntilLocation(true);
-                break;
-            }
-        }
-
-        LatLng location = new LatLng(sharedPreferences.getFloat("Latitude",0),sharedPreferences.getFloat("Longitude",0));
-        reminder.setLocation(location);
-        reminder.setRadius(Integer.valueOf(sharedPreferences.getString("radius",Integer.toString(Reminder.RADIUSDEFAULT))));
-        reminder.setVibrate(sharedPreferences.getBoolean("temp_vibrate", true));
-        reminder.setRingtone(sharedPreferences.getString("temp_ringtone", ""));
-        reminder.setActive(reminder.getDate().after(Calendar.getInstance()));
-        reminder.setQr(sharedPreferences.getString("temp_code","0"));
-        reminder.setNeedQr(sharedPreferences.getBoolean("code_type",false));
-        reminder.setVolumeOverride(sharedPreferences.getBoolean("out _loud",false));
-        reminder.setDisplayScreen(sharedPreferences.getBoolean("display_screen",false));
-        reminder.setWakeUp(sharedPreferences.getBoolean("wake_up",false));
-        return reminder;
+    public static Reminder reminderFactory(SharedPreferences sharedPreferences, Context context){
+        return preferenceToReminder(sharedPreferences, new Reminder(), context);
     }
 
     public Reminder(Parcel in){
@@ -148,20 +77,18 @@ public class Reminder implements Parcelable{
 
     //Variables! Hooray variables!
     private int id;
-    private Boolean active;
     private LatLng location;
     private String name;
     private int repeatType;
     private int repeatLength;
     private byte daysOfWeek;                    //Bitwise byte
     private byte monthType;
-    private Boolean onlyAtLocation;
-    private Boolean untilLocation;
     private byte persistence;                   //Bitwise byte
+    private byte conditions;
+    private byte style;
     private Calendar date;
     private String description;
     private String qr;
-	private Boolean needQr;
     private int snoozeDuration;
     private Boolean vibrate;
     private Boolean led;
@@ -169,6 +96,8 @@ public class Reminder implements Parcelable{
     private int ledPattern;
     private String ringtone;
     private int radius;
+    private String ssid;
+    private String bluetooth;
 
     //Default constants
     public static final Boolean ACTIVEDEFAULT = true;
@@ -181,6 +110,9 @@ public class Reminder implements Parcelable{
     public static final Boolean ONLYATLOCATIONDEFAULT = false;
     public static final Boolean UNTILLOCATIONDEFAULT = false;
     public static final int PERSISTENCEDEFAULT = 12;
+    public static final Boolean VOLUMEOVERRIDEDEFAULT = false;
+    public static final Boolean DISPLAYSCREENDEFAULT = true;
+    public static final Boolean WAKEUPDEFAULT = true;
     public static final String DESCRIPTIONDEFAULT = "";
     public static final int SNOOZEDURATIONDEFAULT = 300000;
     public static final String QRDEFAULT = "";
@@ -192,6 +124,10 @@ public class Reminder implements Parcelable{
     public static final int LEDPATTERNDEFAULT = -1;
     public static final int IDDEFAULT = -1;
     public static final int RADIUSDEFAULT = 500;
+    public static final String SSIDDEFAULT = "";
+    public static final String BTDEFAULT = "";
+    public static final Boolean WIFIDEFAULT = false;
+    public static final Boolean BTNEEDEDDEFAULT = false;
 
     //Time constants
     public static final int MINUTE = 60000;
@@ -217,15 +153,58 @@ public class Reminder implements Parcelable{
     public static final byte DISPLAY_SCREEN = 4;
     public static final byte WAKE_UP = 8;
 
+    //Conditions constants
+    public static final byte UNTIL_LOCATION = 1;
+    public static final byte ONLY_AT_LOCATION = 2;
+    public static final byte WIFINEEDED = 4;
+    public static final byte BLUETOOTHNEEDED = 8;
+    public static final byte ACTIVE = 16;
+
+    //Style constants
+    public static final byte LED = 1;
+    public static final byte VIBRATE = 2;
+
     public static final String PREFS_NAME = "ReminderPrefs";
 
 
+    public void setSSID(String ssid){
+        this.ssid=ssid;
+    }
+
+    public String getSSID(){
+        return ssid;
+    }
+
+    public String getBluetooth(){
+        return bluetooth;
+    }
+
+    public void setBluetooth(String bluetooth){
+        this.bluetooth = bluetooth;
+    }
+
+    public void setConditions (byte conditions){
+        this.conditions = conditions;
+    }
+
+    public byte getConditions() {
+        return conditions;
+    }
+
     public Boolean getActive() {
-        return active;
+        return (this.getConditions() & ACTIVE) == ACTIVE;
     }
 
     public void setActive(Boolean active) {
-        this.active = active;
+        byte mask = ACTIVE;
+        if (active && !this.getActive()){
+            this.setConditions((byte)(this.getConditions()+mask));
+        }
+        else {
+            if (!active && this.getActive()){
+                this.setConditions((byte)(this.getConditions()-mask));
+            }
+        }
     }
 
     public byte getMonthType() {
@@ -242,6 +221,46 @@ public class Reminder implements Parcelable{
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public Boolean getNeedWifi(){
+        return (this.getConditions() & WIFINEEDED) == WIFINEEDED;
+    }
+
+    public void setNeedWifi(Boolean wifiNeeded){
+        byte mask = WIFINEEDED;
+        if (wifiNeeded && !this.getNeedWifi()){
+            this.setConditions((byte)(this.getConditions()+mask));
+        }
+        else {
+            if (!wifiNeeded && this.getNeedWifi()){
+                this.setConditions((byte)(this.getConditions()-mask));
+            }
+        }
+    }
+
+    public Boolean getNeedBluetooth(){
+        return (this.getConditions() & WIFINEEDED) == WIFINEEDED;
+    }
+
+    public void setNeedBluetooth(Boolean needBluetooth){
+        byte mask = BLUETOOTHNEEDED;
+        if (needBluetooth && !this.getNeedBluetooth()){
+            this.setConditions((byte)(this.getConditions()+mask));
+        }
+        else {
+            if (!needBluetooth && this.getNeedBluetooth()){
+                this.setConditions((byte)(this.getConditions()-mask));
+            }
+        }
+    }
+
+    public byte getStyle(){
+        return style;
+    }
+
+    public void setStyle(Byte style){
+        this.style = style;
     }
 
     public LatLng getLocation() {
@@ -285,19 +304,35 @@ public class Reminder implements Parcelable{
     }
 
     public Boolean getOnlyAtLocation() {
-        return onlyAtLocation;
+        return (this.getConditions() & ONLY_AT_LOCATION) == ONLY_AT_LOCATION;
     }
 
     public void setOnlyAtLocation(Boolean onlyAtLocation) {
-        this.onlyAtLocation = onlyAtLocation;
+        byte mask = ONLY_AT_LOCATION;
+        if (onlyAtLocation && !this.getOnlyAtLocation()){
+            this.setConditions((byte)(this.getConditions()+mask));
+        }
+        else {
+            if (!onlyAtLocation && this.getOnlyAtLocation()){
+                this.setConditions((byte)(this.getConditions()-mask));
+            }
+        }
     }
 
     public Boolean getUntilLocation() {
-        return untilLocation;
+        return (this.getConditions() & UNTIL_LOCATION) == UNTIL_LOCATION;
     }
 
     public void setUntilLocation(Boolean untilLocation) {
-        this.untilLocation = untilLocation;
+        byte mask = UNTIL_LOCATION;
+        if (untilLocation && !this.getUntilLocation()){
+            this.setConditions((byte)(this.getConditions()+mask));
+        }
+        else {
+            if (!untilLocation && this.getUntilLocation()){
+                this.setConditions((byte)(this.getConditions()-mask));
+            }
+        }
     }
 
     public byte getPersistence() {
@@ -357,19 +392,35 @@ public class Reminder implements Parcelable{
     }
 
     public Boolean getVibrate() {
-        return vibrate;
+        return (this.getStyle() & VIBRATE) == VIBRATE;
     }
 
     public void setVibrate(Boolean vibrate) {
-        this.vibrate = vibrate;
+        byte mask = VIBRATE;
+        if (vibrate && !this.getVibrate()){
+            this.setStyle((byte)(this.getStyle()+mask));
+        }
+        else {
+            if (!vibrate && this.getVibrate()){
+                this.setStyle((byte)(this.getStyle()-mask));
+            }
+        }
     }
 
     public Boolean getLed() {
-        return led;
+        return (this.getStyle() & VIBRATE) == VIBRATE;
     }
 
     public void setLed(Boolean led) {
-        this.led = led;
+        byte mask = LED;
+        if (led && !this.getLed()){
+            this.setStyle((byte)(this.getStyle()+mask));
+        }
+        else {
+            if (!led && this.getLed()){
+                this.setStyle((byte)(this.getStyle()-mask));
+            }
+        }
     }
 
     public int getLedColor() {
@@ -474,13 +525,13 @@ public class Reminder implements Parcelable{
             reminder.setLocation(new LatLng(cursor.getFloat(cursor.getColumnIndex(ReminderDBHelper.COLUMN_LATITUDE)),cursor.getFloat(cursor.getColumnIndex(ReminderDBHelper.COLUMN_LONGITUDE))));
             reminder.setRepeatLength(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_REPEATLENGTH)));
             reminder.setRepeatType(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_REPEATTYPE)));
-            reminder.setVibrate(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_VIBRATE))==1);
             reminder.setRadius(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_RADIUS)));
-	        reminder.setOnlyAtLocation(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_ONLYATLOCATION)) == 1);
-	        reminder.setUntilLocation(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_UNTILLOCATION)) == 1);
 	        reminder.setQr(cursor.getString(cursor.getColumnIndex(ReminderDBHelper.COLUMN_QR)));
-	        reminder.setNeedQr(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_NEEDQR)) == 1);
 	        reminder.setPersistence((byte)cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_PERSISTENCE)));
+            reminder.setConditions((byte)cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_CONDITIONS)));
+            reminder.setStyle((byte)cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_STYLE)));
+            reminder.setSSID(cursor.getString(cursor.getColumnIndex(ReminderDBHelper.COLUMN_SSID)));
+            reminder.setSnoozeDuration(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_SNOOZEDURATION)));
             try {
                 reminder.setRingtone(cursor.getString(cursor.getColumnIndex(ReminderDBHelper.COLUMN_RINGTONE)));
             }
@@ -502,20 +553,19 @@ public class Reminder implements Parcelable{
                 ReminderDBHelper.COLUMN_DESCRIPTION,
                 ReminderDBHelper.COLUMN_DATE,
                 ReminderDBHelper.COLUMN_DAYSOFWEEK,
-                ReminderDBHelper.COLUMN_DAYSOFMONTH,
                 ReminderDBHelper.COLUMN_MONTHTYPE,
                 ReminderDBHelper.COLUMN_REPEATTYPE,
                 ReminderDBHelper.COLUMN_REPEATLENGTH,
                 ReminderDBHelper.COLUMN_LATITUDE,
                 ReminderDBHelper.COLUMN_LONGITUDE,
-                ReminderDBHelper.COLUMN_VIBRATE,
                 ReminderDBHelper.COLUMN_RINGTONE,
 		        ReminderDBHelper.COLUMN_PERSISTENCE,
                 ReminderDBHelper.COLUMN_RADIUS,
-		        ReminderDBHelper.COLUMN_ONLYATLOCATION,
-		        ReminderDBHelper.COLUMN_UNTILLOCATION,
 		        ReminderDBHelper.COLUMN_QR,
-		        ReminderDBHelper.COLUMN_NEEDQR
+                ReminderDBHelper.COLUMN_SSID,
+                ReminderDBHelper.COLUMN_CONDITIONS,
+                ReminderDBHelper.COLUMN_STYLE,
+                ReminderDBHelper.COLUMN_SNOOZEDURATION
         };
         String sortOrder = ReminderDBHelper.COLUMN_ACTIVE + " DESC, " + ReminderDBHelper.COLUMN_DATE + " ASC";
 
@@ -577,35 +627,15 @@ public class Reminder implements Parcelable{
         values.put(ReminderDBHelper.COLUMN_LONGITUDE,reminder.getLocation().longitude);
         values.put(ReminderDBHelper.COLUMN_REPEATTYPE,reminder.getRepeatType());
         values.put(ReminderDBHelper.COLUMN_REPEATLENGTH,reminder.getRepeatLength());
-        values.put(ReminderDBHelper.COLUMN_VIBRATE,reminder.getVibrate());
         values.put(ReminderDBHelper.COLUMN_RINGTONE,reminder.getRingtone());
 	    values.put(ReminderDBHelper.COLUMN_PERSISTENCE,reminder.getPersistence());
         values.put(ReminderDBHelper.COLUMN_RADIUS,reminder.getRadius());
 	    values.put(ReminderDBHelper.COLUMN_QR,reminder.getQr());
-	    if (reminder.getNeedQr()) {
-		    values.put(ReminderDBHelper.COLUMN_NEEDQR,"1");
-	    }
-	    else {
-		    values.put(ReminderDBHelper.COLUMN_QR,"0");
-	    }
-	    if (reminder.getOnlyAtLocation()) {
-		    values.put(ReminderDBHelper.COLUMN_ONLYATLOCATION,"1");
-	    }
-	    else {
-		    values.put(ReminderDBHelper.COLUMN_ONLYATLOCATION,"0");
-	    }
-	    if (reminder.getUntilLocation()){
-		    values.put(ReminderDBHelper.COLUMN_UNTILLOCATION,"1");
-	    }
-	    else {
-		    values.put(ReminderDBHelper.COLUMN_UNTILLOCATION,"0");
-	    }
-        if (reminder.getVolumeOverride()) {
-            values.put(ReminderDBHelper.COLUMN_OUTLOUD,"1");
-        }
-        else {
-            values.put(ReminderDBHelper.COLUMN_OUTLOUD, "0");
-        }
+        values.put(ReminderDBHelper.COLUMN_SSID, reminder.getSSID());
+        values.put(ReminderDBHelper.COLUMN_SNOOZEDURATION, reminder.getSnoozeDuration());
+        values.put(ReminderDBHelper.COLUMN_CONDITIONS, reminder.getConditions());
+        values.put(ReminderDBHelper.COLUMN_STYLE, reminder.getStyle());
+
         long newRowId;
         newRowId = database.replace(
                 ReminderDBHelper.TABLE_NAME,
@@ -647,35 +677,29 @@ public class Reminder implements Parcelable{
     @Override
     public void writeToParcel(Parcel out, int flags) {
         out.writeInt(id);
-        out.writeByte((byte) (active ? 1 : 0));
         out.writeDouble(location.latitude);
         out.writeDouble(location.longitude);
         out.writeString(name);
         out.writeInt(repeatType);
         out.writeInt(repeatLength);
         out.writeByte(daysOfWeek);
-        out.writeByte((byte) (onlyAtLocation ? 1 : 0));
-        out.writeByte((byte) (untilLocation ? 1 : 0));
         out.writeByte(persistence);
-        Log.d("Minder", String.valueOf(date.getTimeInMillis()));
         out.writeSerializable(date);
         out.writeString(description);
         out.writeString(qr);
         out.writeInt(snoozeDuration);
-        out.writeByte((byte) (vibrate ? 1 : 0));
-        out.writeByte((byte) (led ? 1 : 0));
         out.writeInt(ledColor);
         out.writeInt(ledPattern);
         out.writeString(ringtone);
         out.writeInt(radius);
-	    out.writeString(qr);
-	    out.writeByte((byte) (needQr ? 1 : 0));
+        out.writeString(ssid);
+        out.writeByte(conditions);
+        out.writeByte(style);
     }
 
 
     public void readFromParcel(Parcel in){
         id = in.readInt();
-        active = in.readByte() != 1;
         double lon = in.readDouble();
         double lat = in.readDouble();
         location = new LatLng(lon,lat);
@@ -683,21 +707,18 @@ public class Reminder implements Parcelable{
         repeatType = in.readInt();
         repeatLength = in.readInt();
         daysOfWeek = in.readByte();
-        onlyAtLocation = in.readByte() != 0;
-        untilLocation = in.readByte() != 0;
         persistence = in.readByte();
         date = (Calendar) in.readSerializable();
         description = in.readString();
         qr = in.readString();
         snoozeDuration = in.readInt();
-        vibrate = in.readByte() != 0;
-        led = in.readByte() != 0;
         ledColor = in.readInt();
         ledPattern = in.readInt();
         ringtone = in.readString();
         radius = in.readInt();
-	    qr = in.readString();
-	    needQr = in.readByte() != 0;
+        ssid = in.readString();
+        conditions = in.readByte();
+        style = in.readByte();
     }
 
     @Override
@@ -976,6 +997,147 @@ public class Reminder implements Parcelable{
         editor.putString("temp_months", Integer.toString(reminder.getRepeatLength()));
         editor.putString("temp_monthly_type", Integer.toString(reminder.getMonthType()));
         editor.putString("temp_years", Integer.toString(reminder.getRepeatLength()));
+        editor.putString("ssid",reminder.getSSID());
+        editor.putBoolean("wifi",reminder.getNeedWifi());
+        editor.putString("snooze_duration",Integer.toString(reminder.getSnoozeDuration()));
+        editor.putBoolean("bluetooth",reminder.getNeedBluetooth());
+        editor.putString("bt_name",reminder.getBluetooth());
         editor.apply();
+    }
+
+    public static void setRepeat(SharedPreferences sharedPreferences, Reminder reminder) {
+        reminder.setRepeatType(Integer.parseInt(sharedPreferences.
+                getString("temp_repeat_type",Integer.toString(REPEATTYPEDEFAULT))));
+        switch (reminder.getRepeatType()) {
+            case 1: {
+                reminder.setRepeatLength(Integer.parseInt(sharedPreferences
+                        .getString("temp_days", Integer.toString(REPEATLENGTHDEFAULT))));
+                break;
+            }
+            case 2: {
+                reminder.setRepeatLength(Integer.parseInt(sharedPreferences
+                        .getString("temp_weeks", Integer.toString(REPEATLENGTHDEFAULT))));
+                setDaysOfWeek(sharedPreferences,reminder);
+                break;
+            }
+            case 3: {
+                reminder.setRepeatLength(Integer.parseInt(sharedPreferences
+                        .getString("temp_months", Integer.toString(REPEATLENGTHDEFAULT))));
+                reminder.setMonthType((byte) Integer.parseInt(sharedPreferences.
+                        getString("temp_monthly_type", Integer.toString(MONTHTYPEDEFAULT))));
+                break;
+            }
+            case 4: {
+                reminder.setRepeatLength(Integer.parseInt(sharedPreferences
+                        .getString("temp_years", Integer.toString(REPEATLENGTHDEFAULT))));
+                break;
+            }
+        }
+    }
+
+    private static void setDaysOfWeek(SharedPreferences sharedPreferences, Reminder reminder) {
+        byte daysOfWeek = 0;
+        if (sharedPreferences.getBoolean("temp_sunday",false)) {
+            daysOfWeek += Reminder.SUNDAY;
+        }
+        if (sharedPreferences.getBoolean("temp_monday",false)) {
+            daysOfWeek += Reminder.MONDAY;
+        }
+        if (sharedPreferences.getBoolean("temp_tuesday",false)) {
+            daysOfWeek += Reminder.TUESDAY;
+        }
+        if (sharedPreferences.getBoolean("temp_wednesday",false)) {
+            daysOfWeek += Reminder.WEDNESDAY;
+        }
+        if (sharedPreferences.getBoolean("temp_thursday",false)) {
+            daysOfWeek += Reminder.THURSDAY;
+        }
+        if (sharedPreferences.getBoolean("temp_friday",false)) {
+            daysOfWeek += Reminder.FRIDAY;
+        }
+        if (sharedPreferences.getBoolean("temp_saturday",false)) {
+            daysOfWeek += Reminder.SATURDAY;
+        }
+        reminder.setDaysOfWeek(daysOfWeek);
+    }
+
+    public static void setLocation(SharedPreferences sharedPreferences, Reminder reminder){
+        int locationType = Integer.parseInt(sharedPreferences.getString("location_type", "-1"));
+        switch (locationType){
+            case 0: {
+                reminder.setOnlyAtLocation(false);
+                reminder.setUntilLocation(false);
+                break;
+            }
+            case 1: {
+                reminder.setOnlyAtLocation(true);
+                reminder.setUntilLocation(false);
+                break;
+            }
+            case 2: {
+                reminder.setOnlyAtLocation(false);
+                reminder.setUntilLocation(true);
+                break;
+            }
+            default: {
+                reminder.setOnlyAtLocation(ONLYATLOCATIONDEFAULT);
+                reminder.setUntilLocation(UNTILLOCATIONDEFAULT);
+                break;
+            }
+        }
+
+        LatLng location = new LatLng(sharedPreferences.getFloat("Latitude",(float)LOCATIONDEFAULT.latitude),
+                sharedPreferences.getFloat("Longitude",(float)LOCATIONDEFAULT.longitude));
+        reminder.setLocation(location);
+    }
+
+    public static void setDate(SharedPreferences sharedPreferences, Reminder reminder, Context context) {
+        Calendar date = Calendar.getInstance();
+        SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm aa EEEE, MMMM d, yyyy");
+        try {
+            String newDate = sharedPreferences.getString("temp_time", "") + " " + sharedPreferences.getString("temp_date", "");
+            if (!newDate.equals(" ")) {
+                date.setTime(timeFormat.parse(newDate));
+            }
+        }
+        catch (ParseException e){
+            Log.e("Minder","Parse Error");
+        }
+        if ((!Reminder.checkDayOfWeek(reminder.getDaysOfWeek(),          //If initial day is not in
+                date.get(Calendar.DAY_OF_WEEK)))&&(reminder.getRepeatType()==2)){                       //repeat pattern, skip
+            ReminderDBHelper dbHelper = ReminderDBHelper.getInstance(context);
+            SQLiteDatabase database = dbHelper.openDatabase();
+            Reminder.nextRepeat(database,reminder);
+            dbHelper.closeDatabase();
+        }
+        long time = date.getTimeInMillis();                             //Drop seconds
+        time = time/60000;                                              //
+        time = time*60000;                                              //
+        date.setTimeInMillis(time);                                     //
+        reminder.setDate(date);                                         //Store reminder date + time
+    }
+
+    public static Reminder preferenceToReminder(SharedPreferences sharedPreferences, Reminder reminder, Context context){
+        reminder.setName(sharedPreferences.getString("temp_name",NAMEDEFAULT));
+        reminder.setDescription(sharedPreferences.getString("temp_description", DESCRIPTIONDEFAULT));
+        setDate(sharedPreferences, reminder, context);
+        setRepeat(sharedPreferences, reminder);
+        setLocation(sharedPreferences, reminder);
+        reminder.setRadius(sharedPreferences.getInt("radius",Reminder.RADIUSDEFAULT));
+        reminder.setVibrate(sharedPreferences.getBoolean("temp_vibrate", VIBRATEDEFAULT));
+        reminder.setRingtone(sharedPreferences.getString("temp_ringtone", RINGTONEDEFAULT));
+        reminder.setActive(reminder.getDate().after(Calendar.getInstance()));
+        reminder.setQr(sharedPreferences.getString("temp_code",QRDEFAULT));
+        reminder.setNeedQr(sharedPreferences.getBoolean("code_type",NEEDQRDEFAULT));
+        reminder.setVolumeOverride(sharedPreferences.getBoolean("out _loud",VOLUMEOVERRIDEDEFAULT));
+        reminder.setDisplayScreen(sharedPreferences.getBoolean("display_screen",DISPLAYSCREENDEFAULT));
+        reminder.setWakeUp(sharedPreferences.getBoolean("wake_up",WAKEUPDEFAULT));
+        reminder.setSSID(sharedPreferences.getString("ssid",SSIDDEFAULT));
+        reminder.setNeedWifi(sharedPreferences.getBoolean("wifi",WIFIDEFAULT));
+        reminder.setNeedBluetooth(sharedPreferences.getBoolean("bluetooth",BTNEEDEDDEFAULT));
+        reminder.setBluetooth(sharedPreferences.getString("bt_name",BTDEFAULT));
+        reminder.setSnoozeDuration(Integer.parseInt(sharedPreferences
+                .getString("snooze_duration",Integer.toString(SNOOZEDURATIONDEFAULT))));
+        return reminder;
     }
 }
