@@ -58,6 +58,10 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
 	private GoogleApiClient mGoogleApiClient;
     private int curVolume;
     private int curRingMode;
+    private boolean hasLocation;
+    private boolean hasWiFi;
+    private boolean hasBT;
+    private boolean hasWake;
 
     @Override
     public void onConfigurationChanged(Configuration newConfig)
@@ -89,6 +93,9 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
     }
 
     private void makeNoise() {
+        if (reminder.getVibrate()) {
+            vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+        }
         if (reminder.getVibrate()) {
             if (vibrator.hasVibrator()) {
                 vibrator.vibrate(1000);
@@ -143,8 +150,8 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
 				,location.latitude,location.longitude,results);
 		if (results[0] <= reminder.getRadius()){
 			Log.i("Minder","At Location");
-			makeNoise();
-            createScreen();
+			hasLocation = true;
+            checkConditions();
 		}
 		else{
 			Log.i("Minder","Not at Location");
@@ -186,9 +193,6 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
                 startLocationUpdates(createLocationRequest());
             }
             catch (Exception e){
-                createNotification();
-                makeNoise();
-                createScreen();
                 Log.e("Minder","Unable to start location updates");
             }
 		}
@@ -199,8 +203,8 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
 		if (results[0] <= reminder.getRadius()){
 			Log.i("Minder","At Location");
 			if (reminder.getOnlyAtLocation()){
-				makeNoise();
-                createScreen();
+				hasLocation = true;
+                checkConditions();
 			}
 			else {
 				if (reminder.getUntilLocation()) {
@@ -211,8 +215,8 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
 		}
 		else{
 			if (reminder.getUntilLocation()){
-                makeNoise();
-				createScreen();
+                hasLocation = true;
+                checkConditions();
 			}
 			else {
 				if (reminder.getOnlyAtLocation()) {
@@ -234,7 +238,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
 		PendingIntent resultPendingIntent =
 				PendingIntent.getActivity(
 						this,
-						reminder.getId(),
+						0,
 						resultIntent,
 						PendingIntent.FLAG_UPDATE_CURRENT
 				);
@@ -246,7 +250,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
         PendingIntent dismissPendingIntent =
                 PendingIntent.getActivity(
                         this,
-                        reminder.getId(),
+                        1,
                         dismissIntent,
                         PendingIntent.FLAG_UPDATE_CURRENT
                 );
@@ -312,9 +316,6 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
             Log.i("Minder","API Client built");
         }
         catch (Exception e) {
-            makeNoise();
-            createNotification();
-            createScreen();
             Log.e("Minder","API Client failed to build");
         }
 	}
@@ -344,18 +345,15 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
         WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
         if (wifiManager.isWifiEnabled()){
             WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+            String curSSID = wifiInfo.getSSID();
+            curSSID = curSSID.replaceAll("^\"|\"$", "");
             if (wifiInfo.getSSID().equals(reminder.getSSID())){
-                if (reminder.getOnlyAtLocation() || reminder.getUntilLocation()) {
-                    Log.i("Minder", "Checking Location");
-                    buildGoogleApiClient();
-                } else {
-                    makeNoise();
-                    createScreen();
-                }
+                hasWiFi = true;
+                checkConditions();
             }
         }
         else {
-            snooze(reminder.getSnoozeDuration());
+            snooze(reminder.getSnoozeDuration()); //TODO: Create wifilistener
         }
     }
 
@@ -376,9 +374,26 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
 	@Override
 	protected void onResume(){
 		super.onResume();
-		Intent intent = getIntent();
-
 	}
+
+    private boolean checkConditions(){
+        if (!hasLocation){
+            buildGoogleApiClient();
+            finish();
+            return false;
+        }
+        if (!hasWiFi){
+            checkWifi();
+            finish();
+            return false;
+        }
+        if (!hasWake){
+            checkWake();
+            finish();
+            return false;
+        }
+        return true;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -387,8 +402,6 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
 	    context = this.getApplicationContext();
 
         Intent intent = getIntent();
-        Boolean snooze = intent.getBooleanExtra("Snooze",false);
-        Boolean dismiss = intent.getBooleanExtra("Dismiss",false);
 	    int snoozeNum = intent.getIntExtra("Snooze",0);   //TODO: Implement limited number of snoozes
         int id = intent.getIntExtra("Id",-1);
 	    Boolean override = intent.getBooleanExtra("Override",false);
@@ -406,44 +419,16 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
         reminder = Reminder.getReminder(database,id);
         dbHelper.closeDatabase();
 
-        if (!checkWake()) {
+        hasLocation = !((reminder.getOnlyAtLocation())||(reminder.getUntilLocation()));
+        hasWiFi = !reminder.getNeedWifi();
+        hasBT = !reminder.getNeedBluetooth();
+        hasWake = reminder.getWakeUp();
+
+        if (checkConditions()){
             createNotification();
-            return;
-        }
-
-        if (snooze){
-            snooze(reminder.getSnoozeDuration());
-            return;
-        }
-        if (dismiss){
-            dismiss();
-            return;
-        }
-
-	    if (reminder.getVibrate()) {
-		    vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-	    }
-
-	    if (override){
-		    makeNoise();
+            makeNoise();
             createScreen();
-	    }
-	    else {
-
-		    createNotification();
-
-            if (reminder.getNeedWifi()){
-                checkWifi();
-            }
-
-		    if (reminder.getOnlyAtLocation() || reminder.getUntilLocation()) {
-			    Log.i("Minder", "Checking Location");
-			    buildGoogleApiClient();
-		    } else {
-                makeNoise();
-                createScreen();
-            }
-	    }
+        }
     }
 
 	@Override
@@ -517,7 +502,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
             intentAlarm.putExtra("Id", id);           //Associate intent with specific Reminder
 		    intentAlarm.putExtra("Snooze", 0);                       //This alarm has not been snoozed
 		    alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-		    alarmManager.set(AlarmManager.RTC_WAKEUP, reminder.getDate().getTimeInMillis(),
+		    alarmManager.set(alarmType, reminder.getDate().getTimeInMillis(),
 				    PendingIntent.getBroadcast(context, id, intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
 
 		    Log.v("us.bridgeses.minder", "Alarm " + id + " set");

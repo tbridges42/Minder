@@ -90,7 +90,6 @@
             android:label="@string/title_activity_alarm_screen"
             android:launchMode="singleTop"
             android:screenOrientation="portrait"
-            android:taskAffinity="us.bridgeses.Minder.alarm"
             android:theme="@android:style/Theme.NoTitleBar" >
         </activity>
         <activity
@@ -125,6 +124,11 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="us.bridgeses.Minder.EditConditions" />
         </activity>
+
+        <service
+            android:name=".ReminderService"
+            android:exported="false" >
+        </service>
     </application>
 
 </manifest>
