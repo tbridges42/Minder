@@ -23,12 +23,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.os.Vibrator;
-import android.provider.MediaStore;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.NumberPicker;
 import android.widget.TextView;
 
@@ -229,7 +227,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
 
 		Intent resultIntent = new Intent(this, AlarmScreen.class);
 		resultIntent.putExtra("Id",reminder.getId());
-		resultIntent.putExtra("Override", Boolean.TRUE);
+		resultIntent.putExtra("Override", true);
 
 		// Because clicking the notification opens a new ("special") activity, there's
 		// no need to create an artificial back stack.
@@ -361,6 +359,27 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
         }
     }
 
+	@Override
+	protected void onNewIntent(Intent intent){
+		Boolean dismiss = intent.getBooleanExtra("Dismiss",false);
+		Boolean override = intent.getBooleanExtra("Override",false);
+		if (dismiss) {
+			dismiss();
+			return;
+		}
+		if (override){
+			makeNoise();
+			createScreen();
+		}
+	}
+
+	@Override
+	protected void onResume(){
+		super.onResume();
+		Intent intent = getIntent();
+
+	}
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -370,6 +389,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
         Intent intent = getIntent();
         Boolean snooze = intent.getBooleanExtra("Snooze",false);
         Boolean dismiss = intent.getBooleanExtra("Dismiss",false);
+	    int snoozeNum = intent.getIntExtra("Snooze",0);   //TODO: Implement limited number of snoozes
         int id = intent.getIntExtra("Id",-1);
 	    Boolean override = intent.getBooleanExtra("Override",false);
         Log.d("Minder",Integer.toString(id));
@@ -381,13 +401,9 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
 
         scheduleTaskExecutor = Executors.newScheduledThreadPool(2);
 
-	    int snoozeNum = intent.getIntExtra("Snooze",0);   //TODO: Implement limited number of snoozes
-
 	    dbHelper  = ReminderDBHelper.getInstance(this);
 	    SQLiteDatabase database = dbHelper.openDatabase();
-
         reminder = Reminder.getReminder(database,id);
-
         dbHelper.closeDatabase();
 
         if (!checkWake()) {
@@ -401,7 +417,6 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
         }
         if (dismiss){
             dismiss();
-            finish();
             return;
         }
 
@@ -482,21 +497,22 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
         mNotifyMgr.cancel(id);
 	    Intent intentAlarm = new Intent(this, ReminderReceiver.class);      //Create alarm intent
 	    AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        int alarmType;
-        if (reminder.getWakeUp()){
-            alarmType = AlarmManager.RTC_WAKEUP;
-        }
-        else {
-            alarmType = AlarmManager.RTC;
-        }
-        alarmManager.set(alarmType, reminder.getDate().getTimeInMillis(),
-                PendingIntent.getBroadcast(getApplicationContext(), id, intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
+
+        alarmManager.cancel(PendingIntent.getBroadcast(getApplicationContext(),
+		        id, intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
 	    SQLiteDatabase database = dbHelper.openDatabase();
 	    reminder = Reminder.nextRepeat(database,reminder);
 	    dbHelper.closeDatabase();
 
 
 	    if ((reminder.getActive()) && (reminder.getId() != -1)) {
+		    int alarmType;
+		    if (reminder.getWakeUp()){
+			    alarmType = AlarmManager.RTC_WAKEUP;
+		    }
+		    else {
+			    alarmType = AlarmManager.RTC;
+		    }
             intentAlarm = new Intent(context, ReminderReceiver.class);//Create alarm intent
             intentAlarm.putExtra("Id", id);           //Associate intent with specific Reminder
 		    intentAlarm.putExtra("Snooze", 0);                       //This alarm has not been snoozed
@@ -532,7 +548,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
         else {
             alarmType = AlarmManager.RTC;
         }
-        alarmManager.set(alarmType, reminder.getDate().getTimeInMillis(),
+        alarmManager.set(alarmType, Calendar.getInstance().getTimeInMillis()+duration*Reminder.MINUTE,
                 PendingIntent.getBroadcast(getApplicationContext(), id, intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
 	    Log.v("us.bridgeses.minder", "Alarm " + id + " set");
         silence();

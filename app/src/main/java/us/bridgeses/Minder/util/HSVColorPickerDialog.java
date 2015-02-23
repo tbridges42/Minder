@@ -1,4 +1,4 @@
-package us.bridgeses.minder;
+package us.bridgeses.Minder.util;
 
 import android.app.AlertDialog;
 import android.content.Context;

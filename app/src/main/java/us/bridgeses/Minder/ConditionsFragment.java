@@ -1,6 +1,5 @@
 package us.bridgeses.Minder;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
@@ -21,13 +20,8 @@ import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.provider.Settings;
 import android.util.Log;
-import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
-import android.widget.FrameLayout;
-import android.widget.ListView;
 
-import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 
@@ -115,12 +109,7 @@ public class ConditionsFragment extends PreferenceFragment implements SharedPref
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("ssid",ssid);
-        if (!ssid.equals("")){
-            ssidButton.setSummary("SSID Set");
-        }
-        else {
-            ssidButton.setSummary("");
-        }
+        ssidButton.setSummary(ssid);
         editor.apply();
     }
 
@@ -195,12 +184,7 @@ public class ConditionsFragment extends PreferenceFragment implements SharedPref
         ssidButton.setOnPreferenceClickListener(this);
 		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         wifiRequired.setChecked(sharedPreferences.getBoolean("wifi",Reminder.WIFIDEFAULT));
-        if (sharedPreferences.getString("ssid","").equals("")){
-            ssidButton.setSummary("");
-        }
-        else{
-            ssidButton.setSummary("SSID Set");
-        }
+        ssidButton.setSummary(sharedPreferences.getString("ssid",Reminder.SSIDDEFAULT));
 		Boolean isLocation = sharedPreferences.
                 getFloat("Latitude",(float)Reminder.LOCATIONDEFAULT.latitude)==0;
 		isLocation = isLocation || sharedPreferences.
