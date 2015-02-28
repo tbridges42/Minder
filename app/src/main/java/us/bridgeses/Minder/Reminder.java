@@ -55,6 +55,8 @@ public class Reminder implements Parcelable{
         setNeedWifi(WIFIDEFAULT);
         bluetooth = BTDEFAULT;
         setNeedBluetooth(BTNEEDEDDEFAULT);
+        setWakeUp(WAKEUPDEFAULT);
+        setDisplayScreen(DISPLAYSCREENDEFAULT);
     }
 
     public static Reminder reminderFactory(SharedPreferences sharedPreferences, Context context){

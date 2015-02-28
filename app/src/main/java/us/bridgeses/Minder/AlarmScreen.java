@@ -29,6 +29,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.NumberPicker;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -62,6 +63,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
     private boolean hasWiFi;
     private boolean hasBT;
     private boolean hasWake;
+
 
     @Override
     public void onConfigurationChanged(Configuration newConfig)
@@ -143,7 +145,6 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
 	@Override
 	public void onLocationChanged(Location mLastLocation) {
 		Log.i("Minder","Location updated");
-		stopLocationUpdates();
 		LatLng location = reminder.getLocation();
 		float results[] = new float[1];
 		Location.distanceBetween(mLastLocation.getLatitude(),mLastLocation.getLongitude()
@@ -151,11 +152,15 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
 		if (results[0] <= reminder.getRadius()){
 			Log.i("Minder","At Location");
 			hasLocation = true;
-            checkConditions();
+            stopLocationUpdates();
+            if (checkConditions()){
+                createNotification();
+                makeNoise();
+                createScreen();
+            }
 		}
 		else{
 			Log.i("Minder","Not at Location");
-			snooze(reminder.getSnoozeDuration());
 		}
 	}
 
@@ -204,7 +209,14 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
 			Log.i("Minder","At Location");
 			if (reminder.getOnlyAtLocation()){
 				hasLocation = true;
-                checkConditions();
+                if (checkConditions()){
+                    createNotification();
+                    makeNoise();
+                    createScreen();
+                    //int duration = Toast.LENGTH_SHORT;
+                    //Toast toast = Toast.makeText(this, "Hmm", duration);
+                    //toast.show();
+                }
 			}
 			else {
 				if (reminder.getUntilLocation()) {
@@ -216,7 +228,11 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
 		else{
 			if (reminder.getUntilLocation()){
                 hasLocation = true;
-                checkConditions();
+                if (checkConditions()){
+                    createNotification();
+                    makeNoise();
+                    createScreen();
+                }
 			}
 			else {
 				if (reminder.getOnlyAtLocation()) {
@@ -296,12 +312,14 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
 
             findViewById(R.id.snooze_button).setOnLongClickListener(this);
 
-            scheduleTaskExecutor.schedule(new Runnable() {
-                public void run() {
-                    snooze(reminder.getSnoozeDuration());
-                }
+            if (scheduleTaskExecutor != null){
+                scheduleTaskExecutor.schedule(new Runnable() {
+                    public void run() {
+                        snooze(reminder.getSnoozeDuration());
+                    }
 
-            }, 5, TimeUnit.MINUTES);
+                }, 5, TimeUnit.MINUTES);
+            }
         }
 	}
 
@@ -347,9 +365,13 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
             WifiInfo wifiInfo = wifiManager.getConnectionInfo();
             String curSSID = wifiInfo.getSSID();
             curSSID = curSSID.replaceAll("^\"|\"$", "");
-            if (wifiInfo.getSSID().equals(reminder.getSSID())){
+            if (curSSID.equals(reminder.getSSID())){
                 hasWiFi = true;
-                checkConditions();
+                if (checkConditions()){
+                    createNotification();
+                    makeNoise();
+                    createScreen();
+                }
             }
         }
         else {
@@ -357,18 +379,37 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
         }
     }
 
+    private boolean processIntent(Intent intent){
+        int snoozeNum = intent.getIntExtra("Snooze",0);   //TODO: Implement limited number of snoozes
+        int id = intent.getIntExtra("Id", -1);
+        Log.d("Minder",Integer.toString(id));
+        if (id == -1){
+            Log.w("Minder","Invalid ID");
+            finish();
+            return true;
+        }
+        dbHelper  = ReminderDBHelper.getInstance(this);
+        SQLiteDatabase database = dbHelper.openDatabase();
+        reminder = Reminder.getReminder(database,id);
+        dbHelper.closeDatabase();
+
+        Boolean dismiss = intent.getBooleanExtra("Dismiss",false);
+        Boolean override = intent.getBooleanExtra("Override",false);
+        if (dismiss) {
+            dismiss();
+            return true;
+        }
+        if (override){
+            makeNoise();
+            createScreen();
+            return true;
+        }
+        return false;
+    }
+
 	@Override
 	protected void onNewIntent(Intent intent){
-		Boolean dismiss = intent.getBooleanExtra("Dismiss",false);
-		Boolean override = intent.getBooleanExtra("Override",false);
-		if (dismiss) {
-			dismiss();
-			return;
-		}
-		if (override){
-			makeNoise();
-			createScreen();
-		}
+        processIntent(intent);
 	}
 
 	@Override
@@ -379,17 +420,14 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
     private boolean checkConditions(){
         if (!hasLocation){
             buildGoogleApiClient();
-            finish();
             return false;
         }
         if (!hasWiFi){
             checkWifi();
-            finish();
             return false;
         }
         if (!hasWake){
             checkWake();
-            finish();
             return false;
         }
         return true;
@@ -402,32 +440,21 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
 	    context = this.getApplicationContext();
 
         Intent intent = getIntent();
-	    int snoozeNum = intent.getIntExtra("Snooze",0);   //TODO: Implement limited number of snoozes
-        int id = intent.getIntExtra("Id",-1);
-	    Boolean override = intent.getBooleanExtra("Override",false);
-        Log.d("Minder",Integer.toString(id));
-        if (id == -1){
-			Log.w("Minder","Invalid ID");
-            finish();
-            return;
-        }
 
-        scheduleTaskExecutor = Executors.newScheduledThreadPool(2);
+        if (!processIntent(intent)) {
 
-	    dbHelper  = ReminderDBHelper.getInstance(this);
-	    SQLiteDatabase database = dbHelper.openDatabase();
-        reminder = Reminder.getReminder(database,id);
-        dbHelper.closeDatabase();
+            scheduleTaskExecutor = Executors.newScheduledThreadPool(2);
 
-        hasLocation = !((reminder.getOnlyAtLocation())||(reminder.getUntilLocation()));
-        hasWiFi = !reminder.getNeedWifi();
-        hasBT = !reminder.getNeedBluetooth();
-        hasWake = reminder.getWakeUp();
+            hasLocation = !((reminder.getOnlyAtLocation()) || (reminder.getUntilLocation()));
+            hasWiFi = !reminder.getNeedWifi();
+            hasBT = !reminder.getNeedBluetooth();
+            hasWake = reminder.getWakeUp();
 
-        if (checkConditions()){
-            createNotification();
-            makeNoise();
-            createScreen();
+            if (checkConditions()) {
+                createNotification();
+                makeNoise();
+                createScreen();
+            }
         }
     }
 
@@ -507,7 +534,9 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
 
 		    Log.v("us.bridgeses.minder", "Alarm " + id + " set");
 	    }
-        scheduleTaskExecutor.shutdownNow();
+        if (scheduleTaskExecutor != null) {
+            scheduleTaskExecutor.shutdownNow();
+        }
         finish();
     }
 
@@ -533,11 +562,13 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
         else {
             alarmType = AlarmManager.RTC;
         }
-        alarmManager.set(alarmType, Calendar.getInstance().getTimeInMillis()+duration*Reminder.MINUTE,
+        alarmManager.set(alarmType, Calendar.getInstance().getTimeInMillis()+duration,
                 PendingIntent.getBroadcast(getApplicationContext(), id, intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
 	    Log.v("us.bridgeses.minder", "Alarm " + id + " set");
         silence();
-        scheduleTaskExecutor.shutdownNow();
+        if (scheduleTaskExecutor != null){
+            scheduleTaskExecutor.shutdownNow();
+        }
         finish();
     }
 
