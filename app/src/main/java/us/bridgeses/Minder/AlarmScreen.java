@@ -46,8 +46,7 @@ import java.util.concurrent.TimeUnit;
 import us.bridgeses.Minder.receivers.ReminderReceiver;
 
 
-public class AlarmScreen extends Activity implements View.OnLongClickListener, GoogleApiClient.ConnectionCallbacks,
-		GoogleApiClient.OnConnectionFailedListener, LocationListener{
+public class AlarmScreen extends Activity implements View.OnLongClickListener{
 
     private ReminderDBHelper dbHelper;
     private Reminder reminder;
@@ -56,13 +55,8 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
     private ScheduledExecutorService scheduleTaskExecutor;
 	private Context context;
 	private int snooze;
-	private GoogleApiClient mGoogleApiClient;
     private int curVolume;
     private int curRingMode;
-    private boolean hasLocation;
-    private boolean hasWiFi;
-    private boolean hasBT;
-    private boolean hasWake;
 
 
     @Override
@@ -70,15 +64,6 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
     {
         super.onConfigurationChanged(newConfig);
     }
-
-	@Override
-	public void onConnectionSuspended(int i){
-		Log.w("Minder","Connection Suspended");
-	}
-
-	public void onConnectionFailed(ConnectionResult result){
-		Log.w("Minder","Connection Failed");
-	}
 
     private void silence() {
         if (!reminder.getRingtone().equals("")) {
@@ -142,112 +127,10 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
         //silence();
     }
 
-	@Override
-	public void onLocationChanged(Location mLastLocation) {
-		Log.i("Minder","Location updated");
-		LatLng location = reminder.getLocation();
-		float results[] = new float[1];
-		Location.distanceBetween(mLastLocation.getLatitude(),mLastLocation.getLongitude()
-				,location.latitude,location.longitude,results);
-		if (results[0] <= reminder.getRadius()){
-			Log.i("Minder","At Location");
-			hasLocation = true;
-            stopLocationUpdates();
-            if (checkConditions()){
-                createNotification();
-                makeNoise();
-                createScreen();
-            }
-		}
-		else{
-			Log.i("Minder","Not at Location");
-		}
-	}
-
-	protected void startLocationUpdates(LocationRequest mLocationRequest) {
-		LocationServices.FusedLocationApi.requestLocationUpdates(
-				mGoogleApiClient, mLocationRequest, this);
-	}
-
-	protected void stopLocationUpdates() {
-		LocationServices.FusedLocationApi.removeLocationUpdates(
-				mGoogleApiClient, this);
-	}
-
-	protected LocationRequest createLocationRequest() {
-		LocationRequest mLocationRequest = new LocationRequest();
-		mLocationRequest.setInterval(10000);
-		mLocationRequest.setFastestInterval(5000);
-		mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-		return mLocationRequest;
-	}
-
-	@Override
-	public void onConnected(Bundle connectionHint) {
-		Log.i("Minder","Connected to location service");
-		Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
-				mGoogleApiClient);
-		LatLng location = reminder.getLocation();
-
-		long timeDelta = Calendar.getInstance().getTimeInMillis() - mLastLocation.getTime();
-
-		if ((mLastLocation == null) ||  (timeDelta > (Reminder.MINUTE * 10))
-				||mLastLocation.getAccuracy() > 1.5*reminder.getRadius()){
-			Log.i("Minder","Location is stale");
-			try {
-                startLocationUpdates(createLocationRequest());
-            }
-            catch (Exception e){
-                Log.e("Minder","Unable to start location updates");
-            }
-		}
-
-		float results[] = new float[1];
-		Location.distanceBetween(mLastLocation.getLatitude(),mLastLocation.getLongitude()
-				,location.latitude,location.longitude,results);
-		if (results[0] <= reminder.getRadius()){
-			Log.i("Minder","At Location");
-			if (reminder.getOnlyAtLocation()){
-				hasLocation = true;
-                if (checkConditions()){
-                    createNotification();
-                    makeNoise();
-                    createScreen();
-                    //int duration = Toast.LENGTH_SHORT;
-                    //Toast toast = Toast.makeText(this, "Hmm", duration);
-                    //toast.show();
-                }
-			}
-			else {
-				if (reminder.getUntilLocation()) {
-					Log.i("Minder","Not at Location");
-					snooze(reminder.getSnoozeDuration());
-				}
-			}
-		}
-		else{
-			if (reminder.getUntilLocation()){
-                hasLocation = true;
-                if (checkConditions()){
-                    createNotification();
-                    makeNoise();
-                    createScreen();
-                }
-			}
-			else {
-				if (reminder.getOnlyAtLocation()) {
-					Log.i("Minder","Not at Location");
-					snooze(reminder.getSnoozeDuration());
-				}
-			}
-		}
-	}
-
 	private void createNotification() {
 
 		Intent resultIntent = new Intent(this, AlarmScreen.class);
 		resultIntent.putExtra("Id",reminder.getId());
-		resultIntent.putExtra("Override", true);
 
 		// Because clicking the notification opens a new ("special") activity, there's
 		// no need to create an artificial back stack.
@@ -323,138 +206,63 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
         }
 	}
 
-	protected synchronized void buildGoogleApiClient() {
-		try {
-            mGoogleApiClient = new GoogleApiClient.Builder(this)
-                    .addConnectionCallbacks(this)
-                    .addOnConnectionFailedListener(this)
-                    .addApi(LocationServices.API)
-                    .build();
-            mGoogleApiClient.connect();
-            Log.i("Minder","API Client built");
-        }
-        catch (Exception e) {
-            Log.e("Minder","API Client failed to build");
-        }
-	}
-
-    private Boolean checkWake(){
-        if (!reminder.getWakeUp()){
-            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-            if (Build.VERSION.SDK_INT >= 20){
-                if (!pm.isInteractive()){
-                    snooze(reminder.getSnoozeDuration());
-                    finish();
-                    return false;
-                }
-            }
-            else {
-                if (!pm.isScreenOn()){
-                    snooze(reminder.getSnoozeDuration());
-                    finish();
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    private void checkWifi(){
-        WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
-        if (wifiManager.isWifiEnabled()){
-            WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-            String curSSID = wifiInfo.getSSID();
-            curSSID = curSSID.replaceAll("^\"|\"$", "");
-            if (curSSID.equals(reminder.getSSID())){
-                hasWiFi = true;
-                if (checkConditions()){
-                    createNotification();
-                    makeNoise();
-                    createScreen();
-                }
-            }
-        }
-        else {
-            snooze(reminder.getSnoozeDuration()); //TODO: Create wifilistener
-        }
-    }
-
-    private boolean processIntent(Intent intent){
-        int snoozeNum = intent.getIntExtra("Snooze",0);   //TODO: Implement limited number of snoozes
-        int id = intent.getIntExtra("Id", -1);
-        Log.d("Minder",Integer.toString(id));
+    private Reminder retrieveReminder(int id){
         if (id == -1){
-            Log.w("Minder","Invalid ID");
-            finish();
-            return true;
+            Log.w("Minder", "Invalid ID");
+            return new Reminder();
         }
-        dbHelper  = ReminderDBHelper.getInstance(this);
+        if (context == null){
+            Log.e("Minder","Invalid context");
+            return new Reminder();
+        }
+        ReminderDBHelper dbHelper  = ReminderDBHelper.getInstance(context);
         SQLiteDatabase database = dbHelper.openDatabase();
         reminder = Reminder.getReminder(database,id);
         dbHelper.closeDatabase();
-
-        Boolean dismiss = intent.getBooleanExtra("Dismiss",false);
-        Boolean override = intent.getBooleanExtra("Override",false);
-        if (dismiss) {
-            dismiss();
-            return true;
-        }
-        if (override){
-            makeNoise();
-            createScreen();
-            return true;
-        }
-        return false;
+        return reminder;
     }
 
-	@Override
-	protected void onNewIntent(Intent intent){
-        processIntent(intent);
-	}
+    @Override
+    protected void onNewIntent(Intent intent){
+        int id = intent.getIntExtra("Id", -1);
+        if (id == -1) {
+            finish();
+            return;
+        }
 
-	@Override
-	protected void onResume(){
-		super.onResume();
-	}
+        boolean dismiss = intent.getBooleanExtra("Dismiss",false);
 
-    private boolean checkConditions(){
-        if (!hasLocation){
-            buildGoogleApiClient();
-            return false;
+        if (dismiss){
+            reminder = retrieveReminder(id);
+            dismiss();
+            return;
         }
-        if (!hasWiFi){
-            checkWifi();
-            return false;
-        }
-        if (!hasWake){
-            checkWake();
-            return false;
-        }
-        return true;
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
 	    context = this.getApplicationContext();
+        scheduleTaskExecutor = Executors.newScheduledThreadPool(2);
 
         Intent intent = getIntent();
+        int id = intent.getIntExtra("Id", -1);
+        if (id == -1) {
+            finish();
+            return;
+        }
+        reminder = retrieveReminder(id);
 
-        if (!processIntent(intent)) {
+        boolean dismiss = intent.getBooleanExtra("Dismiss",false);
 
-            scheduleTaskExecutor = Executors.newScheduledThreadPool(2);
-
-            hasLocation = !((reminder.getOnlyAtLocation()) || (reminder.getUntilLocation()));
-            hasWiFi = !reminder.getNeedWifi();
-            hasBT = !reminder.getNeedBluetooth();
-            hasWake = reminder.getWakeUp();
-
-            if (checkConditions()) {
-                createNotification();
-                makeNoise();
-                createScreen();
-            }
+        if (dismiss){
+            dismiss();
+            return;
+        }
+        else {
+            createNotification();
+            makeNoise();
+            createScreen();
         }
     }
 
@@ -512,6 +320,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener, G
 
         alarmManager.cancel(PendingIntent.getBroadcast(getApplicationContext(),
 		        id, intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
+        dbHelper = ReminderDBHelper.getInstance(context);
 	    SQLiteDatabase database = dbHelper.openDatabase();
 	    reminder = Reminder.nextRepeat(database,reminder);
 	    dbHelper.closeDatabase();

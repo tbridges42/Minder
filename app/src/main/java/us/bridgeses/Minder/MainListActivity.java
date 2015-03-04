@@ -1,10 +1,12 @@
 package us.bridgeses.Minder;
 
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -18,6 +20,8 @@ import android.view.View;
 
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
+
+import us.bridgeses.Minder.receivers.ReminderReceiver;
 
 /**
  * Created by Tony on 8/8/2014.
@@ -42,7 +46,28 @@ public class MainListActivity extends Activity implements AsyncFragment.TaskCall
 		dbHelper  = ReminderDBHelper.getInstance(this);
 		SQLiteDatabase database = dbHelper.openDatabase();
 		Reminder reminder = Reminder.getReminder(database,id);
+        Intent intentAlarm = new Intent(this, ReminderReceiver.class);      //Create alarm intent
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        alarmManager.cancel(PendingIntent.getBroadcast(getApplicationContext(), reminder.getId(), intentAlarm,
+                PendingIntent.FLAG_UPDATE_CURRENT));
 		reminder = Reminder.nextRepeat(database, reminder);
+        if ((reminder.getActive()) && (reminder.getId() != -1)) {
+            int alarmType;
+            if (reminder.getWakeUp()){
+                alarmType = AlarmManager.RTC_WAKEUP;
+            }
+            else {
+                alarmType = AlarmManager.RTC;
+            }
+            intentAlarm = new Intent(this, ReminderReceiver.class);//Create alarm intent
+            intentAlarm.putExtra("Id", id);           //Associate intent with specific Reminder
+            intentAlarm.putExtra("Snooze", 0);                       //This alarm has not been snoozed
+            alarmManager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+            alarmManager.set(alarmType, reminder.getDate().getTimeInMillis(),
+                    PendingIntent.getBroadcast(this, id, intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
+
+            Log.v("us.bridgeses.minder", "Alarm " + id + " set");
+        }
 		// Gets an instance of the NotificationManager service
 		NotificationManager mNotifyMgr =
 				(NotificationManager) getSystemService(NOTIFICATION_SERVICE);

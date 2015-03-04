@@ -224,8 +224,7 @@ public class ReminderPreferenceFragment extends PreferenceFragment implements Sh
 	    descriptionPreference.setText(reminder.getDescription());
 	    String time = timeFormat.format(reminder.getDate().getTime());
 	    String date = dateFormat.format(reminder.getDate().getTime());
-	    Log.v("Minder", time + " " + date);
-        timePreference.setSummary(time);
+	    timePreference.setSummary(time);
 	    timePreference.setTime(time);
         datePreference.setSummary(date);
 	    datePreference.setDate(date);
