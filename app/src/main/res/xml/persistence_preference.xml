@@ -32,6 +32,10 @@
             android:title="Wake Up For Reminder"
             android:summaryOn="Phone will wake up for reminder"
             android:summaryOff="Reminder will only trigger is screen is on"/>
-
+        <CheckBoxPreference
+            android:key="dismiss_check"
+            android:title="Dismiss Dialog"
+            android:summaryOff="No dismiss dialog required"
+            android:summaryOn="Must confirm to dismiss alarm" />
     </PreferenceCategory>
 </PreferenceScreen>

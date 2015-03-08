@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  android:title="Style">
+    <PreferenceCategory
+        android:title="Notification Settings">
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:title="Alarm Screen Settings">
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:title="LED Settings">
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:title="Vibrate Settings">
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:title="Sound Settings">
+        <CheckBoxPreference
+            android:key="fade"
+            android:title="Build Up Volume"
+            android:summaryOn="Volume will gradually increase"
+            android:summaryOff="Volume will remain constant" />
+    </PreferenceCategory>
+</PreferenceScreen>

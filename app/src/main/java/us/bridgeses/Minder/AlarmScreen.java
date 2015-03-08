@@ -11,17 +11,13 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.sqlite.SQLiteDatabase;
-import android.location.Location;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.PowerManager;
 import android.os.Vibrator;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -29,14 +25,6 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.NumberPicker;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.model.LatLng;
 
 import java.util.Calendar;
 import java.util.concurrent.Executors;
@@ -158,13 +146,16 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.ic_launcher)
                         .setContentTitle(reminder.getName())
-                        .setContentText(Integer.toString(reminder.getId()))
+                        .setContentText(reminder.getDescription())
                         .setOngoing(true)
                         .setPriority(Notification.PRIORITY_MAX)
-                        .setCategory(Notification.CATEGORY_ALARM)
                         .setStyle(new NotificationCompat.BigTextStyle()
                                 .bigText(reminder.getDescription()))
                         .addAction(R.drawable.ic_stat_content_clear, "Dismiss", dismissPendingIntent);
+
+		if (Build.VERSION.SDK_INT >= 21){
+			mBuilder.setCategory(Notification.CATEGORY_ALARM);
+		}
 
 		mBuilder.setContentIntent(resultPendingIntent);
 		// Gets an instance of the NotificationManager service
@@ -234,7 +225,12 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
 
         if (dismiss){
             reminder = retrieveReminder(id);
-            dismiss();
+	        silence();
+	        if (reminder.getNeedQr()){
+		        checkQr();
+	        }
+	        else
+		        dismiss();
             return;
         }
     }

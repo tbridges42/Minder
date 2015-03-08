@@ -7,7 +7,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -15,8 +14,6 @@ import com.google.android.gms.maps.model.LatLng;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-
-import us.bridgeses.Minder.receivers.BootReceiver;
 
 /**
  * Created by Overseer on 7/13/2014.
@@ -57,6 +54,8 @@ public class Reminder implements Parcelable{
         setNeedBluetooth(BTNEEDEDDEFAULT);
         setWakeUp(WAKEUPDEFAULT);
         setDisplayScreen(DISPLAYSCREENDEFAULT);
+	    setConfirmDismiss(DISMISSDIALOGDEFAULT);
+	    setFadeVolume(FADEDEFAULT);
     }
 
     public static Reminder reminderFactory(SharedPreferences sharedPreferences, Context context){
@@ -92,8 +91,6 @@ public class Reminder implements Parcelable{
     private String description;
     private String qr;
     private int snoozeDuration;
-    private Boolean vibrate;
-    private Boolean led;
     private int ledColor;
     private int ledPattern;
     private String ringtone;
@@ -102,34 +99,35 @@ public class Reminder implements Parcelable{
     private String bluetooth;
 
     //Default constants
-    public static final Boolean ACTIVEDEFAULT = true;
+    public static final boolean ACTIVEDEFAULT = true;
     public static final LatLng LOCATIONDEFAULT = new LatLng(0,0);
     public static final String NAMEDEFAULT = "";
     public static final int REPEATTYPEDEFAULT = 0;
     public static final int REPEATLENGTHDEFAULT = 1;
     public static final byte DAYSOFWEEKDEFAULT = 0;
     public static final byte MONTHTYPEDEFAULT = 0;
-    public static final Boolean ONLYATLOCATIONDEFAULT = false;
-    public static final Boolean UNTILLOCATIONDEFAULT = false;
-    public static final int PERSISTENCEDEFAULT = 12;
-    public static final Boolean VOLUMEOVERRIDEDEFAULT = false;
-    public static final Boolean DISPLAYSCREENDEFAULT = true;
-    public static final Boolean WAKEUPDEFAULT = true;
+    public static final boolean ONLYATLOCATIONDEFAULT = false;
+    public static final boolean UNTILLOCATIONDEFAULT = false;
+    public static final boolean VOLUMEOVERRIDEDEFAULT = false;
+    public static final boolean DISPLAYSCREENDEFAULT = true;
+    public static final boolean WAKEUPDEFAULT = true;
     public static final String DESCRIPTIONDEFAULT = "";
     public static final int SNOOZEDURATIONDEFAULT = 300000;
     public static final String QRDEFAULT = "";
-	public static final Boolean NEEDQRDEFAULT = false;
-    public static final Boolean VIBRATEDEFAULT = false;
+	public static final boolean NEEDQRDEFAULT = false;
+    public static final boolean VIBRATEDEFAULT = false;
     public static final String RINGTONEDEFAULT = "";
-    public static final Boolean LEDDEFAULT = false;
+    public static final boolean LEDDEFAULT = false;
     public static final int LEDCOLORDEFAULT = -1;
     public static final int LEDPATTERNDEFAULT = -1;
     public static final int IDDEFAULT = -1;
     public static final int RADIUSDEFAULT = 500;
     public static final String SSIDDEFAULT = "";
     public static final String BTDEFAULT = "";
-    public static final Boolean WIFIDEFAULT = false;
-    public static final Boolean BTNEEDEDDEFAULT = false;
+    public static final boolean WIFIDEFAULT = false;
+    public static final boolean BTNEEDEDDEFAULT = false;
+	public static final boolean DISMISSDIALOGDEFAULT = false;
+	public static final boolean FADEDEFAULT = false;
 
     //Time constants
     public static final int MINUTE = 60000;
@@ -154,6 +152,7 @@ public class Reminder implements Parcelable{
 	public static final byte REQUIRE_CODE = 2;
     public static final byte DISPLAY_SCREEN = 4;
     public static final byte WAKE_UP = 8;
+	public static final byte DISMISS_DIALOG = 16;
 
     //Conditions constants
     public static final byte UNTIL_LOCATION = 1;
@@ -165,6 +164,7 @@ public class Reminder implements Parcelable{
     //Style constants
     public static final byte LED = 1;
     public static final byte VIBRATE = 2;
+	public static final byte FADE = 4;
 
     public static final String PREFS_NAME = "ReminderPrefs";
 
@@ -505,6 +505,40 @@ public class Reminder implements Parcelable{
             }
         }
     }
+
+	public Boolean getConfirmDismiss(){
+		return (this.getPersistence() & DISMISS_DIALOG) == DISMISS_DIALOG;
+
+	}
+
+	public void setConfirmDismiss(Boolean dismissDialog){
+		byte mask = Reminder.DISMISS_DIALOG;
+		if (dismissDialog && !this.getConfirmDismiss()){
+			this.setPersistence((byte)(this.getPersistence()+mask));
+		}
+		else {
+			if (!dismissDialog && this.getConfirmDismiss()){
+				this.setPersistence((byte)(this.getPersistence()-mask));
+			}
+		}
+	}
+
+	public Boolean getFadeVolume(){
+		return (this.getStyle() & FADE) == FADE;
+
+	}
+
+	public void setFadeVolume(Boolean fade){
+		byte mask = Reminder.FADE;
+		if (fade && !this.getFadeVolume()){
+			this.setStyle((byte) (this.getStyle() + mask));
+		}
+		else {
+			if (!fade && this.getFadeVolume()){
+				this.setStyle((byte) (this.getStyle() - mask));
+			}
+		}
+	}
 
     private static Reminder[] cursorToReminders(Cursor cursor){
         int numReminders = cursor.getCount();
@@ -1140,6 +1174,8 @@ public class Reminder implements Parcelable{
         reminder.setBluetooth(sharedPreferences.getString("bt_name",BTDEFAULT));
         reminder.setSnoozeDuration(Integer.parseInt(sharedPreferences
                 .getString("snooze_duration",Integer.toString(SNOOZEDURATIONDEFAULT))));
+	    reminder.setFadeVolume(sharedPreferences.getBoolean("fade",FADEDEFAULT));
+	    reminder.setConfirmDismiss(sharedPreferences.getBoolean("dismiss_check",DISMISSDIALOGDEFAULT));
         return reminder;
     }
 }

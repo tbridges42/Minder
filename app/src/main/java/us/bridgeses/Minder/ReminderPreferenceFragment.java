@@ -16,7 +16,6 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.preference.RingtonePreference;
-import android.util.Log;
 import android.widget.BaseAdapter;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -162,6 +161,7 @@ public class ReminderPreferenceFragment extends PreferenceFragment implements Sh
         editor.putBoolean("led",reminder.getLed());
         editor.putString("led_pattern",Integer.toString(reminder.getLedPattern()));
         editor.putInt("led_color",reminder.getLedColor());
+	    editor.putBoolean("fade",reminder.getFadeVolume());
         return editor;
     }
 
@@ -173,6 +173,7 @@ public class ReminderPreferenceFragment extends PreferenceFragment implements Sh
         editor.putBoolean("display_screen",reminder.getDisplayScreen());
         editor.putBoolean("wake_up",reminder.getWakeUp());
 
+		editor.putBoolean("dismiss_check",reminder.getConfirmDismiss());
 		return editor;
 	}
 
