@@ -199,7 +199,6 @@ public class ConditionsFragment extends PreferenceFragment implements SharedPref
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-//		reminder = getArguments().getParcelable("Reminder");
         wifiReceiver = new WifiReceiver();
 		addPreferencesFromResource(R.xml.conditions_preference);
 
@@ -211,7 +210,7 @@ public class ConditionsFragment extends PreferenceFragment implements SharedPref
 	@Override
 	public void onResume() {
 		super.onResume();
-		// Set up a listener whenever a key changes
+		// Set up a listener for key changes
 		getPreferenceScreen().getSharedPreferences()
 				.registerOnSharedPreferenceChangeListener(this);
 
@@ -220,9 +219,6 @@ public class ConditionsFragment extends PreferenceFragment implements SharedPref
 	@Override
 	public void onPause() {
 		super.onPause();
-		// Unregister the listener whenever a key changes
-		//getPreferenceScreen().getSharedPreferences()
-		//		.unregisterOnSharedPreferenceChangeListener(this);
 	}
 
 	public static ConditionsFragment newInstance(Reminder reminder){
