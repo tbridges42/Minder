@@ -187,7 +187,6 @@ public class ReminderPreferenceFragment extends PreferenceFragment implements Sh
         editor.putString("temp_date",dateFormat.format(reminder.getDate().getTime()));
         editor.putBoolean("temp_vibrate",reminder.getVibrate());
         editor.putString("temp_ringtone",reminder.getRingtone());
-		editor.putBoolean("volume_override",reminder.getVolumeOverride());
 	    editor = initConditionsValues(editor);
 
 	    editor = initRepeatValues(editor);
