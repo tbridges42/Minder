@@ -1165,7 +1165,7 @@ public class Reminder implements Parcelable{
         reminder.setActive(reminder.getDate().after(Calendar.getInstance()));
         reminder.setQr(sharedPreferences.getString("temp_code",QRDEFAULT));
         reminder.setNeedQr(sharedPreferences.getBoolean("code_type",NEEDQRDEFAULT));
-        reminder.setVolumeOverride(sharedPreferences.getBoolean("out _loud",VOLUMEOVERRIDEDEFAULT));
+        reminder.setVolumeOverride(sharedPreferences.getBoolean("out_loud",VOLUMEOVERRIDEDEFAULT));
         reminder.setDisplayScreen(sharedPreferences.getBoolean("display_screen",DISPLAYSCREENDEFAULT));
         reminder.setWakeUp(sharedPreferences.getBoolean("wake_up",WAKEUPDEFAULT));
         reminder.setSSID(sharedPreferences.getString("ssid",SSIDDEFAULT));

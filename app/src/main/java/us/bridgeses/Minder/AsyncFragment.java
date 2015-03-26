@@ -196,7 +196,6 @@ public class AsyncFragment extends ListFragment{
             }
             Bundle bundle = new Bundle();
             bundle.putParcelable("Reminder", reminder);
-            bundle.putString("Test","Success");
             intent.putExtras(bundle);
             intent.setExtrasClassLoader(Reminder.class.getClassLoader());
             return null;
