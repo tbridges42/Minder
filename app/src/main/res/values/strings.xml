@@ -119,5 +119,6 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_edit_persistence">Edit Persistence</string>
     <string name="title_activity_wifi">WifiActivity</string>
+    <string name="title_activity_edit_style">EditStyle</string>
 
 </resources>

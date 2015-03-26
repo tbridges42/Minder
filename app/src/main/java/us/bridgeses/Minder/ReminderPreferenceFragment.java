@@ -239,8 +239,6 @@ public class ReminderPreferenceFragment extends PreferenceFragment implements Sh
             ringtonePreference.setSummary(ringtoneTitle);
         }
 	    vibratePreference.setChecked(reminder.getVibrate());
-	    //volumeOverridePreference.setChecked(reminder.getVolumeOverride());
-        //outLoudPreference.setChecked(reminder.getOutLoud());
     }
 
     @Override

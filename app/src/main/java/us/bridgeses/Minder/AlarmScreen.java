@@ -18,6 +18,7 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Vibrator;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -45,6 +46,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
 	private int snooze;
     private int curVolume;
     private int curRingMode;
+    private final Handler handler = new Handler();
 
 
     @Override
@@ -230,7 +232,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
 		        checkQr();
 	        }
 	        else
-		        dismiss();
+		        checkDismiss();
             return;
         }
     }
@@ -304,40 +306,51 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
 		}
 	}
 
-    private void dismiss() {
-	    int id = reminder.getId();
+    private void cancelNotification(int id){
         // Gets an instance of the NotificationManager service
         NotificationManager mNotifyMgr =
                 (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         // Builds the notification and issues it.
         mNotifyMgr.cancel(id);
-	    Intent intentAlarm = new Intent(this, ReminderReceiver.class);      //Create alarm intent
-	    AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+    }
+
+    private void cancelAlarm(int id){
+        Intent intentAlarm = new Intent(this, ReminderReceiver.class);      //Create alarm intent
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 
         alarmManager.cancel(PendingIntent.getBroadcast(getApplicationContext(),
-		        id, intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
+                id, intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
+    }
+
+    private void setAlarm(int id){
+        int alarmType;
+        if (reminder.getWakeUp()){
+            alarmType = AlarmManager.RTC_WAKEUP;
+        }
+        else {
+            alarmType = AlarmManager.RTC;
+        }
+        Intent intentAlarm = new Intent(context, ReminderReceiver.class);//Create alarm intent
+        intentAlarm.putExtra("Id", id);           //Associate intent with specific Reminder
+        intentAlarm.putExtra("Snooze", 0);                       //This alarm has not been snoozed
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        alarmManager.set(alarmType, reminder.getDate().getTimeInMillis(),
+                PendingIntent.getBroadcast(context, id, intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
+
+        Log.v("us.bridgeses.minder", "Alarm " + id + " set");
+    }
+
+    private void dismiss() {
+	    int id = reminder.getId();
+        cancelNotification(id);
+	    cancelAlarm(id);
         dbHelper = ReminderDBHelper.getInstance(context);
 	    SQLiteDatabase database = dbHelper.openDatabase();
 	    reminder = Reminder.nextRepeat(database,reminder);
 	    dbHelper.closeDatabase();
 
-
 	    if ((reminder.getActive()) && (reminder.getId() != -1)) {
-		    int alarmType;
-		    if (reminder.getWakeUp()){
-			    alarmType = AlarmManager.RTC_WAKEUP;
-		    }
-		    else {
-			    alarmType = AlarmManager.RTC;
-		    }
-            intentAlarm = new Intent(context, ReminderReceiver.class);//Create alarm intent
-            intentAlarm.putExtra("Id", id);           //Associate intent with specific Reminder
-		    intentAlarm.putExtra("Snooze", 0);                       //This alarm has not been snoozed
-		    alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-		    alarmManager.set(alarmType, reminder.getDate().getTimeInMillis(),
-				    PendingIntent.getBroadcast(context, id, intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
-
-		    Log.v("us.bridgeses.minder", "Alarm " + id + " set");
+		    setAlarm(id);
 	    }
         if (scheduleTaskExecutor != null) {
             scheduleTaskExecutor.shutdownNow();
@@ -345,13 +358,41 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
         finish();
     }
 
+    public void confirmDismiss(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Dismiss Reminder");
+        builder.setPositiveButton("Dismiss", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                if (reminder.getNeedQr()) {
+                    checkQr();
+                } else
+                    dismiss();
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                makeNoise();
+            }
+        });
+        builder.create();
+        builder.show();
+    }
+
+    public void checkDismiss(){
+        silence();
+        if (reminder.getConfirmDismiss()){
+            confirmDismiss();
+        }
+        else {
+            if (reminder.getNeedQr()) {
+                checkQr();
+            } else
+                dismiss();
+        }
+    }
+
 	public void dismissButton(View view) {
-		silence();
-		if (reminder.getNeedQr()){
-			checkQr();
-		}
-		else
-			dismiss();
+		checkDismiss();
 	}
 
     private void snooze(int duration) {
@@ -392,7 +433,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
                 snooze(picker.getValue()*Reminder.MINUTE);
             }
         });
-        builder.setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 makeNoise();
             }

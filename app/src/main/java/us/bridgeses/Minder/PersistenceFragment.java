@@ -16,7 +16,8 @@ import android.preference.PreferenceScreen;
 import android.widget.BaseAdapter;
 
 
-public class PersistenceFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener, Preference.OnPreferenceClickListener{
+public class PersistenceFragment extends PreferenceFragment implements
+        SharedPreferences.OnSharedPreferenceChangeListener, Preference.OnPreferenceClickListener{
 
 
 	public static PreferenceFragment newInstance(){

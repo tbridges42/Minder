@@ -41,6 +41,7 @@ public class EditPersistence extends Activity {
         editor.putBoolean("out_loud", saved.getBoolean("out_loud", Reminder.VOLUMEOVERRIDEDEFAULT));
         editor.putBoolean("display_screen", saved.getBoolean("display_screen", Reminder.DISPLAYSCREENDEFAULT));
         editor.putBoolean("wake_up", saved.getBoolean("wake_up", Reminder.WAKEUPDEFAULT));
+        editor.putBoolean("fade", saved.getBoolean("fade", Reminder.FADEDEFAULT));
         editor.apply();
 		Intent intent = new Intent();
 		setResult(RESULT_CANCELED, intent);
@@ -65,6 +66,8 @@ public class EditPersistence extends Activity {
                     sharedPreferences.getBoolean("display_screen", Reminder.DISPLAYSCREENDEFAULT));
             savedInstanceState.putBoolean("wake_up",
                     sharedPreferences.getBoolean("wake_up", Reminder.WAKEUPDEFAULT));
+            savedInstanceState.putBoolean("fade",
+                    sharedPreferences.getBoolean("fade", Reminder.FADEDEFAULT));
         }
         saved = savedInstanceState;
 
