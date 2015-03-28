@@ -4,23 +4,29 @@
                   android:layout_height="match_parent"
                   android:title="Style">
     <PreferenceCategory
-        android:title="Notification Settings">
+        android:title="Notification Settings"
+        android:enabled="false">
     </PreferenceCategory>
     <PreferenceCategory
-        android:title="Alarm Screen Settings">
+        android:title="Alarm Screen Settings"
+        android:enabled="false">
     </PreferenceCategory>
     <PreferenceCategory
-        android:title="LED Settings">
+        android:title="LED Settings"
+        android:enabled="false">
     </PreferenceCategory>
     <PreferenceCategory
-        android:title="Vibrate Settings">
+        android:title="Vibrate Settings"
+        android:enabled="false">
     </PreferenceCategory>
     <PreferenceCategory
-        android:title="Sound Settings">
+        android:title="Sound Settings"
+        android:enabled="false">
         <CheckBoxPreference
             android:key="fade"
             android:title="Build Up Volume"
             android:summaryOn="Volume will gradually increase"
-            android:summaryOff="Volume will remain constant" />
+            android:summaryOff="Volume will remain constant"
+            android:enabled="false"/>
     </PreferenceCategory>
 </PreferenceScreen>
