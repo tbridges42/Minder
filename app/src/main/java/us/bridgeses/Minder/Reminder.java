@@ -62,6 +62,7 @@ public class Reminder implements Parcelable{
         return preferenceToReminder(sharedPreferences, new Reminder(), context);
     }
 
+    /* Parcelable constructor methods */
     public Reminder(Parcel in){
         readFromParcel(in);
     }
@@ -77,26 +78,37 @@ public class Reminder implements Parcelable{
     };
 
     //Variables! Hooray variables!
-    private int id;
-    private LatLng location;
-    private String name;
-    private int repeatType;
-    private int repeatLength;
-    private byte daysOfWeek;                    //Bitwise byte
-    private byte monthType;
-    private byte persistence;                   //Bitwise byte
-    private byte conditions;
-    private byte style;
-    private Calendar date;
-    private String description;
-    private String qr;
-    private int snoozeDuration;
-    private int ledColor;
-    private int ledPattern;
-    private String ringtone;
-    private int radius;
-    private String ssid;
-    private String bluetooth;
+    private int id;                            //Unique identifier
+    private LatLng location;                   //Geographical location constraint center
+    private int radius;                        //Geographical constraint radius
+    private String name;                       //User defined string representing name or title
+    private String description;                //A user defined string intended to give more detail about the purpose of the reminder
+    private int repeatType;                    /*Number representing type of repeat to be used
+                                                 0 = Do not repeat
+                                                 1 = Daily
+                                                 2 = Weekly
+                                                 3 = Monthly
+                                                 4 = Annually*/
+    private int repeatLength;                  //Span between repeats. Units are set by {@link #repeatType}
+    private byte monthType;                    /*Number representing how to treat monthly repeats
+                                                 0: Monthly on this date (e.g. the 3rd of every month)
+                                                 1: Monthly on this day of week (e.g. the 2nd Thursday)
+                                                 2: Monthly this many days from the end of the month 
+                                                     (e.g. three days before the end of the month)
+                                                 3: Monthly on this day of week, counting from end of the month 
+                                                     (e.g. the last friday, not yet implemented)*///TODO: Implement
+    private byte daysOfWeek;                   //Bitwise byte representing seven boolean values for the seven days of the week
+    private byte persistence;                  //Bitwise byte representing an array of boolean values related to reminder Persistence
+    private byte conditions;                   //Bitwise byte representing an array of boolean values related to reminder Conditions
+    private byte style;                        //Bitwise byte representing an array of boolean values related to reminder Style
+    private Calendar date;                     //The date and time at which the reminder should fire, truncated to second
+    private String qr;                         //A string representing the encoded value of a barcode or QR code, scanned in by user
+    private int snoozeDuration;                //The default duration before trying the reminder again if not dismissed
+    private int ledColor;                      //An int representing the hexadecimal color of the LED //TODO: Implement ledColor
+    private int ledPattern;                    //An int representing the pattern in which the LED should flash //TODO: Implement led
+    private String ringtone;                   //A string representing a URI for a ringtone selected by the user, to be played when reminder fires
+    private String ssid;                       //A string representing an SSID for a user selected wifi-network
+    private String bluetooth;                  //A string representing a user selected bluetooth pairing //TODO: Implement bluetooth
 
     //Default constants
     public static final boolean ACTIVEDEFAULT = true;
@@ -192,9 +204,46 @@ public class Reminder implements Parcelable{
     public byte getConditions() {
         return conditions;
     }
+    
+    private boolean getBitwise(byte store, byte key){
+        return (store & key) == key;
+    }
+    
+    private void setBitwiseConditions(byte store, byte key, boolean value){
+        if (value && !this.getBitwise(store,key){
+            this.setConditions((byte)(this.getConditions()+key));
+        }
+        else {
+            if (!active && this.getActive()){
+                this.setConditions((byte)(this.getConditions()-key));
+            }
+        }
+    }
+    
+     private void setBitwiseStyle(byte store, byte key, boolean value){
+        if (value && !this.getBitwise(store,key){
+            this.setStyle((byte)(this.getStyle()+key));
+        }
+        else {
+            if (!active && this.getActive()){
+                this.setStyle((byte)(this.getStyle()-key));
+            }
+        }
+    }
+    
+    private void setBitwisePersistence(byte store, byte key, boolean value){
+        if (value && !this.getBitwise(store,key){
+            this.setPersistence((byte)(this.getPersistence()+key));
+        }
+        else {
+            if (!active && this.getActive()){
+                this.setPersistence((byte)(this.getPersistence()-key));
+            }
+        }
+    }
 
     public Boolean getActive() {
-        return (this.getConditions() & ACTIVE) == ACTIVE;
+        return getBitwise(this.getCondictions(),ACTIVE);
     }
 
     public void setActive(Boolean active) {
@@ -842,6 +891,7 @@ public class Reminder implements Parcelable{
     //the month)
     //Case 3: Monthly on this day of week, counting from end of the month (e.g. the last friday, not
     //yet implemented
+    //TODO: Implement case 3
     private static void nextMonthlyRepeat(Reminder reminder) {
         Calendar date = reminder.getDate();
         int count = 0;              //Count checks for error conditions and prevents infinite loops
