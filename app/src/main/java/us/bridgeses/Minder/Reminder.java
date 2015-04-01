@@ -62,6 +62,7 @@ public class Reminder implements Parcelable{
         return preferenceToReminder(sharedPreferences, new Reminder(), context);
     }
 
+    /* Parcelable constructor methods */
     public Reminder(Parcel in){
         readFromParcel(in);
     }
@@ -77,26 +78,37 @@ public class Reminder implements Parcelable{
     };
 
     //Variables! Hooray variables!
-    private int id;
-    private LatLng location;
-    private String name;
-    private int repeatType;
-    private int repeatLength;
-    private byte daysOfWeek;                    //Bitwise byte
-    private byte monthType;
-    private byte persistence;                   //Bitwise byte
-    private byte conditions;
-    private byte style;
-    private Calendar date;
-    private String description;
-    private String qr;
-    private int snoozeDuration;
-    private int ledColor;
-    private int ledPattern;
-    private String ringtone;
-    private int radius;
-    private String ssid;
-    private String bluetooth;
+    private int id;                            //Unique identifier
+    private LatLng location;                   //Geographical location constraint center
+    private int radius;                        //Geographical constraint radius
+    private String name;                       //User defined string representing name or title
+    private String description;                //A user defined string intended to give more detail about the purpose of the reminder
+    private int repeatType;                    /*Number representing type of repeat to be used
+                                                 0 = Do not repeat
+                                                 1 = Daily
+                                                 2 = Weekly
+                                                 3 = Monthly
+                                                 4 = Annually*/
+    private int repeatLength;                  //Span between repeats. Units are set by {@link #repeatType}
+    private byte monthType;                    /*Number representing how to treat monthly repeats
+                                                 0: Monthly on this date (e.g. the 3rd of every month)
+                                                 1: Monthly on this day of week (e.g. the 2nd Thursday)
+                                                 2: Monthly this many days from the end of the month 
+                                                     (e.g. three days before the end of the month)
+                                                 3: Monthly on this day of week, counting from end of the month 
+                                                     (e.g. the last friday, not yet implemented)*///TODO: Implement
+    private byte daysOfWeek;                   //Bitwise byte representing seven boolean values for the seven days of the week
+    private byte persistence;                  //Bitwise byte representing an array of boolean values related to reminder Persistence
+    private byte conditions;                   //Bitwise byte representing an array of boolean values related to reminder Conditions
+    private byte style;                        //Bitwise byte representing an array of boolean values related to reminder Style
+    private Calendar date;                     //The date and time at which the reminder should fire, truncated to second
+    private String qr;                         //A string representing the encoded value of a barcode or QR code, scanned in by user
+    private int snoozeDuration;                //The default duration before trying the reminder again if not dismissed
+    private int ledColor;                      //An int representing the hexadecimal color of the LED //TODO: Implement ledColor
+    private int ledPattern;                    //An int representing the pattern in which the LED should flash //TODO: Implement led
+    private String ringtone;                   //A string representing a URI for a ringtone selected by the user, to be played when reminder fires
+    private String ssid;                       //A string representing an SSID for a user selected wifi-network
+    private String bluetooth;                  //A string representing a user selected bluetooth pairing //TODO: Implement bluetooth
 
     //Default constants
     public static final boolean ACTIVEDEFAULT = true;
@@ -170,6 +182,7 @@ public class Reminder implements Parcelable{
 
 
     public void setSSID(String ssid){
+        //TODO: determine ssid input requirements
         this.ssid=ssid;
     }
 
@@ -192,21 +205,28 @@ public class Reminder implements Parcelable{
     public byte getConditions() {
         return conditions;
     }
-
-    public Boolean getActive() {
-        return (this.getConditions() & ACTIVE) == ACTIVE;
+    
+    private boolean getBitwise(byte store, byte key){
+        return (store & key) == key;
     }
-
-    public void setActive(Boolean active) {
-        byte mask = ACTIVE;
-        if (active && !this.getActive()){
-            this.setConditions((byte)(this.getConditions()+mask));
+        
+    private byte makeBitwise(byte store, byte key, boolean value){
+        if (value && !this.getBitwise(store,key){
+            return (byte)(store+key);
         }
         else {
-            if (!active && this.getActive()){
-                this.setConditions((byte)(this.getConditions()-mask));
+            if (!value && this.getBitwise(store,key)){
+                return (byte)(store-key);
             }
         }
+    }
+
+    public Boolean getActive() {
+        return getBitwise(this.getConditions(),ACTIVE);
+    }
+
+    public void setActive(boolean active) {
+        this.active = makeBitwise(this.getConditions(),ACTIVE,active);
     }
 
     public byte getMonthType() {
@@ -222,46 +242,35 @@ public class Reminder implements Parcelable{
     }
 
     public void setId(int id) {
-        this.id = id;
+        if (id >= 0){
+            this.id = id;
+        }
+        else {
+            throw new IndexOutOfBoundsException;
+        }
     }
 
     public Boolean getNeedWifi(){
-        return (this.getConditions() & WIFINEEDED) == WIFINEEDED;
+        return getBitwise(this.getConditions(),WIFINEEDED);
     }
 
-    public void setNeedWifi(Boolean wifiNeeded){
-        byte mask = WIFINEEDED;
-        if (wifiNeeded && !this.getNeedWifi()){
-            this.setConditions((byte)(this.getConditions()+mask));
-        }
-        else {
-            if (!wifiNeeded && this.getNeedWifi()){
-                this.setConditions((byte)(this.getConditions()-mask));
-            }
-        }
+    public void setNeedWifi(boolean wifiNeeded){
+        this.needWifi = makeBitwise(this.getConditions(),WIFINEEDED,wifiNeeded);
     }
 
     public Boolean getNeedBluetooth(){
-        return (this.getConditions() & WIFINEEDED) == WIFINEEDED;
+        return getBitwise(this.getConditions(),BLUETOOTHNEEDED);
     }
 
     public void setNeedBluetooth(Boolean needBluetooth){
-        byte mask = BLUETOOTHNEEDED;
-        if (needBluetooth && !this.getNeedBluetooth()){
-            this.setConditions((byte)(this.getConditions()+mask));
-        }
-        else {
-            if (!needBluetooth && this.getNeedBluetooth()){
-                this.setConditions((byte)(this.getConditions()-mask));
-            }
-        }
+        this.needBluetooth = makeBitwise(this.getConditions(),BLUETOOTHNEEDED,needBluetooth);
     }
 
     public byte getStyle(){
         return style;
     }
 
-    public void setStyle(Byte style){
+    public void setStyle(byte style){
         this.style = style;
     }
 
@@ -286,7 +295,12 @@ public class Reminder implements Parcelable{
     }
 
     public void setRepeatType(int repeatType) {
-        this.repeatType = repeatType;
+        if (0 <= repeatType <= 4){
+            this.repeatType = repeatType;
+        }
+        else {
+            throw new IllegalArgumentException();
+        }
     }
 
     public int getRepeatLength() {
@@ -294,14 +308,23 @@ public class Reminder implements Parcelable{
     }
 
     public void setRepeatLength(int repeatLength) {
-        this.repeatLength = repeatLength;
+        if (0 < repeatLength){
+            this.repeatLength = repeatLength;
+        }
+        else {
+            throw new IllegalArgumentException();
+        }
     }
 
     public byte getDaysOfWeek() {
         return daysOfWeek;
     }
+    
+    //TODO: Move days of week text to getDaysOfWeekNames(int length) where length=1 > umtwrfs; length=2 > MoTuWeThFrSa (weekdays, weekends, every day); 
+    //length = 3 = SunMonTueWedThuFriSat (weekdays, weekends, every day); index > 3 = Sunday Monday Tuesday Wednesday Thursday Friday Saturday
 
     public void setDaysOfWeek(byte daysOfWeek) {
+        //TODO: Move daysOfWeek logic inside setter
         this.daysOfWeek = daysOfWeek;
     }
 
@@ -358,6 +381,7 @@ public class Reminder implements Parcelable{
     }
 
     public void setDescription(String description) {
+        //TODO: Does this need sanitizing?
         this.description = description;
     }
 
@@ -366,6 +390,7 @@ public class Reminder implements Parcelable{
     }
 
     public void setQr(String qr) {
+        //TODO: Does this need sanitizing?
         this.qr = qr;
     }
 
@@ -390,7 +415,12 @@ public class Reminder implements Parcelable{
     }
 
     public void setSnoozeDuration(int snoozeDuration) {
-        this.snoozeDuration = snoozeDuration;
+        if (0 < snoozeDuration){
+            this.snoozeDuration = snoozeDuration;
+        }
+        else {
+            throw new IllegalArgumentException();
+        }
     }
 
     public Boolean getVibrate() {
@@ -430,7 +460,12 @@ public class Reminder implements Parcelable{
     }
 
     public void setLedColor(int ledColor) {
-        this.ledColor = ledColor;
+        if (0 <= ledColor <= 0xffffff){
+            this.ledColor = ledColor;
+        }
+        else {
+            throw new IllegalArgumentException();
+        }
     }
 
     public int getLedPattern() {
@@ -438,7 +473,12 @@ public class Reminder implements Parcelable{
     }
 
     public void setLedPattern(int ledPattern) {
-        this.ledPattern = ledPattern;
+        if (0 <= ledPattern){
+            this.ledPattern = ledPattern;
+        }
+        else {
+            throw new IllegalArgumentException();
+        }
     }
 
     public String getRingtone() {
@@ -446,11 +486,17 @@ public class Reminder implements Parcelable{
     }
 
     public void setRingtone(String ringtone) {
+        //TODO: Does this need sanitizing? Can this be sanitized?
         this.ringtone = ringtone;
     }
 
     public void setRadius(int radius){
-        this.radius = radius;
+        if (0 < radius){
+            this.radius = radius;
+        }
+        else {
+            throw new IllegalArgumentException();
+        }
     }
 
     public int getRadius(){
@@ -842,6 +888,7 @@ public class Reminder implements Parcelable{
     //the month)
     //Case 3: Monthly on this day of week, counting from end of the month (e.g. the last friday, not
     //yet implemented
+    //TODO: Implement case 3
     private static void nextMonthlyRepeat(Reminder reminder) {
         Calendar date = reminder.getDate();
         int count = 0;              //Count checks for error conditions and prevents infinite loops
