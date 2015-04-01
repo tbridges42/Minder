@@ -182,6 +182,7 @@ public class Reminder implements Parcelable{
 
 
     public void setSSID(String ssid){
+        //TODO: determine ssid input requirements
         this.ssid=ssid;
     }
 
@@ -208,54 +209,24 @@ public class Reminder implements Parcelable{
     private boolean getBitwise(byte store, byte key){
         return (store & key) == key;
     }
-    
-    private void setBitwiseConditions(byte store, byte key, boolean value){
+        
+    private byte makeBitwise(byte store, byte key, boolean value){
         if (value && !this.getBitwise(store,key){
-            this.setConditions((byte)(this.getConditions()+key));
+            return (byte)(store+key);
         }
         else {
-            if (!active && this.getActive()){
-                this.setConditions((byte)(this.getConditions()-key));
-            }
-        }
-    }
-    
-     private void setBitwiseStyle(byte store, byte key, boolean value){
-        if (value && !this.getBitwise(store,key){
-            this.setStyle((byte)(this.getStyle()+key));
-        }
-        else {
-            if (!active && this.getActive()){
-                this.setStyle((byte)(this.getStyle()-key));
-            }
-        }
-    }
-    
-    private void setBitwisePersistence(byte store, byte key, boolean value){
-        if (value && !this.getBitwise(store,key){
-            this.setPersistence((byte)(this.getPersistence()+key));
-        }
-        else {
-            if (!active && this.getActive()){
-                this.setPersistence((byte)(this.getPersistence()-key));
+            if (!value && this.getBitwise(store,key)){
+                return (byte)(store-key);
             }
         }
     }
 
     public Boolean getActive() {
-        return getBitwise(this.getCondictions(),ACTIVE);
+        return getBitwise(this.getConditions(),ACTIVE);
     }
 
-    public void setActive(Boolean active) {
-        byte mask = ACTIVE;
-        if (active && !this.getActive()){
-            this.setConditions((byte)(this.getConditions()+mask));
-        }
-        else {
-            if (!active && this.getActive()){
-                this.setConditions((byte)(this.getConditions()-mask));
-            }
-        }
+    public void setActive(boolean active) {
+        this.active = makeBitwise(this.getConditions(),ACTIVE,active);
     }
 
     public byte getMonthType() {
@@ -271,46 +242,35 @@ public class Reminder implements Parcelable{
     }
 
     public void setId(int id) {
-        this.id = id;
+        if (id >= 0){
+            this.id = id;
+        }
+        else {
+            throw new IndexOutOfBoundsException;
+        }
     }
 
     public Boolean getNeedWifi(){
-        return (this.getConditions() & WIFINEEDED) == WIFINEEDED;
+        return getBitwise(this.getConditions(),WIFINEEDED);
     }
 
-    public void setNeedWifi(Boolean wifiNeeded){
-        byte mask = WIFINEEDED;
-        if (wifiNeeded && !this.getNeedWifi()){
-            this.setConditions((byte)(this.getConditions()+mask));
-        }
-        else {
-            if (!wifiNeeded && this.getNeedWifi()){
-                this.setConditions((byte)(this.getConditions()-mask));
-            }
-        }
+    public void setNeedWifi(boolean wifiNeeded){
+        this.needWifi = makeBitwise(this.getConditions(),WIFINEEDED,wifiNeeded);
     }
 
     public Boolean getNeedBluetooth(){
-        return (this.getConditions() & WIFINEEDED) == WIFINEEDED;
+        return getBitwise(this.getConditions(),BLUETOOTHNEEDED);
     }
 
     public void setNeedBluetooth(Boolean needBluetooth){
-        byte mask = BLUETOOTHNEEDED;
-        if (needBluetooth && !this.getNeedBluetooth()){
-            this.setConditions((byte)(this.getConditions()+mask));
-        }
-        else {
-            if (!needBluetooth && this.getNeedBluetooth()){
-                this.setConditions((byte)(this.getConditions()-mask));
-            }
-        }
+        this.needBluetooth = makeBitwise(this.getConditions(),BLUETOOTHNEEDED,needBluetooth);
     }
 
     public byte getStyle(){
         return style;
     }
 
-    public void setStyle(Byte style){
+    public void setStyle(byte style){
         this.style = style;
     }
 
@@ -335,7 +295,12 @@ public class Reminder implements Parcelable{
     }
 
     public void setRepeatType(int repeatType) {
-        this.repeatType = repeatType;
+        if (0 <= repeatType <= 4){
+            this.repeatType = repeatType;
+        }
+        else {
+            throw new IllegalArgumentException();
+        }
     }
 
     public int getRepeatLength() {
@@ -343,14 +308,23 @@ public class Reminder implements Parcelable{
     }
 
     public void setRepeatLength(int repeatLength) {
-        this.repeatLength = repeatLength;
+        if (0 < repeatLength){
+            this.repeatLength = repeatLength;
+        }
+        else {
+            throw new IllegalArgumentException();
+        }
     }
 
     public byte getDaysOfWeek() {
         return daysOfWeek;
     }
+    
+    //TODO: Move days of week text to getDaysOfWeekNames(int length) where length=1 > umtwrfs; length=2 > MoTuWeThFrSa (weekdays, weekends, every day); 
+    //length = 3 = SunMonTueWedThuFriSat (weekdays, weekends, every day); index > 3 = Sunday Monday Tuesday Wednesday Thursday Friday Saturday
 
     public void setDaysOfWeek(byte daysOfWeek) {
+        //TODO: Move daysOfWeek logic inside setter
         this.daysOfWeek = daysOfWeek;
     }
 
@@ -407,6 +381,7 @@ public class Reminder implements Parcelable{
     }
 
     public void setDescription(String description) {
+        //TODO: Does this need sanitizing?
         this.description = description;
     }
 
@@ -415,6 +390,7 @@ public class Reminder implements Parcelable{
     }
 
     public void setQr(String qr) {
+        //TODO: Does this need sanitizing?
         this.qr = qr;
     }
 
@@ -439,7 +415,12 @@ public class Reminder implements Parcelable{
     }
 
     public void setSnoozeDuration(int snoozeDuration) {
-        this.snoozeDuration = snoozeDuration;
+        if (0 < snoozeDuration){
+            this.snoozeDuration = snoozeDuration;
+        }
+        else {
+            throw new IllegalArgumentException();
+        }
     }
 
     public Boolean getVibrate() {
@@ -479,7 +460,12 @@ public class Reminder implements Parcelable{
     }
 
     public void setLedColor(int ledColor) {
-        this.ledColor = ledColor;
+        if (0 <= ledColor <= 0xffffff){
+            this.ledColor = ledColor;
+        }
+        else {
+            throw new IllegalArgumentException();
+        }
     }
 
     public int getLedPattern() {
@@ -487,7 +473,12 @@ public class Reminder implements Parcelable{
     }
 
     public void setLedPattern(int ledPattern) {
-        this.ledPattern = ledPattern;
+        if (0 <= ledPattern){
+            this.ledPattern = ledPattern;
+        }
+        else {
+            throw new IllegalArgumentException();
+        }
     }
 
     public String getRingtone() {
@@ -495,11 +486,17 @@ public class Reminder implements Parcelable{
     }
 
     public void setRingtone(String ringtone) {
+        //TODO: Does this need sanitizing? Can this be sanitized?
         this.ringtone = ringtone;
     }
 
     public void setRadius(int radius){
-        this.radius = radius;
+        if (0 < radius){
+            this.radius = radius;
+        }
+        else {
+            throw new IllegalArgumentException();
+        }
     }
 
     public int getRadius(){
