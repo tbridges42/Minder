@@ -19,9 +19,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import com.google.android.gms.maps.model.LatLng;
-
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -92,7 +89,7 @@ public class EditReminder extends Activity implements DeleteDialogFragment.Notic
     public void save(View view){
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        reminder = Reminder.preferenceToReminder(sharedPreferences, reminder, this);
+        reminder = Reminder.reminderFactory(sharedPreferences, this);
 
         if (defaults) {
             SharedPreferences defaultPreferences = getApplication().
