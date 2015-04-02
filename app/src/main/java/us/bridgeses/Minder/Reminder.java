@@ -59,7 +59,7 @@ public class Reminder implements Parcelable{
     }
 
     public static Reminder reminderFactory(SharedPreferences sharedPreferences, Context context){
-        return preferenceToReminder(sharedPreferences, new Reminder(), context);
+        return preferenceToReminder(sharedPreferences, context);
     }
 
     /* Parcelable constructor methods */
@@ -1156,8 +1156,9 @@ public class Reminder implements Parcelable{
         setDate(date);                                         //Store reminder date + time
     }
 
-    public static Reminder preferenceToReminder(SharedPreferences sharedPreferences, Reminder reminder, Context context){
-        reminder.setName(sharedPreferences.getString("temp_name",NAMEDEFAULT));
+    public static Reminder preferenceToReminder(SharedPreferences sharedPreferences, Context context){
+        Reminder reminder = new Reminder();
+	    reminder.setName(sharedPreferences.getString("temp_name",NAMEDEFAULT));
         reminder.setDescription(sharedPreferences.getString("temp_description", DESCRIPTIONDEFAULT));
         reminder.setDate(sharedPreferences, context);
         reminder.setRepeat(sharedPreferences);
