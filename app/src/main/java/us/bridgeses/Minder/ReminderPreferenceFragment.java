@@ -181,6 +181,7 @@ public class ReminderPreferenceFragment extends PreferenceFragment implements Sh
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.clear().commit();
+	    editor.putInt("temp_id",reminder.getId());
         editor.putString("temp_name",reminder.getName());
         editor.putString("temp_description",reminder.getDescription());
         editor.putString("temp_time",timeFormat.format(reminder.getDate().getTime()));
