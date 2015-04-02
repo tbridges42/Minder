@@ -195,9 +195,215 @@ public class Reminder implements Parcelable{
     }
 
     public void setBluetooth(String bluetooth){
+	    //TODO: determine bluetooth input requirements
         this.bluetooth = bluetooth;
     }
 
+	public byte getMonthType() {
+		return monthType;
+	}
+
+	public void setMonthType(byte monthType) {
+		if ((0 <= monthType) && (monthType <= 3)){
+			this.monthType = monthType;
+		}
+		else {
+			throw new IllegalArgumentException("Month Type must be between 0 and 3");
+		}
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		if (id >= 0){
+			this.id = id;
+		}
+		else {
+			throw new IllegalArgumentException("ID must be greater than zero");
+		}
+	}
+
+	public LatLng getLocation() {
+		return location;
+	}
+
+	public void setLocation(LatLng location) {
+		this.location = location;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public int getRepeatType() {
+		return repeatType;
+	}
+
+	public void setRepeatType(int repeatType) {
+		if ((0 <= repeatType) && (repeatType <= 4)){
+			this.repeatType = repeatType;
+		}
+		else {
+			throw new IllegalArgumentException("Repeat type must be between 0 and 4");
+		}
+	}
+
+	public int getRepeatLength() {
+		return repeatLength;
+	}
+
+	public void setRepeatLength(int repeatLength) {
+		if (0 < repeatLength){
+			this.repeatLength = repeatLength;
+		}
+		else {
+			throw new IllegalArgumentException("Repeat length must be greater than zero");
+		}
+	}
+
+	public byte getDaysOfWeek() {
+		return daysOfWeek;
+	}
+
+	//TODO: Move days of week text to getDaysOfWeekNames(int length) where length=1 > umtwrfs; length=2 > MoTuWeThFrSa (weekdays, weekends, every day);
+	//length = 3 = SunMonTueWedThuFriSat (weekdays, weekends, every day); index > 3 = Sunday Monday Tuesday Wednesday Thursday Friday Saturday
+
+	public void setDaysOfWeek(byte daysOfWeek) {
+		//TODO: Move daysOfWeek logic inside setter
+		this.daysOfWeek = daysOfWeek;
+	}
+
+	public void setDaysOfWeek(boolean Sunday, boolean Monday, boolean Tuesday, boolean Wednesday,
+	                          boolean Thursday, boolean Friday, boolean Saturday){
+		byte tempDays = 0;
+		if (Sunday){
+			tempDays += SUNDAY;
+		}
+		if (Monday){
+			tempDays += MONDAY;
+		}
+		if (Tuesday){
+			tempDays += TUESDAY;
+		}
+		if (Wednesday){
+			tempDays += WEDNESDAY;
+		}
+		if (Thursday){
+			tempDays += THURSDAY;
+		}
+		if (Friday){
+			tempDays += FRIDAY;
+		}
+		if (Saturday){
+			tempDays += SATURDAY;
+		}
+		daysOfWeek = tempDays;
+	}
+
+	public Calendar getDate() {
+		return date;
+	}
+
+	public void setDate(Calendar date) {
+		long time = date.getTimeInMillis();
+		time = time/60000;
+		time = time*60000;
+		date.setTimeInMillis(time);                     //Drop seconds
+		this.date = date;
+	}
+
+	public void setDate(long millis) {
+		Calendar tempDate = Calendar.getInstance();
+		tempDate.setTimeInMillis(millis);
+		this.date = tempDate;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		//TODO: Does this need sanitizing?
+		this.description = description;
+	}
+
+	public String getQr() {
+		return qr;
+	}
+
+	public void setQr(String qr) {
+		//TODO: Does this need sanitizing?
+		this.qr = qr;
+	}
+
+	public int getSnoozeDuration() {
+		return snoozeDuration;
+	}
+
+	public void setSnoozeDuration(int snoozeDuration) {
+		if (0 < snoozeDuration){
+			this.snoozeDuration = snoozeDuration;
+		}
+		else {
+			throw new IllegalArgumentException("Snooze Duration must be greater than zero");
+		}
+	}
+
+	public int getLedColor() {
+		return ledColor;
+	}
+
+	public void setLedColor(int ledColor) {
+		if ((0 <= ledColor) && (ledColor <= 0xffffff)){
+			this.ledColor = ledColor;
+		}
+		else {
+			throw new IllegalArgumentException("LED Color must be a valid color");
+		}
+	}
+
+	public int getLedPattern() {
+		return ledPattern;
+	}
+
+	public void setLedPattern(int ledPattern) {
+		if (0 <= ledPattern){
+			this.ledPattern = ledPattern;
+		}
+		else {
+			throw new IllegalArgumentException("LED Pattern must be positive");
+		}
+	}
+
+	public String getRingtone() {
+		return ringtone;
+	}
+
+	public void setRingtone(String ringtone) {
+		//TODO: Does this need sanitizing? Can this be sanitized?
+		this.ringtone = ringtone;
+	}
+
+	public void setRadius(int radius){
+		if (0 < radius){
+			this.radius = radius;
+		}
+		else {
+			throw new IllegalArgumentException("Radius must be greater than zero");
+		}
+	}
+
+	public int getRadius(){
+		return radius;
+	}
+
+	/******************************* Bitwise getters and setters *************************/
     public void setConditions (byte conditions){
         this.conditions = conditions;
     }
@@ -205,13 +411,29 @@ public class Reminder implements Parcelable{
     public byte getConditions() {
         return conditions;
     }
+
+	public byte getPersistence() {
+		return persistence;
+	}
+
+	public void setPersistence(byte persistence) {
+		this.persistence = persistence;
+	}
+
+	public byte getStyle(){
+		return style;
+	}
+
+	public void setStyle(byte style){
+		this.style = style;
+	}
     
     private boolean getBitwise(byte store, byte key){
         return (store & key) == key;
     }
         
     private byte makeBitwise(byte store, byte key, boolean value){
-        if (value && !this.getBitwise(store,key){
+        if (value && !this.getBitwise(store,key)){
             return (byte)(store+key);
         }
         else {
@@ -219,372 +441,122 @@ public class Reminder implements Parcelable{
                 return (byte)(store-key);
             }
         }
+	    return store;
     }
+
+	/*********************** Conditions bitwise getters and setters ************************/
 
     public Boolean getActive() {
         return getBitwise(this.getConditions(),ACTIVE);
     }
 
     public void setActive(boolean active) {
-        this.active = makeBitwise(this.getConditions(),ACTIVE,active);
+        this.setConditions(makeBitwise(this.getConditions(),ACTIVE,active));
     }
 
-    public byte getMonthType() {
-        return monthType;
-    }
+	public Boolean getNeedWifi(){
+		return getBitwise(this.getConditions(),WIFINEEDED);
+	}
 
-    public void setMonthType(byte monthType) {
-        this.monthType = monthType;
-    }
+	public void setNeedWifi(boolean wifiNeeded){
+		this.setConditions(makeBitwise(this.getConditions(),WIFINEEDED,wifiNeeded));
+	}
 
-    public int getId() {
-        return id;
-    }
+	public Boolean getNeedBluetooth(){
+		return getBitwise(this.getConditions(),BLUETOOTHNEEDED);
+	}
 
-    public void setId(int id) {
-        if (id >= 0){
-            this.id = id;
-        }
-        else {
-            throw new IndexOutOfBoundsException;
-        }
-    }
+	public void setNeedBluetooth(Boolean needBluetooth){
+		this.setConditions(makeBitwise(this.getConditions(),BLUETOOTHNEEDED,needBluetooth));
+	}
 
-    public Boolean getNeedWifi(){
-        return getBitwise(this.getConditions(),WIFINEEDED);
-    }
+	public Boolean getOnlyAtLocation() {
+		return getBitwise(this.getConditions(),ONLY_AT_LOCATION);
+	}
 
-    public void setNeedWifi(boolean wifiNeeded){
-        this.needWifi = makeBitwise(this.getConditions(),WIFINEEDED,wifiNeeded);
-    }
+	public void setOnlyAtLocation(Boolean onlyAtLocation) {
+		this.setConditions(makeBitwise(this.getConditions(),ONLY_AT_LOCATION,onlyAtLocation));
+	}
 
-    public Boolean getNeedBluetooth(){
-        return getBitwise(this.getConditions(),BLUETOOTHNEEDED);
-    }
+	public Boolean getUntilLocation() {
+		return getBitwise(this.getConditions(),UNTIL_LOCATION);
+	}
 
-    public void setNeedBluetooth(Boolean needBluetooth){
-        this.needBluetooth = makeBitwise(this.getConditions(),BLUETOOTHNEEDED,needBluetooth);
-    }
+	public void setUntilLocation(Boolean untilLocation) {
+		this.setConditions(makeBitwise(this.getConditions(),UNTIL_LOCATION,untilLocation));
+	}
 
-    public byte getStyle(){
-        return style;
-    }
-
-    public void setStyle(byte style){
-        this.style = style;
-    }
-
-    public LatLng getLocation() {
-        return location;
-    }
-
-    public void setLocation(LatLng location) {
-        this.location = location;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public int getRepeatType() {
-        return repeatType;
-    }
-
-    public void setRepeatType(int repeatType) {
-        if (0 <= repeatType <= 4){
-            this.repeatType = repeatType;
-        }
-        else {
-            throw new IllegalArgumentException();
-        }
-    }
-
-    public int getRepeatLength() {
-        return repeatLength;
-    }
-
-    public void setRepeatLength(int repeatLength) {
-        if (0 < repeatLength){
-            this.repeatLength = repeatLength;
-        }
-        else {
-            throw new IllegalArgumentException();
-        }
-    }
-
-    public byte getDaysOfWeek() {
-        return daysOfWeek;
-    }
-    
-    //TODO: Move days of week text to getDaysOfWeekNames(int length) where length=1 > umtwrfs; length=2 > MoTuWeThFrSa (weekdays, weekends, every day); 
-    //length = 3 = SunMonTueWedThuFriSat (weekdays, weekends, every day); index > 3 = Sunday Monday Tuesday Wednesday Thursday Friday Saturday
-
-    public void setDaysOfWeek(byte daysOfWeek) {
-        //TODO: Move daysOfWeek logic inside setter
-        this.daysOfWeek = daysOfWeek;
-    }
-
-    public Boolean getOnlyAtLocation() {
-        return (this.getConditions() & ONLY_AT_LOCATION) == ONLY_AT_LOCATION;
-    }
-
-    public void setOnlyAtLocation(Boolean onlyAtLocation) {
-        byte mask = ONLY_AT_LOCATION;
-        if (onlyAtLocation && !this.getOnlyAtLocation()){
-            this.setConditions((byte)(this.getConditions()+mask));
-        }
-        else {
-            if (!onlyAtLocation && this.getOnlyAtLocation()){
-                this.setConditions((byte)(this.getConditions()-mask));
-            }
-        }
-    }
-
-    public Boolean getUntilLocation() {
-        return (this.getConditions() & UNTIL_LOCATION) == UNTIL_LOCATION;
-    }
-
-    public void setUntilLocation(Boolean untilLocation) {
-        byte mask = UNTIL_LOCATION;
-        if (untilLocation && !this.getUntilLocation()){
-            this.setConditions((byte)(this.getConditions()+mask));
-        }
-        else {
-            if (!untilLocation && this.getUntilLocation()){
-                this.setConditions((byte)(this.getConditions()-mask));
-            }
-        }
-    }
-
-    public byte getPersistence() {
-        return persistence;
-    }
-
-    public void setPersistence(byte persistence) {
-        this.persistence = persistence;
-    }
-
-    public Calendar getDate() {
-        return date;
-    }
-
-    public void setDate(Calendar date) {
-        this.date = date;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        //TODO: Does this need sanitizing?
-        this.description = description;
-    }
-
-    public String getQr() {
-        return qr;
-    }
-
-    public void setQr(String qr) {
-        //TODO: Does this need sanitizing?
-        this.qr = qr;
-    }
+	/************************ Persistence bitwise getters and setters **********************/
 
 	public Boolean getNeedQr() {
-        return (this.getPersistence() & REQUIRE_CODE) == REQUIRE_CODE;
-    }
+		return getBitwise(this.getPersistence(),REQUIRE_CODE);
+	}
 
 	public void setNeedQr(Boolean needQr) {
-        byte mask = Reminder.REQUIRE_CODE;
-        if (needQr && !this.getNeedQr()){
-            this.setPersistence((byte)(this.getPersistence()+mask));
-        }
-        else {
-            if (!needQr && this.getNeedQr()){
-                this.setPersistence((byte)(this.getPersistence()-mask));
-            }
-        }
-    }
-
-    public int getSnoozeDuration() {
-        return snoozeDuration;
-    }
-
-    public void setSnoozeDuration(int snoozeDuration) {
-        if (0 < snoozeDuration){
-            this.snoozeDuration = snoozeDuration;
-        }
-        else {
-            throw new IllegalArgumentException();
-        }
-    }
-
-    public Boolean getVibrate() {
-        return (this.getStyle() & VIBRATE) == VIBRATE;
-    }
-
-    public void setVibrate(Boolean vibrate) {
-        byte mask = VIBRATE;
-        if (vibrate && !this.getVibrate()){
-            this.setStyle((byte)(this.getStyle()+mask));
-        }
-        else {
-            if (!vibrate && this.getVibrate()){
-                this.setStyle((byte)(this.getStyle()-mask));
-            }
-        }
-    }
-
-    public Boolean getLed() {
-        return (this.getStyle() & VIBRATE) == VIBRATE;
-    }
-
-    public void setLed(Boolean led) {
-        byte mask = LED;
-        if (led && !this.getLed()){
-            this.setStyle((byte)(this.getStyle()+mask));
-        }
-        else {
-            if (!led && this.getLed()){
-                this.setStyle((byte)(this.getStyle()-mask));
-            }
-        }
-    }
-
-    public int getLedColor() {
-        return ledColor;
-    }
-
-    public void setLedColor(int ledColor) {
-        if (0 <= ledColor <= 0xffffff){
-            this.ledColor = ledColor;
-        }
-        else {
-            throw new IllegalArgumentException();
-        }
-    }
-
-    public int getLedPattern() {
-        return ledPattern;
-    }
-
-    public void setLedPattern(int ledPattern) {
-        if (0 <= ledPattern){
-            this.ledPattern = ledPattern;
-        }
-        else {
-            throw new IllegalArgumentException();
-        }
-    }
-
-    public String getRingtone() {
-        return ringtone;
-    }
-
-    public void setRingtone(String ringtone) {
-        //TODO: Does this need sanitizing? Can this be sanitized?
-        this.ringtone = ringtone;
-    }
-
-    public void setRadius(int radius){
-        if (0 < radius){
-            this.radius = radius;
-        }
-        else {
-            throw new IllegalArgumentException();
-        }
-    }
-
-    public int getRadius(){
-        return radius;
-    }
+		this.setPersistence(makeBitwise(this.getPersistence(),REQUIRE_CODE,needQr));
+	}
 
 	public Boolean getVolumeOverride(){
-		return (this.getPersistence() & VOLUME_OVERRIDE) == VOLUME_OVERRIDE;
+		return getBitwise(this.getPersistence(),VOLUME_OVERRIDE);
 	}
 
-	public void setVolumeOverride(Boolean active){
-		byte mask = Reminder.VOLUME_OVERRIDE;
-		if (active && !this.getVolumeOverride()){
-			this.setPersistence((byte)(this.getPersistence()+mask));
-		}
-		else {
-			if (!active && this.getVolumeOverride()){
-				this.setPersistence((byte)(this.getPersistence()-mask));
-			}
-		}
+	public void setVolumeOverride(Boolean volumeOverride){
+		this.setPersistence(makeBitwise(this.getPersistence(),VOLUME_OVERRIDE,volumeOverride));
 	}
 
-    public Boolean getDisplayScreen(){
-        return (this.getPersistence() & DISPLAY_SCREEN) == DISPLAY_SCREEN;
-    }
+	public Boolean getDisplayScreen(){
+		return getBitwise(this.getPersistence(),DISPLAY_SCREEN);
+	}
 
-    public void setDisplayScreen(Boolean active){
-        byte mask = Reminder.DISPLAY_SCREEN;
-        if (active && !this.getDisplayScreen()){
-            this.setPersistence((byte)(this.getPersistence()+mask));
-        }
-        else {
-            if (!active && this.getDisplayScreen()){
-                this.setPersistence((byte)(this.getPersistence()-mask));
-            }
-        }
-    }
+	public void setDisplayScreen(Boolean displayScreen){
+		this.setPersistence(makeBitwise(this.getPersistence(),DISPLAY_SCREEN,displayScreen));
+	}
 
-    public Boolean getWakeUp(){
-        return (this.getPersistence() & WAKE_UP) == WAKE_UP;
+	public Boolean getWakeUp(){
+		return getBitwise(this.getPersistence(),WAKE_UP);
 
-    }
+	}
 
-    public void setWakeUp(Boolean wakeUp){
-        byte mask = Reminder.WAKE_UP;
-        if (wakeUp && !this.getWakeUp()){
-            this.setPersistence((byte)(this.getPersistence()+mask));
-        }
-        else {
-            if (!wakeUp && this.getWakeUp()){
-                this.setPersistence((byte)(this.getPersistence()-mask));
-            }
-        }
-    }
+	public void setWakeUp(Boolean wakeUp){
+		this.setPersistence(makeBitwise(this.getPersistence(),WAKE_UP,wakeUp));
+	}
 
 	public Boolean getConfirmDismiss(){
-		return (this.getPersistence() & DISMISS_DIALOG) == DISMISS_DIALOG;
+		return getBitwise(this.getPersistence(),DISMISS_DIALOG);
 
 	}
 
 	public void setConfirmDismiss(Boolean dismissDialog){
-		byte mask = Reminder.DISMISS_DIALOG;
-		if (dismissDialog && !this.getConfirmDismiss()){
-			this.setPersistence((byte)(this.getPersistence()+mask));
-		}
-		else {
-			if (!dismissDialog && this.getConfirmDismiss()){
-				this.setPersistence((byte)(this.getPersistence()-mask));
-			}
-		}
+		this.setPersistence(makeBitwise(this.getPersistence(),DISMISS_DIALOG,dismissDialog));
 	}
 
-	public Boolean getFadeVolume(){
-		return (this.getStyle() & FADE) == FADE;
+	/*************************** Style bitwise getters and setters ************************/
 
+	public Boolean getFadeVolume(){
+		return getBitwise(this.getStyle(),FADE);
 	}
 
 	public void setFadeVolume(Boolean fade){
-		byte mask = Reminder.FADE;
-		if (fade && !this.getFadeVolume()){
-			this.setStyle((byte) (this.getStyle() + mask));
-		}
-		else {
-			if (!fade && this.getFadeVolume()){
-				this.setStyle((byte) (this.getStyle() - mask));
-			}
-		}
+		this.setStyle(makeBitwise(this.getStyle(),FADE,fade));
 	}
+
+	public Boolean getVibrate() {
+		return getBitwise(this.getStyle(),VIBRATE);
+	}
+
+	public void setVibrate(Boolean vibrate) {
+		this.setStyle(makeBitwise(this.getStyle(),VIBRATE,vibrate));
+	}
+
+	public Boolean getLed() {
+		return getBitwise(this.getStyle(),LED);
+	}
+
+	public void setLed(Boolean led) {
+		this.setStyle(makeBitwise(this.getStyle(),LED,led));
+	}
+
+	/**************************** Database methods ***************************************/
 
     private static Reminder[] cursorToReminders(Cursor cursor){
         int numReminders = cursor.getCount();
@@ -594,17 +566,13 @@ public class Reminder implements Parcelable{
             Reminder reminder = new Reminder();
             reminder.setId(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_ID)));
             reminder.setActive(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_ACTIVE)) == 1);
-            int index = cursor.getColumnIndex(ReminderDBHelper.COLUMN_NAME);
-            String name = cursor.getString(index);
-            reminder.setName(name);
+            reminder.setName(cursor.getString(cursor.getColumnIndex(ReminderDBHelper.COLUMN_NAME)));
             reminder.setDescription(cursor.getString(cursor.getColumnIndex(ReminderDBHelper.COLUMN_DESCRIPTION)));
-            Calendar calendar = Calendar.getInstance();
-            long time = cursor.getLong(cursor.getColumnIndex(ReminderDBHelper.COLUMN_DATE))*1000;
-            calendar.setTimeInMillis(time);
-            reminder.setDate(calendar);
+            reminder.setDate(cursor.getLong(cursor.getColumnIndex(ReminderDBHelper.COLUMN_DATE))*1000);
             reminder.setDaysOfWeek((byte) cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_DAYSOFWEEK)));
             reminder.setMonthType((byte) cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_MONTHTYPE)));
-            reminder.setLocation(new LatLng(cursor.getFloat(cursor.getColumnIndex(ReminderDBHelper.COLUMN_LATITUDE)),cursor.getFloat(cursor.getColumnIndex(ReminderDBHelper.COLUMN_LONGITUDE))));
+            reminder.setLocation(new LatLng(cursor.getFloat(cursor.getColumnIndex(ReminderDBHelper.COLUMN_LATITUDE)),
+		            cursor.getFloat(cursor.getColumnIndex(ReminderDBHelper.COLUMN_LONGITUDE))));
             reminder.setRepeatLength(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_REPEATLENGTH)));
             reminder.setRepeatType(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_REPEATTYPE)));
             reminder.setRadius(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_RADIUS)));
@@ -614,6 +582,8 @@ public class Reminder implements Parcelable{
             reminder.setStyle((byte)cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_STYLE)));
             reminder.setSSID(cursor.getString(cursor.getColumnIndex(ReminderDBHelper.COLUMN_SSID)));
             reminder.setSnoozeDuration(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_SNOOZEDURATION)));
+	        reminder.setLedColor(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_LEDCOLOR)));
+	        reminder.setLedPattern(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_LEDPATTERN)));
             try {
                 reminder.setRingtone(cursor.getString(cursor.getColumnIndex(ReminderDBHelper.COLUMN_RINGTONE)));
             }
@@ -647,7 +617,9 @@ public class Reminder implements Parcelable{
                 ReminderDBHelper.COLUMN_SSID,
                 ReminderDBHelper.COLUMN_CONDITIONS,
                 ReminderDBHelper.COLUMN_STYLE,
-                ReminderDBHelper.COLUMN_SNOOZEDURATION
+                ReminderDBHelper.COLUMN_SNOOZEDURATION,
+		        ReminderDBHelper.COLUMN_LEDCOLOR,
+		        ReminderDBHelper.COLUMN_LEDPATTERN,
         };
         String sortOrder = ReminderDBHelper.COLUMN_ACTIVE + " DESC, " + ReminderDBHelper.COLUMN_DATE + " ASC";
 
@@ -726,7 +698,7 @@ public class Reminder implements Parcelable{
         return newRowId;
     }
 
-    protected static Boolean deleteReminder(SQLiteDatabase database, int id){
+    protected static boolean deleteReminder(SQLiteDatabase database, int id){
         String[] args = { String.valueOf(id) };
         int result = database.delete(ReminderDBHelper.TABLE_NAME,ReminderDBHelper.COLUMN_ID+" LIKE ?",args);
         return result != 0;
@@ -756,6 +728,8 @@ public class Reminder implements Parcelable{
         }
     }
 
+	/******************************** Parcel Methods ******************************/
+
     @Override
     public void writeToParcel(Parcel out, int flags) {
         out.writeInt(id);
@@ -778,7 +752,6 @@ public class Reminder implements Parcelable{
         out.writeByte(conditions);
         out.writeByte(style);
     }
-
 
     public void readFromParcel(Parcel in){
         id = in.readInt();
@@ -805,9 +778,10 @@ public class Reminder implements Parcelable{
 
     @Override
     public int describeContents(){
-
         return 0;
     }
+
+	/********************************* Repeat Methods ****************************************/
 
     //Returns true if thisDay is in bitwise set daysOfWeek
     protected static Boolean checkDayOfWeek(byte daysOfWeek, int thisDay) {	//Call with checkDayOfWeek(reminder.getDaysOfWeek,thisDay)
@@ -864,7 +838,7 @@ public class Reminder implements Parcelable{
             if (count > (7*(reminder.getRepeatLength()+1))){ //Cycled through entire week without finding match
                 Log.e("Minder","Next Weekly Repeat does not exist");
                 reminder.setActive(false);
-                return;
+	            throw new IndexOutOfBoundsException("Next Weekly Repeat does not exist");
             }
             if (thisDay == 7) { //After Saturday, cycle to Sunday
                 thisDay = 1;
@@ -1020,6 +994,8 @@ public class Reminder implements Parcelable{
         return appendix;
     }
 
+	/******************************** Save methods ****************************************/
+
     public static void saveDefaults(SharedPreferences sharedPreferences, Reminder reminder){
         SimpleDateFormat dateFormat = new SimpleDateFormat("EEEE, MMMM d, yyyy");
         SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm aa");
@@ -1088,93 +1064,77 @@ public class Reminder implements Parcelable{
         editor.apply();
     }
 
-    public static void setRepeat(SharedPreferences sharedPreferences, Reminder reminder) {
-        reminder.setRepeatType(Integer.parseInt(sharedPreferences.
+    public void setRepeat(SharedPreferences sharedPreferences) {
+        setRepeatType(Integer.parseInt(sharedPreferences.
                 getString("temp_repeat_type",Integer.toString(REPEATTYPEDEFAULT))));
-        switch (reminder.getRepeatType()) {
+        switch (getRepeatType()) {
             case 1: {
-                reminder.setRepeatLength(Integer.parseInt(sharedPreferences
+                setRepeatLength(Integer.parseInt(sharedPreferences
                         .getString("temp_days", Integer.toString(REPEATLENGTHDEFAULT))));
                 break;
             }
             case 2: {
-                reminder.setRepeatLength(Integer.parseInt(sharedPreferences
+                setRepeatLength(Integer.parseInt(sharedPreferences
                         .getString("temp_weeks", Integer.toString(REPEATLENGTHDEFAULT))));
-                setDaysOfWeek(sharedPreferences,reminder);
+                setDaysOfWeek(sharedPreferences);
                 break;
             }
             case 3: {
-                reminder.setRepeatLength(Integer.parseInt(sharedPreferences
+                setRepeatLength(Integer.parseInt(sharedPreferences
                         .getString("temp_months", Integer.toString(REPEATLENGTHDEFAULT))));
-                reminder.setMonthType((byte) Integer.parseInt(sharedPreferences.
+                setMonthType((byte) Integer.parseInt(sharedPreferences.
                         getString("temp_monthly_type", Integer.toString(MONTHTYPEDEFAULT))));
                 break;
             }
             case 4: {
-                reminder.setRepeatLength(Integer.parseInt(sharedPreferences
+                setRepeatLength(Integer.parseInt(sharedPreferences
                         .getString("temp_years", Integer.toString(REPEATLENGTHDEFAULT))));
                 break;
             }
         }
     }
 
-    private static void setDaysOfWeek(SharedPreferences sharedPreferences, Reminder reminder) {
-        byte daysOfWeek = 0;
-        if (sharedPreferences.getBoolean("temp_sunday",false)) {
-            daysOfWeek += Reminder.SUNDAY;
-        }
-        if (sharedPreferences.getBoolean("temp_monday",false)) {
-            daysOfWeek += Reminder.MONDAY;
-        }
-        if (sharedPreferences.getBoolean("temp_tuesday",false)) {
-            daysOfWeek += Reminder.TUESDAY;
-        }
-        if (sharedPreferences.getBoolean("temp_wednesday",false)) {
-            daysOfWeek += Reminder.WEDNESDAY;
-        }
-        if (sharedPreferences.getBoolean("temp_thursday",false)) {
-            daysOfWeek += Reminder.THURSDAY;
-        }
-        if (sharedPreferences.getBoolean("temp_friday",false)) {
-            daysOfWeek += Reminder.FRIDAY;
-        }
-        if (sharedPreferences.getBoolean("temp_saturday",false)) {
-            daysOfWeek += Reminder.SATURDAY;
-        }
-        reminder.setDaysOfWeek(daysOfWeek);
-    }
+	private void setDaysOfWeek(SharedPreferences sharedPreferences){
+		setDaysOfWeek(sharedPreferences.getBoolean("temp_sunday",false),
+				sharedPreferences.getBoolean("temp_monday",false),
+				sharedPreferences.getBoolean("temp_tuesday",false),
+				sharedPreferences.getBoolean("temp_wednesday",false),
+				sharedPreferences.getBoolean("temp_thursday",false),
+				sharedPreferences.getBoolean("temp_friday",false),
+				sharedPreferences.getBoolean("temp_saturday",false));
+	}
 
-    public static void setLocation(SharedPreferences sharedPreferences, Reminder reminder){
+    public void setLocation(SharedPreferences sharedPreferences){
         int locationType = Integer.parseInt(sharedPreferences.getString("location_type", "-1"));
         switch (locationType){
             case 0: {
-                reminder.setOnlyAtLocation(false);
-                reminder.setUntilLocation(false);
+                setOnlyAtLocation(false);
+                setUntilLocation(false);
                 break;
             }
             case 1: {
-                reminder.setOnlyAtLocation(true);
-                reminder.setUntilLocation(false);
+                setOnlyAtLocation(true);
+                setUntilLocation(false);
                 break;
             }
             case 2: {
-                reminder.setOnlyAtLocation(false);
-                reminder.setUntilLocation(true);
+                setOnlyAtLocation(false);
+                setUntilLocation(true);
                 break;
             }
             default: {
-                reminder.setOnlyAtLocation(ONLYATLOCATIONDEFAULT);
-                reminder.setUntilLocation(UNTILLOCATIONDEFAULT);
+                setOnlyAtLocation(ONLYATLOCATIONDEFAULT);
+                setUntilLocation(UNTILLOCATIONDEFAULT);
                 break;
             }
         }
 
         LatLng location = new LatLng(sharedPreferences.getFloat("Latitude",(float)LOCATIONDEFAULT.latitude),
                 sharedPreferences.getFloat("Longitude",(float)LOCATIONDEFAULT.longitude));
-        reminder.setLocation(location);
+        setLocation(location);
     }
 
-    public static void setDate(SharedPreferences sharedPreferences, Reminder reminder, Context context) {
+    public void setDate(SharedPreferences sharedPreferences, Context context) {
         Calendar date = Calendar.getInstance();
         SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm aa EEEE, MMMM d, yyyy");
         try {
@@ -1186,26 +1146,22 @@ public class Reminder implements Parcelable{
         catch (ParseException e){
             Log.e("Minder","Parse Error");
         }
-        if ((!Reminder.checkDayOfWeek(reminder.getDaysOfWeek(),          //If initial day is not in
-                date.get(Calendar.DAY_OF_WEEK)))&&(reminder.getRepeatType()==2)){                       //repeat pattern, skip
+        if ((!Reminder.checkDayOfWeek(getDaysOfWeek(),          //If initial day is not in
+                date.get(Calendar.DAY_OF_WEEK)))&&(getRepeatType()==2)){                       //repeat pattern, skip
             ReminderDBHelper dbHelper = ReminderDBHelper.getInstance(context);
             SQLiteDatabase database = dbHelper.openDatabase();
-            Reminder.nextRepeat(database,reminder);
+            Reminder.nextRepeat(database,this);
             dbHelper.closeDatabase();
         }
-        long time = date.getTimeInMillis();                             //Drop seconds
-        time = time/60000;                                              //
-        time = time*60000;                                              //
-        date.setTimeInMillis(time);                                     //
-        reminder.setDate(date);                                         //Store reminder date + time
+        setDate(date);                                         //Store reminder date + time
     }
 
     public static Reminder preferenceToReminder(SharedPreferences sharedPreferences, Reminder reminder, Context context){
         reminder.setName(sharedPreferences.getString("temp_name",NAMEDEFAULT));
         reminder.setDescription(sharedPreferences.getString("temp_description", DESCRIPTIONDEFAULT));
-        setDate(sharedPreferences, reminder, context);
-        setRepeat(sharedPreferences, reminder);
-        setLocation(sharedPreferences, reminder);
+        reminder.setDate(sharedPreferences, context);
+        reminder.setRepeat(sharedPreferences);
+        reminder.setLocation(sharedPreferences);
         reminder.setRadius(sharedPreferences.getInt("radius",Reminder.RADIUSDEFAULT));
         reminder.setVibrate(sharedPreferences.getBoolean("temp_vibrate", VIBRATEDEFAULT));
         reminder.setRingtone(sharedPreferences.getString("temp_ringtone", RINGTONEDEFAULT));
