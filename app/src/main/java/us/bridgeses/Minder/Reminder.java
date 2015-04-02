@@ -217,7 +217,7 @@ public class Reminder implements Parcelable{
 	}
 
 	public void setId(int id) {
-		if (id >= 0){
+		if (id >= -1){
 			this.id = id;
 		}
 		else {
@@ -559,10 +559,9 @@ public class Reminder implements Parcelable{
 	/**************************** Database methods ***************************************/
 
     private static Reminder[] cursorToReminders(Cursor cursor){
-        int numReminders = cursor.getCount();
         cursor.moveToFirst();
-        Reminder[] reminders = new Reminder[numReminders];
-        for (int i=0; i<numReminders; i++) {
+        Reminder[] reminders = new Reminder[cursor.getCount()];
+        for (int i=0; i<cursor.getCount(); i++) {
             Reminder reminder = new Reminder();
             reminder.setId(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_ID)));
             reminder.setActive(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_ACTIVE)) == 1);
@@ -654,19 +653,6 @@ public class Reminder implements Parcelable{
     }
 
     protected static long saveReminder(SQLiteDatabase database, Reminder reminder) {
-        Cursor cursor = database.rawQuery("select "+ReminderDBHelper.COLUMN_ID+" from " + ReminderDBHelper.TABLE_NAME
-                                             + " where " + ReminderDBHelper.COLUMN_DATE + "="
-                                             + reminder.getDate().getTimeInMillis()/1000,null);
-
-        if (cursor.getCount() > 0) {
-            cursor.moveToFirst();
-            int id = cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_ID));
-            if (id != reminder.getId()){
-                Calendar date = Calendar.getInstance();
-                date.setTimeInMillis(reminder.getDate().getTimeInMillis()+30000);
-                reminder.setDate(date);
-            }
-        }
         ContentValues values = new ContentValues();
         if (reminder.getId() != -1)
             values.put(ReminderDBHelper.COLUMN_ID,reminder.getId());
@@ -689,43 +675,15 @@ public class Reminder implements Parcelable{
         values.put(ReminderDBHelper.COLUMN_SNOOZEDURATION, reminder.getSnoozeDuration());
         values.put(ReminderDBHelper.COLUMN_CONDITIONS, reminder.getConditions());
         values.put(ReminderDBHelper.COLUMN_STYLE, reminder.getStyle());
-
-        long newRowId;
-        newRowId = database.replace(
-                ReminderDBHelper.TABLE_NAME,
-                null,
-                values);
-        return newRowId;
+        return database.replace(
+		        ReminderDBHelper.TABLE_NAME,
+		        null,
+		        values);
     }
 
-    protected static boolean deleteReminder(SQLiteDatabase database, int id){
+    protected static int deleteReminder(SQLiteDatabase database, int id){
         String[] args = { String.valueOf(id) };
-        int result = database.delete(ReminderDBHelper.TABLE_NAME,ReminderDBHelper.COLUMN_ID+" LIKE ?",args);
-        return result != 0;
-    }
-
-    public static Reminder getNextReminder(SQLiteDatabase database){
-        Calendar currentDate = Calendar.getInstance();
-        long currentTime = (currentDate.getTimeInMillis()/60000)*60;
-        String[] args = { String.valueOf(currentTime), "1" };
-        Cursor cursor = database.query(ReminderDBHelper.TABLE_NAME,
-                                        null,
-                                        ReminderDBHelper.COLUMN_DATE + " > ? AND " +
-                                        ReminderDBHelper.COLUMN_ACTIVE + " = ?",
-                                        args,
-                                        null,
-                                        null,
-                                        ReminderDBHelper.COLUMN_DATE + " ASC",
-                                        "1");
-        if (cursor.getCount()>=1) {
-            Reminder[] reminders = cursorToReminders(cursor);
-	        Reminder nextReminder = reminders[0];
-
-            return reminders[0];
-        }
-        else {
-            return new Reminder();
-        }
+        return database.delete(ReminderDBHelper.TABLE_NAME,ReminderDBHelper.COLUMN_ID+" LIKE ?",args);
     }
 
 	/******************************** Parcel Methods ******************************/
@@ -1158,6 +1116,7 @@ public class Reminder implements Parcelable{
 
     public static Reminder preferenceToReminder(SharedPreferences sharedPreferences, Context context){
         Reminder reminder = new Reminder();
+	    reminder.setId(sharedPreferences.getInt("temp_id",IDDEFAULT));
 	    reminder.setName(sharedPreferences.getString("temp_name",NAMEDEFAULT));
         reminder.setDescription(sharedPreferences.getString("temp_description", DESCRIPTIONDEFAULT));
         reminder.setDate(sharedPreferences, context);
