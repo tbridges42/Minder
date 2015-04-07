@@ -4,6 +4,7 @@ import android.app.Application;
 
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.Tracker;
+import com.orhanobut.logger.Logger;
 
 import java.util.HashMap;
 
@@ -41,5 +42,11 @@ public class MyApplication extends Application {
 
 		}
 		return mTrackers.get(trackerId);
+	}
+
+	@Override
+	public void onCreate(){
+		super.onCreate();
+		Logger.init("Minder");
 	}
 }
