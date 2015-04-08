@@ -5,13 +5,14 @@ import android.app.FragmentManager;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
+
+import com.orhanobut.logger.Logger;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -62,7 +63,7 @@ public class ReminderListAdapter extends SimpleCursorAdapter implements View.OnC
 
 	public void onClick(View v){
 		int id = (int)v.getTag();
-		Log.e("Minder",Integer.toString(id));
+		Logger.e(Integer.toString(id));
 		SkipDialogFragment df = SkipDialogFragment.newInstance(id);
 		df.show(fragmentManager,"SkipDialog");
 	}

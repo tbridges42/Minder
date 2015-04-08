@@ -6,7 +6,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
+
+import com.orhanobut.logger.Logger;
 
 import us.bridgeses.Minder.Reminder;
 import us.bridgeses.Minder.ReminderDBHelper;
@@ -27,7 +28,7 @@ public class BootReceiver extends BroadcastReceiver{
 			alarmManager.set(AlarmManager.RTC_WAKEUP, reminder.getDate().getTimeInMillis(),
 					PendingIntent.getBroadcast(context, id, intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
 		}
-		Log.v("us.bridgeses.minder","Alarm "+id+" set");
+		Logger.v("Alarm " + id + " set");
 	}
 
     @Override
@@ -38,15 +39,15 @@ public class BootReceiver extends BroadcastReceiver{
 	    SQLiteDatabase database = dbHelper.openDatabase();                      //Open database
 
 	    Reminder[] reminders = Reminder.readReminders(database);                //Get all reminders
-		Log.v("Minder","Reminders received");
+		Logger.v("Reminders received");
 	    dbHelper.closeDatabase();                                               //Close database
 	    if (reminders.length != 0) {                                            //If there are reminders
 
 		    alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
 		    for (Reminder reminder : reminders) {                               //For each reminder
-			    Log.v("Minder", Integer.toString(reminders.length));
-			    Log.v("Minder", Integer.toString(reminder.getId()));
+			    Logger.v(Integer.toString(reminders.length));
+			    Logger.v(Integer.toString(reminder.getId()));
 			    if (reminder.getActive()) {                                     //If reminder is active
 				    setAlarm(context, reminder);                                //Set alarm
 			    }

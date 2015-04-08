@@ -3,7 +3,8 @@ package us.bridgeses.Minder;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
+
+import com.orhanobut.logger.Logger;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -89,7 +90,7 @@ public class ReminderDBHelper extends SQLiteOpenHelper {
             database.execSQL(SQL_DELETE_ENTRIES);     //Versions less than 3 are incompatible and need to be rewritten
             database.execSQL(SQL_CREATE_ENTRIES);
         }
-        Log.i("Minder Database","Database Upgraded");
+        Logger.i("Database Upgraded");
     }
 
     public void onCreate(SQLiteDatabase database) {

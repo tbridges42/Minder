@@ -11,9 +11,10 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.preference.DialogPreference;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import android.widget.DatePicker;
+
+import com.orhanobut.logger.Logger;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -140,7 +141,7 @@ public class DatePreference extends DialogPreference implements
                 setTheDate(((DateSavedState) state).dateValue);
             }
             catch (ClassCastException e) {
-                Log.e("Minder","Reset Date");
+                Logger.e("Reset Date");
                 setTheDate(defaultValue());
             }
         } else {

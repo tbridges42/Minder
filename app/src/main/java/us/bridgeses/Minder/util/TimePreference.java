@@ -8,9 +8,10 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.preference.DialogPreference;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import android.widget.TimePicker;
+
+import com.orhanobut.logger.Logger;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -128,11 +129,11 @@ public class TimePreference extends DialogPreference implements TimePicker.OnTim
                 setTheTime(((TimeSavedState) state).timeValue);
             }
             catch (ClassCastException e) {
-                Log.e("Minder", "Reset Time");
+                Logger.e("Reset Time");
                 setTheTime(defaultValue());
             }
         } else {
-            Log.e("Minder","Something weird happening");
+            Logger.e("Something weird happening");
             TimeSavedState s = (TimeSavedState) state;
             super.onRestoreInstanceState(s.getSuperState());
             setTheTime(s.timeValue);

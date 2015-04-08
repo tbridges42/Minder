@@ -13,13 +13,13 @@ import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
+import com.orhanobut.logger.Logger;
 
 import us.bridgeses.Minder.receivers.ReminderReceiver;
 
@@ -41,7 +41,7 @@ public class MainListActivity extends Activity implements AsyncFragment.TaskCall
 
 	@Override
 	public void onDialogPositiveClick(DialogFragment dialog, int id) {
-		Log.e("Minder", Integer.toString(id));
+		Logger.e(Integer.toString(id));
 		ReminderDBHelper dbHelper;
 		dbHelper  = ReminderDBHelper.getInstance(this);
 		SQLiteDatabase database = dbHelper.openDatabase();
@@ -66,7 +66,7 @@ public class MainListActivity extends Activity implements AsyncFragment.TaskCall
             alarmManager.set(alarmType, reminder.getDate().getTimeInMillis(),
                     PendingIntent.getBroadcast(this, id, intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
 
-            Log.v("us.bridgeses.minder", "Alarm " + id + " set");
+            Logger.v("Alarm " + id + " set");
         }
 		// Gets an instance of the NotificationManager service
 		NotificationManager mNotifyMgr =

@@ -21,11 +21,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.NumberPicker;
 import android.widget.TextView;
+
+import com.orhanobut.logger.Logger;
 
 import java.util.Calendar;
 import java.util.concurrent.Executors;
@@ -82,13 +83,13 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
                 if (reminder.getVolumeOverride()) {
                     AudioManager manager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-                    Log.d("Minder", "Maxing out volume");
+                    Logger.d("Maxing out volume");
                     curVolume = manager.getStreamVolume(AudioManager.STREAM_ALARM);
                     manager.setStreamVolume(AudioManager.STREAM_ALARM, manager.getStreamMaxVolume(AudioManager.STREAM_ALARM), 0);
                     curRingMode = manager.getRingerMode();
                     manager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
                 } else
-                    Log.d("Minder", "Not maxing volume");
+                    Logger.d("Not maxing volume");
                 ringtone = RingtoneManager.getRingtone(context, Uri.parse(reminder.getRingtone()));
                 ringtone.setStreamType(AudioManager.STREAM_ALARM);
 
@@ -96,7 +97,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
             else {
                 if (reminder.getVolumeOverride()) {
                     AudioManager manager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-                    Log.d("Minder", "Maxing out volume, Lollipop");
+                    Logger.d("Maxing out volume, Lollipop");
                     curVolume = manager.getStreamVolume(AudioManager.STREAM_ALARM);
                     AudioAttributes.Builder builder = new AudioAttributes.Builder();
                     builder.setUsage(AudioAttributes.USAGE_ALARM);
@@ -104,7 +105,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
                     curRingMode = manager.getRingerMode();
                     manager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
                 } else
-                    Log.d("Minder", "Not maxing volume, Lollipop");
+                    Logger.d("Not maxing volume, Lollipop");
                 ringtone = RingtoneManager.getRingtone(context, Uri.parse(reminder.getRingtone()));
             }
             ringtone.play();
@@ -201,11 +202,11 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
 
     private Reminder retrieveReminder(int id){
         if (id == -1){
-            Log.w("Minder", "Invalid ID");
+            Logger.w("Invalid ID");
             return new Reminder();
         }
         if (context == null){
-            Log.e("Minder","Invalid context");
+            Logger.e("Invalid context");
             return new Reminder();
         }
         ReminderDBHelper dbHelper  = ReminderDBHelper.getInstance(context);
@@ -337,7 +338,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
         alarmManager.set(alarmType, reminder.getDate().getTimeInMillis(),
                 PendingIntent.getBroadcast(context, id, intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
 
-        Log.v("us.bridgeses.minder", "Alarm " + id + " set");
+        Logger.v("Alarm " + id + " set");
     }
 
     private void dismiss() {
@@ -410,7 +411,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
         }
         alarmManager.set(alarmType, Calendar.getInstance().getTimeInMillis()+duration,
                 PendingIntent.getBroadcast(getApplicationContext(), id, intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
-	    Log.v("us.bridgeses.minder", "Alarm " + id + " set");
+	    Logger.v("Alarm " + id + " set");
         silence();
         if (scheduleTaskExecutor != null){
             scheduleTaskExecutor.shutdownNow();

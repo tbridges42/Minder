@@ -10,8 +10,9 @@ import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
-import android.util.Log;
 import android.widget.BaseAdapter;
+
+import com.orhanobut.logger.Logger;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -222,7 +223,7 @@ public class RepeatFragment extends PreferenceFragment  implements SharedPrefere
 			            editor.apply();
 
 		            } catch (ParseException e) {
-			            Log.e("Minder", "Parse Error");
+			            Logger.e("Parse Error");
 		            }
 	            }
 	            setWeeklyTitle();
@@ -321,7 +322,7 @@ public class RepeatFragment extends PreferenceFragment  implements SharedPrefere
             date.setTime(timeFormat.parse(newDate));
         }
         catch (ParseException e){
-            Log.e("Minder", "Parse Error");
+            Logger.e("Parse Error");
         }
 
         switch (monthType) {

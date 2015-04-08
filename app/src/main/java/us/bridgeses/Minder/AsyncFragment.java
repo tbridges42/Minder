@@ -9,10 +9,11 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+
+import com.orhanobut.logger.Logger;
 
 /**
  * Created by Tony on 8/9/2014.
@@ -157,7 +158,7 @@ public class AsyncFragment extends ListFragment{
 
                 // mCallbacks.onPostExecute(cursor);
             }
-	        Log.e("Minder", "Cursor updated");
+	        Logger.e("Cursor updated");
             mAdapter.swapCursor(cursor);
 	        mAdapter.notifyDataSetChanged();
         }

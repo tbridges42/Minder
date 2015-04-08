@@ -19,8 +19,9 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.provider.Settings;
-import android.util.Log;
 import android.widget.BaseAdapter;
+
+import com.orhanobut.logger.Logger;
 
 import java.util.List;
 
@@ -86,7 +87,7 @@ public class ConditionsFragment extends PreferenceFragment implements SharedPref
                 public void onClick(DialogInterface dialog, int which) {
                     setSSID(finalSSID[which]);
                     getActivity().unregisterReceiver(wifiReceiver);
-                    Log.e("Minder",finalSSID[which]);
+                    Logger.e(finalSSID[which]);
                 }
             });
             wifiBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {

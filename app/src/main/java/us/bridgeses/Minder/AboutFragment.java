@@ -7,7 +7,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
-import android.util.Log;
+
+import com.orhanobut.logger.Logger;
 
 /**
  * Created by Tony on 1/30/2015.
@@ -61,7 +62,7 @@ public class AboutFragment extends PreferenceFragment implements Preference.OnPr
 			super.findPreference("version").setSummary(version);
 		}
 		catch(PackageManager.NameNotFoundException e){
-			Log.e("Minder", "Package name not found");
+			Logger.e("Package name not found");
 		}
 	}
 }

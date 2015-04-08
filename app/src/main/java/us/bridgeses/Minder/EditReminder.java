@@ -14,10 +14,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NavUtils;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
+
+import com.orhanobut.logger.Logger;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -127,7 +128,7 @@ public class EditReminder extends Activity implements DeleteDialogFragment.Notic
 
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        Log.v("Minder","Activity Configuration Changed");
+        Logger.v("Activity Configuration Changed");
     }
 
     @Override

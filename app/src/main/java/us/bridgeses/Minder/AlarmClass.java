@@ -5,15 +5,11 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.res.Configuration;
 import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
-import android.net.ConnectivityManager;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -21,9 +17,9 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
+import com.orhanobut.logger.Logger;
 
 import java.util.Calendar;
-import java.util.concurrent.Executors;
 
 import us.bridgeses.Minder.receivers.ReminderReceiver;
 
@@ -60,11 +56,11 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
 
     private void retrieveReminder(){
         if (id == -1){
-            Log.w("Minder", "Invalid ID");
+            Logger.w("Invalid ID");
             return;
         }
         if (context == null){
-            Log.e("Minder","Invalid context");
+            Logger.e("Invalid context");
             return;
         }
         ReminderDBHelper dbHelper  = ReminderDBHelper.getInstance(context);
@@ -129,28 +125,28 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
 
     @Override
     public void onLocationChanged(Location mLastLocation) {
-        Log.i("Minder","Location updated");
+        Logger.i("Location updated");
         LatLng location = reminder.getLocation();
         float results[] = new float[1];
         Location.distanceBetween(mLastLocation.getLatitude(),mLastLocation.getLongitude()
                 ,location.latitude,location.longitude,results);
         if (results[0] <= reminder.getRadius()){
-            Log.i("Minder","At Location");
+            Logger.i("At Location");
             if (reminder.getOnlyAtLocation()) {
-                Log.i("Minder","Supposed to be at location");
+                Logger.i("Supposed to be at location");
                 hasLocation = true;
                 stopLocationUpdates();
                 checkConditions();
             }
             else {
-                Log.i("Minder","Not supposed to be at location");
+                Logger.i("Not supposed to be at location");
                 snooze(Reminder.MINUTE);
             }
         }
         else{
-            Log.i("Minder","Not at Location");
+            Logger.i("Not at Location");
             if (reminder.getUntilLocation()){
-                Log.i("Minder","Not supposed to be at location");
+                Logger.i("Not supposed to be at location");
                 hasLocation = true;
                 stopLocationUpdates();
                 checkConditions();
@@ -163,7 +159,7 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
 
     @Override
     public void onConnected(Bundle connectionHint) {
-        Log.i("Minder","Connected to location service");
+        Logger.i("Connected to location service");
         Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
                 mGoogleApiClient);
         LatLng location = reminder.getLocation();
@@ -172,12 +168,12 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
 
         if ((mLastLocation == null) ||  (timeDelta > (Reminder.MINUTE * 10))
                 ||mLastLocation.getAccuracy() > 1.5*reminder.getRadius()){
-            Log.i("Minder","Location is stale");
+            Logger.i("Location is stale");
             try {
                 startLocationUpdates(createUrgentLocationRequest());
             }
             catch (Exception e){
-                Log.e("Minder","Unable to start location updates");
+                Logger.e("Unable to start location updates");
             }
         }
 
@@ -185,39 +181,39 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
         Location.distanceBetween(mLastLocation.getLatitude(),mLastLocation.getLongitude()
                 ,location.latitude,location.longitude,results);
         if (results[0] <= reminder.getRadius()){
-            Log.i("Minder","At Location");
+            Logger.i("At Location");
             if (reminder.getOnlyAtLocation()){
-                Log.i("Minder","Supposed to be at location");
+                Logger.i("Supposed to be at location");
                 hasLocation = true;
                 checkConditions();
             }
             else {
                 if (reminder.getUntilLocation()) {
-                    Log.i("Minder","Not supposed to be at Location");
+                    Logger.i("Not supposed to be at Location");
                     try {
                         snooze(Reminder.MINUTE);
                     }
                     catch (Exception e){
-                        Log.e("Minder","Unable to start location updates");
+                        Logger.e("Unable to start location updates");
                     }
                 }
             }
         }
         else{
-            Log.i("Minder","Not at location");
+            Logger.i("Not at location");
             if (reminder.getUntilLocation()){
-                Log.i("Minder","Not supposed to be at location");
+                Logger.i("Not supposed to be at location");
                 hasLocation = true;
                 checkConditions();
             }
             else {
                 if (reminder.getOnlyAtLocation()) {
-                    Log.i("Minder","Supposed to be at location");
+                    Logger.i("Supposed to be at location");
                     try {
                         snooze(reminder.getSnoozeDuration());
                     }
                     catch (Exception e){
-                        Log.e("Minder","Unable to start location updates");
+                        Logger.e("Unable to start location updates");
                     }
                 }
             }
@@ -226,15 +222,15 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
 
     @Override
     public void onConnectionSuspended(int i){
-        Log.w("Minder","Connection Suspended");
+        Logger.w("Connection Suspended");
     }
 
     public void onConnectionFailed(ConnectionResult result){
-        Log.w("Minder", "Connection Failed");
+        Logger.w("Connection Failed");
     }
 
     private void checkLocation(){
-        Log.v("Minder","Checking for location");
+        Logger.v("Checking for location");
         try {
             mGoogleApiClient = new GoogleApiClient.Builder(context)
                     .addConnectionCallbacks(this)
@@ -242,15 +238,15 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
                     .addApi(LocationServices.API)
                     .build();
             mGoogleApiClient.connect();
-            Log.i("Minder","API Client built");
+            Logger.i("API Client built");
         }
         catch (Exception e) {
-            Log.e("Minder","API Client failed to build");
+            Logger.e("API Client failed to build");
         }
     }
 
     private void checkWifi(){
-        Log.v("Minder","Checking Wifi");
+        Logger.v("Checking Wifi");
         if (wifiReceiver != null){
             context.unregisterReceiver(wifiReceiver);
             wifiReceiver = null;
@@ -299,7 +295,7 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
     }
 
     public void run(){
-        Log.v("Minder","Reminder fired");
+        Logger.v("Reminder fired");
         retrieveReminder();
         initConditions();
         checkConditions();
@@ -312,15 +308,15 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
             WifiInfo wifiInfo = wifiManager.getConnectionInfo();
             if (wifiInfo != null){
                 if (wifiInfo.getSSID() != null){
-                    Log.i("Minder","Connected to "+wifiInfo.getSSID());
+                    Logger.i("Connected to "+wifiInfo.getSSID());
                     checkConditions();
                 }
                 else{
-                    Log.i("Minder","No SSID");
+                    Logger.i("No SSID");
                 }
             }
             else {
-                Log.i("Minder","No wifi info");
+                Logger.i("No wifi info");
             }
         }
     }

@@ -6,7 +6,8 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
+
+import com.orhanobut.logger.Logger;
 
 /**
  * Created by Tony on 9/13/2014.
@@ -66,7 +67,7 @@ public class SkipDialogFragment extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         // Use the Builder class for convenient dialog construction
 	    id = getArguments().getInt("Id");
-	    Log.d("Minder","Sending "+Integer.toString(id));
+	    Logger.d("Sending " + Integer.toString(id));
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 	    builder.setTitle("Skip Reminder");
 	    builder.setMessage("Skip the next instance of this Reminder")

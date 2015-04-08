@@ -10,6 +10,7 @@ import android.os.Parcelable;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.orhanobut.logger.Logger;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -794,7 +795,7 @@ public class Reminder implements Parcelable{
         int count = 0;      //Count checks for error conditions and prevents infinite loops
         while (!repeat) {
             if (count > (7*(reminder.getRepeatLength()+1))){ //Cycled through entire week without finding match
-                Log.e("Minder","Next Weekly Repeat does not exist");
+                Logger.e("Next Weekly Repeat does not exist");
                 reminder.setActive(false);
 	            throw new IndexOutOfBoundsException("Next Weekly Repeat does not exist");
             }
@@ -831,7 +832,7 @@ public class Reminder implements Parcelable{
                 while (day > date.getActualMaximum(Calendar.DAY_OF_MONTH)) { //no Day in month
                                                                             //e.g. no 30th in Feb.
                     if (count == 13){   //Cycled through every month without finding a match
-                        Log.e("Minder","Next Monthly Repeat does not exist");
+                        Logger.e("Next Monthly Repeat does not exist");
                         reminder.setActive(false);
                         return;
                     }
@@ -847,7 +848,7 @@ public class Reminder implements Parcelable{
                 date.add(Calendar.MONTH,reminder.getRepeatLength());
                 while (weekOfMonth > date.getActualMaximum(Calendar.WEEK_OF_MONTH)) {
                     if (count == 13){
-                        Log.e("Minder","Next Monthly Repeat does not exist");
+                        Logger.e("Next Monthly Repeat does not exist");
                         reminder.setActive(false);
                         return;
                     }
@@ -864,7 +865,7 @@ public class Reminder implements Parcelable{
                 while (delta > date.getActualMaximum(Calendar.DAY_OF_MONTH)) { //e.g. Can't be 30 days
                                                                             //from the end of February
                     if (count == 13){
-                        Log.e("Minder","Next Monthly Repeat does not exist");
+                        Logger.e("Next Monthly Repeat does not exist");
                         reminder.setActive(false);
                         return;
                     }
