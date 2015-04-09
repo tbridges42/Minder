@@ -44,7 +44,7 @@
     <string name="short_sun">S</string>
 
     <!-- About screen strings -->
-    <string name="app_url">http://app.bridgeses.us</string>
+    <string name="site_url">http://apps.bridgeses.us/minder</string>
     <string name="support_url">http://support.bridgeses.us</string>
     <string name="email">tbridges42@gmail.com</string>
     <string name="monster_shop">https://www.etsy.com/shop/TravelingMonsterShop</string>
