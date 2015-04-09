@@ -23,6 +23,12 @@ public class AboutFragment extends PreferenceFragment implements Preference.OnPr
 	@Override
 	public boolean onPreferenceClick(Preference preference) {
 		String key = preference.getKey();
+		if (key.equals("website")){
+			String url = getResources().getString(R.string.site_url);
+			Intent i = new Intent(Intent.ACTION_VIEW);
+			i.setData(Uri.parse(url));
+			startActivity(i);
+		}
 		if (key.equals("support")){
 			String url = getResources().getString(R.string.support_url);
 			Intent i = new Intent(Intent.ACTION_VIEW);
