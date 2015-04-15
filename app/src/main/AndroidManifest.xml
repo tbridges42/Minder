@@ -122,6 +122,9 @@
             android:name=".EditStyle"
             android:label="@string/title_activity_edit_style" >
         </activity>
+
+        <service android:name=".util.RingtoneService"/>
+
     </application>
 
 </manifest>
