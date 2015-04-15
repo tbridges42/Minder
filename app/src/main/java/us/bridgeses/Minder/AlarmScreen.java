@@ -34,6 +34,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import us.bridgeses.Minder.receivers.ReminderReceiver;
+import us.bridgeses.Minder.util.RingtoneService;
 
 
 public class AlarmScreen extends Activity implements View.OnLongClickListener{
@@ -58,12 +59,8 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
 
     private void silence() {
         if (!reminder.getRingtone().equals("")) {
-            ringtone.stop();
-            if (reminder.getVolumeOverride()) {
-                AudioManager manager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-                manager.setStreamVolume(AudioManager.STREAM_ALARM, curVolume,0);
-                manager.setRingerMode(curRingMode);
-            }
+	        Intent stopIntent = new Intent(context, RingtoneService.class);
+	        context.stopService(stopIntent);
         }
         if (reminder.getVibrate() && (vibrator != null)) {
             vibrator.cancel();
@@ -254,8 +251,9 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
 
         boolean dismiss = intent.getBooleanExtra("Dismiss",false);
 
+	    Logger.d(Boolean.toString(dismiss));
         if (dismiss){
-            dismiss();
+            checkDismiss();
             return;
         }
         else {
@@ -323,7 +321,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
                 id, intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
     }
 
-    private void setAlarm(int id){
+    private void setNewAlarm(int id){
         int alarmType;
         if (reminder.getWakeUp()){
             alarmType = AlarmManager.RTC_WAKEUP;
@@ -351,7 +349,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
 	    dbHelper.closeDatabase();
 
 	    if ((reminder.getActive()) && (reminder.getId() != -1)) {
-		    setAlarm(id);
+		    setNewAlarm(id);
 	    }
         if (scheduleTaskExecutor != null) {
             scheduleTaskExecutor.shutdownNow();

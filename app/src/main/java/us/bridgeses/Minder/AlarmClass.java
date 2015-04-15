@@ -1,15 +1,23 @@
 package us.bridgeses.Minder;
 
 import android.app.AlarmManager;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
+import android.media.AudioAttributes;
+import android.media.AudioManager;
+import android.media.Ringtone;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Vibrator;
+import android.support.v4.app.NotificationCompat;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -22,6 +30,7 @@ import com.orhanobut.logger.Logger;
 import java.util.Calendar;
 
 import us.bridgeses.Minder.receivers.ReminderReceiver;
+import us.bridgeses.Minder.util.RingtoneService;
 
 /**
  * Created by Laura on 3/1/2015.
@@ -32,27 +41,129 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
     private int snoozeNum = 0;
     private Context context;
     private Reminder reminder;
+	private boolean dismiss = false;
     private boolean hasLocation;
     private boolean hasWiFi;
     private boolean hasBT;
     private boolean urgentRequest;
     private WifiReceiver wifiReceiver;
     private GoogleApiClient mGoogleApiClient;
+	private int curVolume;
+	private int curRingMode;
+	private Ringtone ringtone;
 
 
     public AlarmClass(Context context, int id){
-        this.context = context;
-        this.id = id;
-    }
+		this.context = context;
+		this.id = id;
+	}
+
+	public AlarmClass(Context context, int id, boolean dismiss){
+		this.context = context;
+		this.id = id;
+		this.dismiss = dismiss;
+	}
 
     public AlarmClass(Context context, int id, int snoozeNum){
-        this.context = context;
-        this.id = id;
-        this.snoozeNum = snoozeNum;
-    }
+		this.context = context;
+		this.id = id;
+		this.snoozeNum = snoozeNum;
+	}
 
     public AlarmClass(){
     }
+
+	private void createNotification() {
+
+		Intent resultIntent = new Intent(context, AlarmScreen.class);
+		resultIntent.putExtra("Id",reminder.getId());
+
+		// Because clicking the notification opens a new ("special") activity, there's
+		// no need to create an artificial back stack.
+		PendingIntent resultPendingIntent =
+				PendingIntent.getActivity(
+						context,
+						0,
+						resultIntent,
+						PendingIntent.FLAG_UPDATE_CURRENT
+				);
+
+		Intent dismissIntent = new Intent(context, ReminderReceiver.class);
+		dismissIntent.putExtra("Id",reminder.getId());
+		dismissIntent.putExtra("Dismiss",true);
+
+		PendingIntent dismissPendingIntent =
+				PendingIntent.getBroadcast(
+						context,
+						1,
+						dismissIntent,
+						PendingIntent.FLAG_UPDATE_CURRENT
+				);
+
+		NotificationCompat.Builder mBuilder =
+				new NotificationCompat.Builder(context)
+						.setSmallIcon(R.drawable.ic_launcher)
+						.setContentTitle(reminder.getName())
+						.setContentText(reminder.getDescription())
+						.setOngoing(true)
+						.setPriority(Notification.PRIORITY_MAX)
+						.setStyle(new NotificationCompat.BigTextStyle()
+								.bigText(reminder.getDescription()))
+						.addAction(R.drawable.ic_stat_content_clear, "Dismiss", dismissPendingIntent);
+
+		if (Build.VERSION.SDK_INT >= 21){
+			mBuilder.setCategory(Notification.CATEGORY_ALARM);
+		}
+
+		mBuilder.setContentIntent(resultPendingIntent);
+		// Gets an instance of the NotificationManager service
+		NotificationManager mNotifyMgr =
+				(NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+		// Builds the notification and issues it.
+		mNotifyMgr.notify(reminder.getId(), mBuilder.build());
+	}
+
+	private void makeNoise() {
+		Vibrator vibrator;
+		Logger.d("In makeNoise");
+		if (reminder.getVibrate()) {
+			vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+			if (vibrator.hasVibrator()) {
+				vibrator.vibrate(1000);
+			}
+		}
+		if (!reminder.getRingtone().equals("")) {
+			Logger.d("Starting ringtone");
+			if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+				if (reminder.getVolumeOverride()) {
+					AudioManager manager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+					Logger.d("Maxing out volume");
+					curVolume = manager.getStreamVolume(AudioManager.STREAM_ALARM);
+					manager.setStreamVolume(AudioManager.STREAM_ALARM, manager.getStreamMaxVolume(AudioManager.STREAM_ALARM), 0);
+					curRingMode = manager.getRingerMode();
+					manager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
+				} else
+					Logger.d("Not maxing volume");
+
+			}
+			else {
+				if (reminder.getVolumeOverride()) {
+					AudioManager manager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+					Logger.d("Maxing out volume, Lollipop");
+					curVolume = manager.getStreamVolume(AudioManager.STREAM_ALARM);
+					AudioAttributes.Builder builder = new AudioAttributes.Builder();
+					builder.setUsage(AudioAttributes.USAGE_ALARM);
+					builder.setFlags(AudioAttributes.FLAG_AUDIBILITY_ENFORCED);
+					curRingMode = manager.getRingerMode();
+					manager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
+				} else
+					Logger.d("Not maxing volume, Lollipop");
+			}
+			Intent startIntent = new Intent(context, RingtoneService.class);
+			startIntent.putExtra("ringtone-uri", reminder.getRingtone());
+			context.startService(startIntent);
+		}
+	}
 
     private void retrieveReminder(){
         if (id == -1){
@@ -74,6 +185,8 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
         intent.putExtra("Id",id);
         intent.putExtra("SnoozeNum",snoozeNum);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+	    intent.putExtra("Dismiss",dismiss);
+	    Logger.d(Boolean.toString(dismiss));
         context.startActivity(intent);
     }
 
@@ -273,7 +386,13 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
 
     private void checkConditions(){
         if (hasLocation && hasBT && hasWiFi){
-            alarm();
+            if (reminder.getDisplayScreen()){
+	            alarm();
+            }
+	        else{
+	            makeNoise();
+	            createNotification();
+            }
         }
         else {
             if (!hasLocation) {
@@ -297,8 +416,15 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
     public void run(){
         Logger.v("Reminder fired");
         retrieveReminder();
-        initConditions();
-        checkConditions();
+	    if (dismiss){
+		    Intent stopIntent = new Intent(context, RingtoneService.class);
+		    context.stopService(stopIntent);
+		    alarm();
+	    }
+	    else {
+		    initConditions();
+		    checkConditions();
+	    }
     }
 
     class WifiReceiver extends BroadcastReceiver{
