@@ -4,8 +4,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
+import com.orhanobut.logger.Logger;
+
 import us.bridgeses.Minder.AlarmClass;
-import us.bridgeses.Minder.AlarmScreen;
 
 
 public class ReminderReceiver extends BroadcastReceiver {
@@ -22,7 +23,9 @@ public class ReminderReceiver extends BroadcastReceiver {
             return;
         }
 	    int snooze = alarmIntent.getIntExtra("Snooze",0);               //for the alarm screen based
-        AlarmClass alarmClass = new AlarmClass(context,id);
+	    boolean dismiss = alarmIntent.getBooleanExtra("Dismiss",false);
+	    Logger.d(Boolean.toString(dismiss));
+        AlarmClass alarmClass = new AlarmClass(context,id,alarmIntent.getBooleanExtra("Dismiss",false));
         alarmClass.run();
         result.finish();
     }
