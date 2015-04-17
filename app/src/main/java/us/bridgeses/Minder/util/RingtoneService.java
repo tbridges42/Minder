@@ -21,14 +21,30 @@ public class RingtoneService extends Service {
 		return null;
 	}
 
+	private void startRingtone(Uri ringtoneUri){
+		this.ringtone = RingtoneManager.getRingtone(this, ringtoneUri);
+		ringtone.play();
+	}
+
+	private void stopRingtone(){
+
+	}
+
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId)
 	{
-		Logger.d("Starting ringtone service");
-		Uri ringtoneUri = Uri.parse(intent.getExtras().getString("ringtone-uri"));
+		boolean start = intent.getBooleanExtra("Start",false);
+		if (start) {
+			Logger.d("Starting ringtone service");
+			Uri ringtoneUri = Uri.parse(intent.getExtras().getString("ringtone-uri"));
+			startRingtone(ringtoneUri);
+		}
+		else {
+			stopRingtone();
+		}
 
-		this.ringtone = RingtoneManager.getRingtone(this, ringtoneUri);
-		ringtone.play();
+
+
 
 		return START_NOT_STICKY;
 	}
@@ -36,6 +52,8 @@ public class RingtoneService extends Service {
 	@Override
 	public void onDestroy()
 	{
+		Logger.d("Stopping Ringtone");
 		ringtone.stop();
+		super.onDestroy();
 	}
 }
