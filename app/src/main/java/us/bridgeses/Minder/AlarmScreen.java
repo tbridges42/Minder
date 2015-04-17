@@ -59,6 +59,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
 
     private void silence() {
         if (!reminder.getRingtone().equals("")) {
+	        Logger.d("Trying to stop ringtone");
 	        Intent stopIntent = new Intent(context, RingtoneService.class);
 	        context.stopService(stopIntent);
         }
@@ -105,7 +106,10 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
                     Logger.d("Not maxing volume, Lollipop");
                 ringtone = RingtoneManager.getRingtone(context, Uri.parse(reminder.getRingtone()));
             }
-            ringtone.play();
+	        Intent startIntent = new Intent(context, RingtoneService.class);
+	        startIntent.putExtra("ringtone-uri", reminder.getRingtone());
+	        startIntent.putExtra("Start",true);
+	        context.startService(startIntent);
         }
     }
 
