@@ -123,7 +123,7 @@
             android:label="@string/title_activity_edit_style" >
         </activity>
 
-        <service android:name=".util.RingtoneService"/>
+        <service android:name=".util.AlertService"/>
 
     </application>
 

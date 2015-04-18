@@ -30,7 +30,7 @@ import com.orhanobut.logger.Logger;
 import java.util.Calendar;
 
 import us.bridgeses.Minder.receivers.ReminderReceiver;
-import us.bridgeses.Minder.util.RingtoneService;
+import us.bridgeses.Minder.util.AlertService;
 
 /**
  * Created by Laura on 3/1/2015.
@@ -159,9 +159,9 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
 				} else
 					Logger.d("Not maxing volume, Lollipop");
 			}
-			Intent startIntent = new Intent(context, RingtoneService.class);
+			Intent startIntent = new Intent(context, AlertService.class);
 			startIntent.putExtra("ringtone-uri", reminder.getRingtone());
-			startIntent.putExtra("Start",true);
+			startIntent.putExtra("StartRingtone",true);
 			context.startService(startIntent);
 		}
 	}
@@ -418,7 +418,7 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
         Logger.v("Reminder fired");
         retrieveReminder();
 	    if (dismiss){
-		    Intent stopIntent = new Intent(context, RingtoneService.class);
+		    Intent stopIntent = new Intent(context, AlertService.class);
 		    context.stopService(stopIntent);
 		    alarm();
 	    }

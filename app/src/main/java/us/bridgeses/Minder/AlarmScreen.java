@@ -34,7 +34,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import us.bridgeses.Minder.receivers.ReminderReceiver;
-import us.bridgeses.Minder.util.RingtoneService;
+import us.bridgeses.Minder.util.AlertService;
 
 
 public class AlarmScreen extends Activity implements View.OnLongClickListener{
@@ -58,25 +58,14 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
     }
 
     private void silence() {
-        if (!reminder.getRingtone().equals("")) {
-	        Logger.d("Trying to stop ringtone");
-	        Intent stopIntent = new Intent(context, RingtoneService.class);
-	        context.stopService(stopIntent);
-        }
-        if (reminder.getVibrate() && (vibrator != null)) {
-            vibrator.cancel();
-        }
+	    Intent stopIntent = new Intent(context, AlertService.class);
+	    context.stopService(stopIntent);
     }
 
     private void makeNoise() {
-        if (reminder.getVibrate()) {
-            vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-        }
-        if (reminder.getVibrate()) {
-            if (vibrator.hasVibrator()) {
-                vibrator.vibrate(1000);
-            }
-        }
+	    Intent startIntent = new Intent(context, AlertService.class);
+		startIntent.putExtra("StartVibrate",reminder.getVibrate());
+		startIntent.putExtra("VibrateRepeat",reminder.getVibrateRepeat());
         if (!reminder.getRingtone().equals("")) {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
                 if (reminder.getVolumeOverride()) {
@@ -106,11 +95,10 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
                     Logger.d("Not maxing volume, Lollipop");
                 ringtone = RingtoneManager.getRingtone(context, Uri.parse(reminder.getRingtone()));
             }
-	        Intent startIntent = new Intent(context, RingtoneService.class);
 	        startIntent.putExtra("ringtone-uri", reminder.getRingtone());
-	        startIntent.putExtra("Start",true);
-	        context.startService(startIntent);
+	        startIntent.putExtra("StartRingtone",true);
         }
+	    context.startService(startIntent);
     }
 
     @Override
