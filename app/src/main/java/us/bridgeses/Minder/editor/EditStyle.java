@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
 
+import us.bridgeses.Minder.Reminder;
+
 public class EditStyle extends EditorActivity {
 
 	@Override
@@ -20,7 +22,9 @@ public class EditStyle extends EditorActivity {
     public void cancel(View view) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-
+		editor.putBoolean("temp_vibrate", saved.getBoolean("temp_vibrate", Reminder.VIBRATEDEFAULT));
+		editor.putBoolean("vibrate_repeat", saved.getBoolean("vibrate_repeat", Reminder.VIBRATEREPEATDEFAULT));
+		editor.putBoolean("led", saved.getBoolean("led", Reminder.LEDDEFAULT));
         editor.apply();
         Intent intent = new Intent();
         setResult(RESULT_CANCELED, intent);
@@ -31,7 +35,13 @@ public class EditStyle extends EditorActivity {
 	protected void saveState(){
 		if (saved == null) {
 			saved = new Bundle();
-
+			SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+			saved.putBoolean("temp_vibrate",
+					sharedPreferences.getBoolean("temp_vibrate", Reminder.VIBRATEDEFAULT));
+			saved.putBoolean("vibrate_repeat",
+					sharedPreferences.getBoolean("vibrate_repeat", Reminder.VIBRATEREPEATDEFAULT));
+			saved.putBoolean("led",
+					sharedPreferences.getBoolean("led", Reminder.LEDDEFAULT));
 		}
 	}
 
