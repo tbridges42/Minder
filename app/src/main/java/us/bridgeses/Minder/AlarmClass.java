@@ -161,6 +161,7 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
 			}
 			Intent startIntent = new Intent(context, RingtoneService.class);
 			startIntent.putExtra("ringtone-uri", reminder.getRingtone());
+			startIntent.putExtra("Start",true);
 			context.startService(startIntent);
 		}
 	}
