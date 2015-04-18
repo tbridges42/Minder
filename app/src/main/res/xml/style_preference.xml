@@ -4,20 +4,48 @@
                   android:layout_height="match_parent"
                   android:title="Style">
     <PreferenceCategory
-        android:title="Notification Settings"
-        android:enabled="false">
-    </PreferenceCategory>
-    <PreferenceCategory
-        android:title="Alarm Screen Settings"
-        android:enabled="false">
+        android:title="Vibrate Settings"
+        android:enabled="true">
+        <CheckBoxPreference
+            android:key="temp_vibrate"
+            android:title="Vibrate"
+            android:summaryOn="Alarm will vibrate"
+            android:summaryOff="Alarm will not vibrate"/>
+        <CheckBoxPreference
+            android:key="vibrate_repeat"
+            android:title="Vibrate Repeat"
+            android:summaryOn="Alarm will vibrate until dismissed"
+            android:summaryOff="Alarm will vibrate only once"
+            android:enabled="false"/>
+        <PreferenceScreen
+            android:title="Vibrate Pattern"
+            android:summary="Coming soon!"
+            android:enabled="false"/>
     </PreferenceCategory>
     <PreferenceCategory
         android:title="LED Settings"
         android:enabled="false">
+        <CheckBoxPreference
+            android:key="led"
+            android:title="Flash LED"
+            android:summaryOn="LED will flash"
+            android:summaryOff="LED will not flash"/>
+        <PreferenceScreen
+            android:title="LED Pattern"
+            android:summary="Coming soon!" />
+        <PreferenceScreen
+            android:title="LED Color"
+            android:summary="Coming soon!" />
     </PreferenceCategory>
     <PreferenceCategory
-        android:title="Vibrate Settings"
+        android:title="Alarm Screen Settings"
         android:enabled="false">
+        <PreferenceScreen
+            android:title="Background Image"
+            android:summary="Coming soon!"/>
+        <PreferenceScreen
+            android:title="Font Color"
+            android:summary="Coming soon!"/>
     </PreferenceCategory>
     <PreferenceCategory
         android:title="Sound Settings"

@@ -6,8 +6,6 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
 
-import us.bridgeses.Minder.Reminder;
-
 public class EditStyle extends EditorActivity {
 
 	@Override
@@ -22,7 +20,7 @@ public class EditStyle extends EditorActivity {
     public void cancel(View view) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean("fade",saved.getBoolean("fade", Reminder.FADEDEFAULT));
+
         editor.apply();
         Intent intent = new Intent();
         setResult(RESULT_CANCELED, intent);
@@ -33,8 +31,7 @@ public class EditStyle extends EditorActivity {
 	protected void saveState(){
 		if (saved == null) {
 			saved = new Bundle();
-			SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-			saved.putBoolean("fade", sharedPreferences.getBoolean("fade", Reminder.FADEDEFAULT));
+
 		}
 	}
 

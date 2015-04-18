@@ -89,6 +89,10 @@ public class EditReminderFragment extends PreferenceFragment implements SharedPr
 				    setRepeatSummary();
 				    break;
 			    }
+			    case 4: {
+				    vibratePreference.setChecked(sharedPreferences.getBoolean("temp_vibrate",reminder.getVibrate()));
+				    break;
+			    }
 		    }
 	    }
     }

@@ -41,9 +41,7 @@
             android:title="Conditions">
         </PreferenceScreen>
         <PreferenceScreen android:key="button_style"
-            android:title="Style"
-            android:enabled="false"
-            android:summary="Coming soon">
+            android:title="Style">
         </PreferenceScreen>
         <!--TODO: Implement LED Options -->
         <PreferenceScreen android:key="button_persistence"

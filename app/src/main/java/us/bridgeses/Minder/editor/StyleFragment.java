@@ -2,13 +2,11 @@ package us.bridgeses.Minder.editor;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.CheckBoxPreference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.widget.BaseAdapter;
 
 import us.bridgeses.Minder.R;
-import us.bridgeses.Minder.Reminder;
 
 public class StyleFragment extends PreferenceFragment implements 
         SharedPreferences.OnSharedPreferenceChangeListener{
@@ -32,8 +30,7 @@ public class StyleFragment extends PreferenceFragment implements
 
     private void initSummaries(){
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        CheckBoxPreference fade = (CheckBoxPreference) super.findPreference("fade");
-        fade.setChecked(sharedPreferences.getBoolean("fade", Reminder.FADEDEFAULT));
+
     }
 
     @Override
