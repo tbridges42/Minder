@@ -94,7 +94,7 @@
             android:theme="@android:style/Theme.NoTitleBar" >
         </activity>
         <activity
-            android:name=".EditConditions"
+            android:name=".editor.EditConditions"
             android:label="@string/title_activity_edit_conditions"
             android:parentActivityName=".EditReminder" >
             <meta-data
@@ -110,7 +110,7 @@
                 android:value="us.bridgeses.Minder.MainListActivity" />
         </activity>
         <activity
-            android:name=".EditPersistence"
+            android:name=".editor.EditPersistence"
             android:label="@string/title_activity_edit_persistence"
             android:parentActivityName=".EditReminder" >
             <meta-data
@@ -119,7 +119,7 @@
         </activity>
 
         <activity
-            android:name=".EditStyle"
+            android:name=".editor.EditStyle"
             android:label="@string/title_activity_edit_style" >
         </activity>
 

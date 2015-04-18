@@ -29,7 +29,7 @@ import us.bridgeses.Minder.receivers.ReminderReceiver;
 public class EditReminder extends Activity implements DeleteDialogFragment.NoticeDialogListener {
 
     Reminder reminder;
-    ReminderPreferenceFragment mFragment;
+    EditReminderFragment mFragment;
     private static final String TAG_TASK_FRAGMENT = "task_fragment";
     private Boolean defaults = false;
 
@@ -119,7 +119,7 @@ public class EditReminder extends Activity implements DeleteDialogFragment.Notic
 
     public void cancel(View view){
 	    FragmentManager fragmentManager = getFragmentManager();
-	    mFragment = (ReminderPreferenceFragment) fragmentManager.findFragmentByTag(TAG_TASK_FRAGMENT);
+	    mFragment = (EditReminderFragment) fragmentManager.findFragmentByTag(TAG_TASK_FRAGMENT);
 	    if (mFragment != null){
 		    fragmentManager.beginTransaction().remove(mFragment).commit();
 	    }
@@ -153,9 +153,9 @@ public class EditReminder extends Activity implements DeleteDialogFragment.Notic
         else
             reminder = new Reminder();
 
-        ReminderPreferenceFragment fragment = ReminderPreferenceFragment.newInstance(reminder);
+        EditReminderFragment fragment = EditReminderFragment.newInstance(reminder);
         FragmentManager fragmentManager = getFragmentManager();
-        mFragment = (ReminderPreferenceFragment) fragmentManager.findFragmentByTag(TAG_TASK_FRAGMENT);
+        mFragment = (EditReminderFragment) fragmentManager.findFragmentByTag(TAG_TASK_FRAGMENT);
 
         if (mFragment == null) {
             fragmentManager.beginTransaction().replace(R.id.reminder_frame, fragment,TAG_TASK_FRAGMENT).commit();

@@ -23,13 +23,16 @@ import com.google.android.gms.maps.model.LatLng;
 import java.text.SimpleDateFormat;
 
 import us.bridgeses.Minder.util.DatePreference;
+import us.bridgeses.Minder.editor.EditConditions;
+import us.bridgeses.Minder.editor.EditPersistence;
+import us.bridgeses.Minder.editor.EditStyle;
 import us.bridgeses.Minder.util.TimePreference;
 
 /**
  * Created by Tony on 8/27/2014.
  */
 
-public class ReminderPreferenceFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener, Preference.OnPreferenceClickListener {
+public class EditReminderFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener, Preference.OnPreferenceClickListener {
 
     private Reminder reminder;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("EEEE, MMMM d, yyyy");
@@ -67,6 +70,10 @@ public class ReminderPreferenceFragment extends PreferenceFragment implements Sh
             intent.putExtras(bundle);*/
             startActivityForResult(intent, 2);
         }
+	    if (key.equals("button_style")) {
+		    Intent intent = new Intent(getActivity(), EditStyle.class);
+		    startActivityForResult(intent, 4);
+	    }
 	    if (key.equals("button_persistence")) {
 		    Intent intent = new Intent(getActivity(), EditPersistence.class);
 		    startActivityForResult(intent, 3);
@@ -87,8 +94,8 @@ public class ReminderPreferenceFragment extends PreferenceFragment implements Sh
 	    }
     }
 
-    public static ReminderPreferenceFragment newInstance(Reminder reminder){
-        ReminderPreferenceFragment fragment = new ReminderPreferenceFragment();
+    public static EditReminderFragment newInstance(Reminder reminder){
+        EditReminderFragment fragment = new EditReminderFragment();
         Bundle args = new Bundle();
         args.putParcelable("Reminder", reminder);
         fragment.setArguments(args);
