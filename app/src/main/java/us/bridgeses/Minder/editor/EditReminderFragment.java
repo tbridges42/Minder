@@ -171,7 +171,7 @@ public class EditReminderFragment extends PreferenceFragment implements SharedPr
         editor.putBoolean("led",reminder.getLed());
         editor.putString("led_pattern",Integer.toString(reminder.getLedPattern()));
         editor.putInt("led_color",reminder.getLedColor());
-	    editor.putBoolean("fade",reminder.getFadeVolume());
+	    editor.putBoolean("vibrate_repeat",reminder.getVibrateRepeat());
         return editor;
     }
 

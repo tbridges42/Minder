@@ -57,6 +57,7 @@ public class Reminder implements Parcelable{
         setDisplayScreen(DISPLAYSCREENDEFAULT);
 	    setConfirmDismiss(DISMISSDIALOGDEFAULT);
 	    setFadeVolume(FADEDEFAULT);
+	    setVibrateRepeat(VIBRATEREPEATDEFAULT);
     }
 
     public static Reminder reminderFactory(SharedPreferences sharedPreferences, Context context){
@@ -141,6 +142,7 @@ public class Reminder implements Parcelable{
     public static final boolean BTNEEDEDDEFAULT = false;
 	public static final boolean DISMISSDIALOGDEFAULT = false;
 	public static final boolean FADEDEFAULT = false;
+	public static final boolean VIBRATEREPEATDEFAULT = false;
 
     //Time constants
     public static final int MINUTE = 60000;
@@ -177,7 +179,8 @@ public class Reminder implements Parcelable{
     //Style constants
     public static final byte LED = 1;
     public static final byte VIBRATE = 2;
-	public static final byte FADE = 4;
+	public static final byte VIBRATEREPEAT = 4;
+	public static final byte FADE = 8;
 
     public static final String PREFS_NAME = "ReminderPrefs";
 
@@ -447,7 +450,7 @@ public class Reminder implements Parcelable{
 
 	/*********************** Conditions bitwise getters and setters ************************/
 
-    public Boolean getActive() {
+    public boolean getActive() {
         return getBitwise(this.getConditions(),ACTIVE);
     }
 
@@ -455,7 +458,7 @@ public class Reminder implements Parcelable{
         this.setConditions(makeBitwise(this.getConditions(),ACTIVE,active));
     }
 
-	public Boolean getNeedWifi(){
+	public boolean getNeedWifi(){
 		return getBitwise(this.getConditions(),WIFINEEDED);
 	}
 
@@ -463,98 +466,106 @@ public class Reminder implements Parcelable{
 		this.setConditions(makeBitwise(this.getConditions(),WIFINEEDED,wifiNeeded));
 	}
 
-	public Boolean getNeedBluetooth(){
+	public boolean getNeedBluetooth(){
 		return getBitwise(this.getConditions(),BLUETOOTHNEEDED);
 	}
 
-	public void setNeedBluetooth(Boolean needBluetooth){
+	public void setNeedBluetooth(boolean needBluetooth){
 		this.setConditions(makeBitwise(this.getConditions(),BLUETOOTHNEEDED,needBluetooth));
 	}
 
-	public Boolean getOnlyAtLocation() {
+	public boolean getOnlyAtLocation() {
 		return getBitwise(this.getConditions(),ONLY_AT_LOCATION);
 	}
 
-	public void setOnlyAtLocation(Boolean onlyAtLocation) {
+	public void setOnlyAtLocation(boolean onlyAtLocation) {
 		this.setConditions(makeBitwise(this.getConditions(),ONLY_AT_LOCATION,onlyAtLocation));
 	}
 
-	public Boolean getUntilLocation() {
+	public boolean getUntilLocation() {
 		return getBitwise(this.getConditions(),UNTIL_LOCATION);
 	}
 
-	public void setUntilLocation(Boolean untilLocation) {
+	public void setUntilLocation(boolean untilLocation) {
 		this.setConditions(makeBitwise(this.getConditions(),UNTIL_LOCATION,untilLocation));
 	}
 
 	/************************ Persistence bitwise getters and setters **********************/
 
-	public Boolean getNeedQr() {
+	public boolean getNeedQr() {
 		return getBitwise(this.getPersistence(),REQUIRE_CODE);
 	}
 
-	public void setNeedQr(Boolean needQr) {
+	public void setNeedQr(boolean needQr) {
 		this.setPersistence(makeBitwise(this.getPersistence(),REQUIRE_CODE,needQr));
 	}
 
-	public Boolean getVolumeOverride(){
+	public boolean getVolumeOverride(){
 		return getBitwise(this.getPersistence(),VOLUME_OVERRIDE);
 	}
 
-	public void setVolumeOverride(Boolean volumeOverride){
+	public void setVolumeOverride(boolean volumeOverride){
 		this.setPersistence(makeBitwise(this.getPersistence(),VOLUME_OVERRIDE,volumeOverride));
 	}
 
-	public Boolean getDisplayScreen(){
+	public boolean getDisplayScreen(){
 		return getBitwise(this.getPersistence(),DISPLAY_SCREEN);
 	}
 
-	public void setDisplayScreen(Boolean displayScreen){
+	public void setDisplayScreen(boolean displayScreen){
 		this.setPersistence(makeBitwise(this.getPersistence(),DISPLAY_SCREEN,displayScreen));
 	}
 
-	public Boolean getWakeUp(){
+	public boolean getWakeUp(){
 		return getBitwise(this.getPersistence(),WAKE_UP);
 
 	}
 
-	public void setWakeUp(Boolean wakeUp){
+	public void setWakeUp(boolean wakeUp){
 		this.setPersistence(makeBitwise(this.getPersistence(),WAKE_UP,wakeUp));
 	}
 
-	public Boolean getConfirmDismiss(){
+	public boolean getConfirmDismiss(){
 		return getBitwise(this.getPersistence(),DISMISS_DIALOG);
 
 	}
 
-	public void setConfirmDismiss(Boolean dismissDialog){
+	public void setConfirmDismiss(boolean dismissDialog){
 		this.setPersistence(makeBitwise(this.getPersistence(),DISMISS_DIALOG,dismissDialog));
 	}
 
 	/*************************** Style bitwise getters and setters ************************/
 
-	public Boolean getFadeVolume(){
+	public boolean getFadeVolume(){
 		return getBitwise(this.getStyle(),FADE);
 	}
 
-	public void setFadeVolume(Boolean fade){
+	public void setFadeVolume(boolean fade){
 		this.setStyle(makeBitwise(this.getStyle(),FADE,fade));
 	}
 
-	public Boolean getVibrate() {
+	public boolean getVibrate() {
 		return getBitwise(this.getStyle(),VIBRATE);
 	}
 
-	public void setVibrate(Boolean vibrate) {
+	public void setVibrate(boolean vibrate) {
 		this.setStyle(makeBitwise(this.getStyle(),VIBRATE,vibrate));
 	}
 
-	public Boolean getLed() {
+	public boolean getLed() {
 		return getBitwise(this.getStyle(),LED);
 	}
 
-	public void setLed(Boolean led) {
+	public void setLed(boolean led) {
 		this.setStyle(makeBitwise(this.getStyle(),LED,led));
+	}
+	
+	public boolean getVibrateRepeat() {
+		return getBitwise(this.getStyle(),VIBRATEREPEAT);
+	}
+
+	public void setVibrateRepeat(boolean vibrateRepeat) {
+		this.setStyle(makeBitwise(this.getStyle(),VIBRATEREPEAT,vibrateRepeat));
 	}
 
 	/**************************** Database methods ***************************************/
@@ -743,7 +754,7 @@ public class Reminder implements Parcelable{
 	/********************************* Repeat Methods ****************************************/
 
     //Returns true if thisDay is in bitwise set daysOfWeek
-    public static Boolean checkDayOfWeek(byte daysOfWeek, int thisDay) {	//Call with checkDayOfWeek(reminder.getDaysOfWeek,thisDay)
+    public static boolean checkDayOfWeek(byte daysOfWeek, int thisDay) {	//Call with checkDayOfWeek(reminder.getDaysOfWeek,thisDay)
         int mask = 0;
         switch (thisDay) {
             case 1: {
@@ -791,7 +802,7 @@ public class Reminder implements Parcelable{
     private static void nextWeeklyRepeat(Reminder reminder){
         Calendar date = reminder.getDate();
         int thisDay = date.get(Calendar.DAY_OF_WEEK);
-        Boolean repeat = false;
+        boolean repeat = false;
         int count = 0;      //Count checks for error conditions and prevents infinite loops
         while (!repeat) {
             if (count > (7*(reminder.getRepeatLength()+1))){ //Cycled through entire week without finding match
@@ -964,7 +975,7 @@ public class Reminder implements Parcelable{
         editor.putString("temp_description",reminder.getDescription());
         editor.putBoolean("temp_vibrate",reminder.getVibrate());
         editor.putString("temp_ringtone",reminder.getRingtone());
-        editor.putString("volume_override",reminder.getVolumeOverride().toString());
+        editor.putBoolean("volume_override", reminder.getVolumeOverride());
         if (reminder.getOnlyAtLocation()){
             editor.putString("location_type", Integer.toString(1));
         }
@@ -1140,6 +1151,7 @@ public class Reminder implements Parcelable{
                 .getString("snooze_duration",Integer.toString(SNOOZEDURATIONDEFAULT))));
 	    reminder.setFadeVolume(sharedPreferences.getBoolean("fade",FADEDEFAULT));
 	    reminder.setConfirmDismiss(sharedPreferences.getBoolean("dismiss_check",DISMISSDIALOGDEFAULT));
+	    reminder.setVibrateRepeat(sharedPreferences.getBoolean("vibrate_repeat",VIBRATEREPEATDEFAULT));
         return reminder;
     }
 }

@@ -2,6 +2,7 @@ package us.bridgeses.Minder.editor;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.widget.BaseAdapter;
@@ -23,14 +24,19 @@ public class StyleFragment extends PreferenceFragment implements
                 .registerOnSharedPreferenceChangeListener(this);
     }
 
-    public void onSharedPreferenceChanged(SharedPreferences preference, String key){
-
-        ((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
-    }
+	public void onSharedPreferenceChanged(SharedPreferences preference, String key){
+		if (key.equals("temp_vibrate")){
+			CheckBoxPreference mPreference = (CheckBoxPreference) findPreference(key);
+			super.findPreference("vibrate_repeat").setEnabled(mPreference.isChecked());
+		}
+		((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
+	}
 
     private void initSummaries(){
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-
+	    CheckBoxPreference vibrateRepeat = (CheckBoxPreference) super.findPreference("vibrate_repeat");
+	    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+	    vibrateRepeat.setChecked(sharedPreferences.getBoolean("vibrate_repeat",false));
+	    vibrateRepeat.setEnabled(sharedPreferences.getBoolean("temp_vibrate",false));
     }
 
     @Override
