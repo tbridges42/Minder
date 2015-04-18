@@ -2,10 +2,6 @@ package us.bridgeses.Minder.editor;
 
 import android.app.Fragment;
 
-import us.bridgeses.Minder.ConditionsFragment;
-import us.bridgeses.Minder.PersistenceFragment;
-import us.bridgeses.Minder.StyleFragment;
-
 /**
  * Created by Tony on 4/18/2015.
  */

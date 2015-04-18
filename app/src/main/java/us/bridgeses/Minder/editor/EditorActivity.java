@@ -8,7 +8,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
-import us.bridgeses.Minder.PersistenceFragment;
 import us.bridgeses.Minder.R;
 
 /**

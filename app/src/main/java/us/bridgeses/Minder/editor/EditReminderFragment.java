@@ -1,4 +1,4 @@
-package us.bridgeses.Minder;
+package us.bridgeses.Minder.editor;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -22,10 +22,9 @@ import com.google.android.gms.maps.model.LatLng;
 
 import java.text.SimpleDateFormat;
 
+import us.bridgeses.Minder.R;
+import us.bridgeses.Minder.Reminder;
 import us.bridgeses.Minder.util.DatePreference;
-import us.bridgeses.Minder.editor.EditConditions;
-import us.bridgeses.Minder.editor.EditPersistence;
-import us.bridgeses.Minder.editor.EditStyle;
 import us.bridgeses.Minder.util.TimePreference;
 
 /**

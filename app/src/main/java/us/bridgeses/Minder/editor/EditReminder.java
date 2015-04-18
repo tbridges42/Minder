@@ -1,4 +1,4 @@
-package us.bridgeses.Minder;
+package us.bridgeses.Minder.editor;
 
 import android.app.Activity;
 import android.app.AlarmManager;
@@ -23,6 +23,9 @@ import com.orhanobut.logger.Logger;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+import us.bridgeses.Minder.R;
+import us.bridgeses.Minder.Reminder;
+import us.bridgeses.Minder.ReminderDBHelper;
 import us.bridgeses.Minder.receivers.ReminderReceiver;
 
 

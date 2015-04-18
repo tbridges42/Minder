@@ -1,4 +1,4 @@
-package us.bridgeses.Minder;
+package us.bridgeses.Minder.editor;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -8,12 +8,13 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
-import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.widget.BaseAdapter;
+
+import us.bridgeses.Minder.R;
 
 
 public class PersistenceFragment extends PreferenceFragment implements

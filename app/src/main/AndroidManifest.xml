@@ -45,7 +45,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".EditReminder"
+            android:name=".editor.EditReminder"
             android:label="@string/title_activity_edit"
             android:parentActivityName=".MainListActivity"
             android:windowSoftInputMode="adjustPan" >
@@ -54,9 +54,9 @@
                 android:value="us.bridgeses.Minder.MainListActivity" />
         </activity>
         <activity
-            android:name=".EditRepeat"
+            android:name=".editor.EditRepeat"
             android:label="@string/title_activity_repeat"
-            android:parentActivityName=".EditReminder"
+            android:parentActivityName=".editor.EditReminder"
             android:windowSoftInputMode="adjustPan" >
             <intent-filter>
                 <action android:name="android.intent.action.EDITREPEAT" />
@@ -66,7 +66,7 @@
 
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="us.bridgeses.Minder.EditReminder" />
+                android:value=".editor.EditReminder" />
         </activity>
 
         <receiver
@@ -96,10 +96,10 @@
         <activity
             android:name=".editor.EditConditions"
             android:label="@string/title_activity_edit_conditions"
-            android:parentActivityName=".EditReminder" >
+            android:parentActivityName=".editor.EditReminder" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="EditReminder" />
+                android:value=".editor.EditReminder" />
         </activity>
         <activity
             android:name=".SettingsActivity"
@@ -112,10 +112,10 @@
         <activity
             android:name=".editor.EditPersistence"
             android:label="@string/title_activity_edit_persistence"
-            android:parentActivityName=".EditReminder" >
+            android:parentActivityName=".editor.EditReminder" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="EditReminder" />
+                android:value=".editor.EditReminder" />
         </activity>
 
         <activity

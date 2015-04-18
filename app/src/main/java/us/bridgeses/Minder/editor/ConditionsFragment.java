@@ -1,4 +1,4 @@
-package us.bridgeses.Minder;
+package us.bridgeses.Minder.editor;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -24,6 +24,10 @@ import android.widget.BaseAdapter;
 import com.orhanobut.logger.Logger;
 
 import java.util.List;
+
+import us.bridgeses.Minder.MapsActivity;
+import us.bridgeses.Minder.R;
+import us.bridgeses.Minder.Reminder;
 
 
 public class ConditionsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener, Preference.OnPreferenceClickListener{
@@ -184,7 +188,7 @@ public class ConditionsFragment extends PreferenceFragment implements SharedPref
         ssidButton.setEnabled(wifiRequired.isChecked());
         ssidButton.setOnPreferenceClickListener(this);
 		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        wifiRequired.setChecked(sharedPreferences.getBoolean("wifi",Reminder.WIFIDEFAULT));
+        wifiRequired.setChecked(sharedPreferences.getBoolean("wifi", Reminder.WIFIDEFAULT));
         ssidButton.setSummary(sharedPreferences.getString("ssid",Reminder.SSIDDEFAULT));
 		Boolean isLocation = sharedPreferences.
                 getFloat("Latitude",(float)Reminder.LOCATIONDEFAULT.latitude)==0;

@@ -15,6 +15,8 @@ import android.widget.SimpleCursorAdapter;
 
 import com.orhanobut.logger.Logger;
 
+import us.bridgeses.Minder.editor.EditReminder;
+
 /**
  * Created by Tony on 8/9/2014.
  */

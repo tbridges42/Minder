@@ -1,4 +1,4 @@
-package us.bridgeses.Minder;
+package us.bridgeses.Minder.editor;
 
 import android.app.Activity;
 import android.app.FragmentManager;
@@ -7,6 +7,10 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
+
+import us.bridgeses.Minder.R;
+import us.bridgeses.Minder.Reminder;
+import us.bridgeses.Minder.RepeatFragment;
 
 /**
  * Created by Tony on 9/13/2014.

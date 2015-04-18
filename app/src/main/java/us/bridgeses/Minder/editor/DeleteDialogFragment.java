@@ -1,4 +1,4 @@
-package us.bridgeses.Minder;
+package us.bridgeses.Minder.editor;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -6,6 +6,8 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+
+import us.bridgeses.Minder.R;
 
 /**
  * Created by Tony on 9/13/2014.

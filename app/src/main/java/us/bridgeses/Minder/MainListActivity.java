@@ -21,6 +21,7 @@ import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.orhanobut.logger.Logger;
 
+import us.bridgeses.Minder.editor.EditReminder;
 import us.bridgeses.Minder.receivers.ReminderReceiver;
 
 /**

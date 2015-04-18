@@ -653,7 +653,7 @@ public class Reminder implements Parcelable{
         }
     }
 
-    protected static long saveReminder(SQLiteDatabase database, Reminder reminder) {
+    public static long saveReminder(SQLiteDatabase database, Reminder reminder) {
         ContentValues values = new ContentValues();
         if (reminder.getId() != -1)
             values.put(ReminderDBHelper.COLUMN_ID,reminder.getId());
@@ -682,7 +682,7 @@ public class Reminder implements Parcelable{
 		        values);
     }
 
-    protected static int deleteReminder(SQLiteDatabase database, int id){
+    public static int deleteReminder(SQLiteDatabase database, int id){
         String[] args = { String.valueOf(id) };
         return database.delete(ReminderDBHelper.TABLE_NAME,ReminderDBHelper.COLUMN_ID+" LIKE ?",args);
     }
@@ -743,7 +743,7 @@ public class Reminder implements Parcelable{
 	/********************************* Repeat Methods ****************************************/
 
     //Returns true if thisDay is in bitwise set daysOfWeek
-    protected static Boolean checkDayOfWeek(byte daysOfWeek, int thisDay) {	//Call with checkDayOfWeek(reminder.getDaysOfWeek,thisDay)
+    public static Boolean checkDayOfWeek(byte daysOfWeek, int thisDay) {	//Call with checkDayOfWeek(reminder.getDaysOfWeek,thisDay)
         int mask = 0;
         switch (thisDay) {
             case 1: {
