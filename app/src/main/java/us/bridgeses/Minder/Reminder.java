@@ -131,11 +131,11 @@ public class Reminder implements Parcelable{
 	public static final boolean NEEDQRDEFAULT = false;
     public static final boolean VIBRATEDEFAULT = false;
     public static final String RINGTONEDEFAULT = "";
-    public static final boolean LEDDEFAULT = false;
+    public static final boolean LEDDEFAULT = true;
     public static final int LEDCOLORDEFAULT = -1;
     public static final int LEDPATTERNDEFAULT = -1;
     public static final int IDDEFAULT = -1;
-    public static final int RADIUSDEFAULT = 500;
+    public static final int RADIUSDEFAULT = 200;
     public static final String SSIDDEFAULT = "";
     public static final String BTDEFAULT = "";
     public static final boolean WIFIDEFAULT = false;
