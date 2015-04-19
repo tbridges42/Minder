@@ -14,6 +14,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -349,6 +350,11 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
 	        else{
 	            makeNoise();
 	            createNotification();
+	            PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+	            PowerManager.WakeLock wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
+			            "MyWakelockTag");
+	            wakeLock.acquire();
+	            wakeLock.release();
             }
         }
         else {
