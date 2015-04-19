@@ -9,11 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
-import android.media.AudioAttributes;
-import android.media.AudioManager;
 import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
@@ -127,38 +123,8 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
 		Intent startIntent = new Intent(context, AlertService.class);
 		startIntent.putExtra("StartVibrate", reminder.getVibrate());
 		startIntent.putExtra("VibrateRepeat",reminder.getVibrateRepeat());
-		if (!reminder.getRingtone().equals("")) {
-			if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-				if (reminder.getVolumeOverride()) {
-					AudioManager manager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-					Logger.d("Maxing out volume");
-					curVolume = manager.getStreamVolume(AudioManager.STREAM_ALARM);
-					manager.setStreamVolume(AudioManager.STREAM_ALARM, manager.getStreamMaxVolume(AudioManager.STREAM_ALARM), 0);
-					curRingMode = manager.getRingerMode();
-					manager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
-				} else
-					Logger.d("Not maxing volume");
-				ringtone = RingtoneManager.getRingtone(context, Uri.parse(reminder.getRingtone()));
-				ringtone.setStreamType(AudioManager.STREAM_ALARM);
-
-			}
-			else {
-				if (reminder.getVolumeOverride()) {
-					AudioManager manager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-					Logger.d("Maxing out volume, Lollipop");
-					curVolume = manager.getStreamVolume(AudioManager.STREAM_ALARM);
-					AudioAttributes.Builder builder = new AudioAttributes.Builder();
-					builder.setUsage(AudioAttributes.USAGE_ALARM);
-					builder.setFlags(AudioAttributes.FLAG_AUDIBILITY_ENFORCED);
-					curRingMode = manager.getRingerMode();
-					manager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
-				} else
-					Logger.d("Not maxing volume, Lollipop");
-				ringtone = RingtoneManager.getRingtone(context, Uri.parse(reminder.getRingtone()));
-			}
-			startIntent.putExtra("ringtone-uri", reminder.getRingtone());
-			startIntent.putExtra("StartRingtone",true);
-		}
+		startIntent.putExtra("StartRingtone",reminder.getRingtone().equals(""));
+		startIntent.putExtra("ringtone-uri", reminder.getRingtone());
 		context.startService(startIntent);
 	}
 
