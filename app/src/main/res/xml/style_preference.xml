@@ -54,8 +54,7 @@
         <CheckBoxPreference
             android:key="fade"
             android:title="Build Up Volume"
-            android:summaryOn="Volume will gradually increase"
-            android:summaryOff="Volume will remain constant"
+            android:summary="Coming soon!"
             android:enabled="false"/>
     </PreferenceCategory>
 </PreferenceScreen>
