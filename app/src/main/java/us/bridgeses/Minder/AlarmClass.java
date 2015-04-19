@@ -14,7 +14,6 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.NotificationCompat;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -96,19 +95,23 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
 						PendingIntent.FLAG_UPDATE_CURRENT
 				);
 
-		NotificationCompat.Builder mBuilder =
-				new NotificationCompat.Builder(context)
+		Notification.Builder mBuilder =
+				new Notification.Builder(context)
 						.setSmallIcon(R.drawable.ic_launcher)
 						.setContentTitle(reminder.getName())
 						.setContentText(reminder.getDescription())
 						.setOngoing(true)
 						.setPriority(Notification.PRIORITY_MAX)
-						.setStyle(new NotificationCompat.BigTextStyle()
+						.setStyle(new Notification.BigTextStyle()
 								.bigText(reminder.getDescription()))
 						.addAction(R.drawable.ic_stat_content_clear, "Dismiss", dismissPendingIntent);
 
 		if (Build.VERSION.SDK_INT >= 21){
 			mBuilder.setCategory(Notification.CATEGORY_ALARM);
+		}
+
+		if (reminder.getLed()){
+			mBuilder.setLights(0xFF0000FF,250,250);
 		}
 
 		mBuilder.setContentIntent(resultPendingIntent);
@@ -123,7 +126,7 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
 		Intent startIntent = new Intent(context, AlertService.class);
 		startIntent.putExtra("StartVibrate", reminder.getVibrate());
 		startIntent.putExtra("VibrateRepeat",reminder.getVibrateRepeat());
-		startIntent.putExtra("StartRingtone",reminder.getRingtone().equals(""));
+		startIntent.putExtra("StartRingtone",!reminder.getRingtone().equals(""));
 		startIntent.putExtra("ringtone-uri", reminder.getRingtone());
 		context.startService(startIntent);
 	}
@@ -175,7 +178,7 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
         Intent intentAlarm = new Intent(context, ReminderReceiver.class);//Create alarm intent
         int id = reminder.getId();
         intentAlarm.putExtra("Id", id);           //Associate intent with specific reminder
-        intentAlarm.putExtra("Snooze",snoozeNum);                       //Increment snooze count
+        intentAlarm.putExtra("Snooze", snoozeNum);                       //Increment snooze count
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         int alarmType;
         if (reminder.getWakeUp()){
@@ -184,8 +187,8 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
         else {
             alarmType = AlarmManager.RTC;
         }
-        alarmManager.set(alarmType, Calendar.getInstance().getTimeInMillis()+duration,
-                PendingIntent.getBroadcast(context, id, intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
+        alarmManager.set(alarmType, Calendar.getInstance().getTimeInMillis() + duration,
+		        PendingIntent.getBroadcast(context, id, intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
     }
 
     @Override

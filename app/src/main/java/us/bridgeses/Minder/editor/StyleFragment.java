@@ -34,9 +34,11 @@ public class StyleFragment extends PreferenceFragment implements
 
     private void initSummaries(){
 	    CheckBoxPreference vibrateRepeat = (CheckBoxPreference) super.findPreference("vibrate_repeat");
+	    CheckBoxPreference led = (CheckBoxPreference) super.findPreference("led");
 	    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
 	    vibrateRepeat.setChecked(sharedPreferences.getBoolean("vibrate_repeat",false));
 	    vibrateRepeat.setEnabled(sharedPreferences.getBoolean("temp_vibrate",false));
+	    led.setChecked(sharedPreferences.getBoolean("led",false));
     }
 
     @Override
