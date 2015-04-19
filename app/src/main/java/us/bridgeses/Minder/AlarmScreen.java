@@ -3,7 +3,6 @@ package us.bridgeses.Minder;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -11,16 +10,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.sqlite.SQLiteDatabase;
-import android.media.AudioAttributes;
-import android.media.AudioManager;
 import android.media.Ringtone;
-import android.media.RingtoneManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
-import android.support.v4.app.NotificationCompat;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.NumberPicker;
@@ -62,100 +56,11 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
 	    context.stopService(stopIntent);
     }
 
-    private void makeNoise() {
-	    Intent startIntent = new Intent(context, AlertService.class);
-		startIntent.putExtra("StartVibrate",reminder.getVibrate());
-		startIntent.putExtra("VibrateRepeat",reminder.getVibrateRepeat());
-        if (!reminder.getRingtone().equals("")) {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-                if (reminder.getVolumeOverride()) {
-                    AudioManager manager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-                    Logger.d("Maxing out volume");
-                    curVolume = manager.getStreamVolume(AudioManager.STREAM_ALARM);
-                    manager.setStreamVolume(AudioManager.STREAM_ALARM, manager.getStreamMaxVolume(AudioManager.STREAM_ALARM), 0);
-                    curRingMode = manager.getRingerMode();
-                    manager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
-                } else
-                    Logger.d("Not maxing volume");
-                ringtone = RingtoneManager.getRingtone(context, Uri.parse(reminder.getRingtone()));
-                ringtone.setStreamType(AudioManager.STREAM_ALARM);
-
-            }
-            else {
-                if (reminder.getVolumeOverride()) {
-                    AudioManager manager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-                    Logger.d("Maxing out volume, Lollipop");
-                    curVolume = manager.getStreamVolume(AudioManager.STREAM_ALARM);
-                    AudioAttributes.Builder builder = new AudioAttributes.Builder();
-                    builder.setUsage(AudioAttributes.USAGE_ALARM);
-                    builder.setFlags(AudioAttributes.FLAG_AUDIBILITY_ENFORCED);
-                    curRingMode = manager.getRingerMode();
-                    manager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
-                } else
-                    Logger.d("Not maxing volume, Lollipop");
-                ringtone = RingtoneManager.getRingtone(context, Uri.parse(reminder.getRingtone()));
-            }
-	        startIntent.putExtra("ringtone-uri", reminder.getRingtone());
-	        startIntent.putExtra("StartRingtone",true);
-        }
-	    context.startService(startIntent);
-    }
-
     @Override
     public void onStop() {
         super.onStop();
         //silence();
     }
-
-	private void createNotification() {
-
-		Intent resultIntent = new Intent(this, AlarmScreen.class);
-		resultIntent.putExtra("Id",reminder.getId());
-
-		// Because clicking the notification opens a new ("special") activity, there's
-		// no need to create an artificial back stack.
-		PendingIntent resultPendingIntent =
-				PendingIntent.getActivity(
-						this,
-						0,
-						resultIntent,
-						PendingIntent.FLAG_UPDATE_CURRENT
-				);
-
-        Intent dismissIntent = new Intent(this, AlarmScreen.class);
-        dismissIntent.putExtra("Id",reminder.getId());
-        dismissIntent.putExtra("Dismiss",true);
-
-        PendingIntent dismissPendingIntent =
-                PendingIntent.getActivity(
-                        this,
-                        1,
-                        dismissIntent,
-                        PendingIntent.FLAG_UPDATE_CURRENT
-                );
-
-        NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.ic_launcher)
-                        .setContentTitle(reminder.getName())
-                        .setContentText(reminder.getDescription())
-                        .setOngoing(true)
-                        .setPriority(Notification.PRIORITY_MAX)
-                        .setStyle(new NotificationCompat.BigTextStyle()
-                                .bigText(reminder.getDescription()))
-                        .addAction(R.drawable.ic_stat_content_clear, "Dismiss", dismissPendingIntent);
-
-		if (Build.VERSION.SDK_INT >= 21){
-			mBuilder.setCategory(Notification.CATEGORY_ALARM);
-		}
-
-		mBuilder.setContentIntent(resultPendingIntent);
-		// Gets an instance of the NotificationManager service
-		NotificationManager mNotifyMgr =
-				(NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-		// Builds the notification and issues it.
-		mNotifyMgr.notify(reminder.getId(), mBuilder.build());
-	}
 
     @Override
     public boolean onLongClick(View view){
@@ -249,8 +154,6 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
             return;
         }
         else {
-            createNotification();
-            makeNoise();
             createScreen();
         }
     }
@@ -264,7 +167,6 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
 				dismiss();
 			}
 			if(resultCode == Activity.RESULT_CANCELED){
-				makeNoise();
                 createScreen();
 			}
 		}
@@ -332,6 +234,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
     }
 
     private void dismiss() {
+	    silence();
 	    int id = reminder.getId();
         cancelNotification(id);
 	    cancelAlarm(id);
@@ -362,7 +265,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                makeNoise();
+
             }
         });
         builder.create();
@@ -370,7 +273,6 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
     }
 
     public void checkDismiss(){
-        silence();
         if (reminder.getConfirmDismiss()){
             confirmDismiss();
         }
@@ -410,7 +312,6 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
     }
 
     private void customSnooze(View view) {
-        silence();
         final View dLayout = View.inflate(this, R.layout.snooze_dialog,null);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
@@ -426,7 +327,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                makeNoise();
+
             }
         });
         builder.setView(dLayout);

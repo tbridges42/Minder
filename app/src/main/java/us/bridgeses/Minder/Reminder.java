@@ -1152,6 +1152,7 @@ public class Reminder implements Parcelable{
 	    reminder.setFadeVolume(sharedPreferences.getBoolean("fade",FADEDEFAULT));
 	    reminder.setConfirmDismiss(sharedPreferences.getBoolean("dismiss_check",DISMISSDIALOGDEFAULT));
 	    reminder.setVibrateRepeat(sharedPreferences.getBoolean("vibrate_repeat",VIBRATEREPEATDEFAULT));
+	    reminder.setLed(sharedPreferences.getBoolean("led",LEDDEFAULT));
         return reminder;
     }
 }

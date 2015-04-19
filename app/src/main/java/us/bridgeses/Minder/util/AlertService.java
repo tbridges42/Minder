@@ -1,8 +1,11 @@
 package us.bridgeses.Minder.util;
 
+import android.annotation.TargetApi;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.media.AudioAttributes;
+import android.media.AudioManager;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -18,6 +21,8 @@ import com.orhanobut.logger.Logger;
 public class AlertService extends Service {
 	private Ringtone ringtone;
 	private Vibrator vibrator;
+	private int currVolume = -1;
+	private int currRingMode = -1;
 
 	@Override
 	public IBinder onBind(Intent intent)
@@ -25,8 +30,44 @@ public class AlertService extends Service {
 		return null;
 	}
 
-	private void startRingtone(Uri ringtoneUri){
+	@SuppressWarnings("deprecation")
+	private void overrideVolumeCompat(){
+		AudioManager manager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+		Logger.d("Maxing out volume");
+		currVolume = manager.getStreamVolume(AudioManager.STREAM_ALARM);
+		manager.setStreamVolume(AudioManager.STREAM_ALARM, (int) Math.round(manager.getStreamMaxVolume(AudioManager.STREAM_ALARM) * 0.8), 0);
+		currRingMode = manager.getRingerMode();
+		manager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
+		ringtone.setStreamType(AudioManager.STREAM_ALARM);
+	}
+
+	@TargetApi(21)
+	private void overrideVolume(){
+		AudioManager manager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+		Logger.d("Maxing out volume, Lollipop");
+		currVolume = manager.getStreamVolume(AudioManager.STREAM_ALARM);
+		manager.setStreamVolume(AudioManager.STREAM_ALARM, (int) Math.round(manager.getStreamMaxVolume(AudioManager.STREAM_ALARM) * 0.8), 0);
+		AudioAttributes.Builder builder = new AudioAttributes.Builder();
+		builder.setUsage(AudioAttributes.USAGE_ALARM);
+		builder.setFlags(AudioAttributes.FLAG_AUDIBILITY_ENFORCED);
+		currRingMode = manager.getRingerMode();
+		manager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
+	}
+
+	private void restoreVolume(){
+		AudioManager manager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+		manager.setStreamVolume(AudioManager.STREAM_ALARM, currVolume, 0);
+		manager.setRingerMode(currRingMode);
+	}
+
+	private void startRingtone(Uri ringtoneUri, boolean override){
 		this.ringtone = RingtoneManager.getRingtone(this, ringtoneUri);
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+			overrideVolumeCompat();
+		}
+		else {
+			overrideVolume();
+		}
 		ringtone.play();
 	}
 
@@ -34,6 +75,9 @@ public class AlertService extends Service {
 		if (ringtone != null) {
 			Logger.d("Stopping Ringtone");
 			ringtone.stop();
+		}
+		if (currVolume != -1){
+			restoreVolume();
 		}
 	}
 
@@ -75,7 +119,7 @@ public class AlertService extends Service {
 		if (startRingtone) {
 			Logger.d("Starting ringtone service");
 			Uri ringtoneUri = Uri.parse(intent.getExtras().getString("ringtone-uri"));
-			startRingtone(ringtoneUri);
+			startRingtone(ringtoneUri,false);
 		}
 		else {
 			stopRingtone();
@@ -97,15 +141,9 @@ public class AlertService extends Service {
 	public void onDestroy()
 	{
 
-		if (ringtone != null) {
-			Logger.d("Stopping Ringtone");
-			ringtone.stop();
-		}
+		stopRingtone();
 
-		Logger.d("Stopping Vibrate");
-		if (vibrator != null) {
-			vibrator.cancel();
-		}
+		stopVibrate();
 		super.onDestroy();
 	}
 }

@@ -12,11 +12,12 @@ import android.location.Location;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Vibrator;
 import android.support.v4.app.NotificationCompat;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -45,7 +46,6 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
     private boolean hasLocation;
     private boolean hasWiFi;
     private boolean hasBT;
-    private boolean urgentRequest;
     private WifiReceiver wifiReceiver;
     private GoogleApiClient mGoogleApiClient;
 	private int curVolume;
@@ -124,16 +124,10 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
 	}
 
 	private void makeNoise() {
-		Vibrator vibrator;
-		Logger.d("In makeNoise");
-		if (reminder.getVibrate()) {
-			vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
-			if (vibrator.hasVibrator()) {
-				vibrator.vibrate(1000);
-			}
-		}
+		Intent startIntent = new Intent(context, AlertService.class);
+		startIntent.putExtra("StartVibrate", reminder.getVibrate());
+		startIntent.putExtra("VibrateRepeat",reminder.getVibrateRepeat());
 		if (!reminder.getRingtone().equals("")) {
-			Logger.d("Starting ringtone");
 			if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
 				if (reminder.getVolumeOverride()) {
 					AudioManager manager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
@@ -144,6 +138,8 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
 					manager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
 				} else
 					Logger.d("Not maxing volume");
+				ringtone = RingtoneManager.getRingtone(context, Uri.parse(reminder.getRingtone()));
+				ringtone.setStreamType(AudioManager.STREAM_ALARM);
 
 			}
 			else {
@@ -158,12 +154,12 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
 					manager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
 				} else
 					Logger.d("Not maxing volume, Lollipop");
+				ringtone = RingtoneManager.getRingtone(context, Uri.parse(reminder.getRingtone()));
 			}
-			Intent startIntent = new Intent(context, AlertService.class);
 			startIntent.putExtra("ringtone-uri", reminder.getRingtone());
 			startIntent.putExtra("StartRingtone",true);
-			context.startService(startIntent);
 		}
+		context.startService(startIntent);
 	}
 
     private void retrieveReminder(){
@@ -201,18 +197,7 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
                 mGoogleApiClient, this);
     }
 
-    protected LocationRequest createLocationRequest() {
-        urgentRequest = false;
-        LocationRequest mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(Reminder.MINUTE*15);
-        mLocationRequest.setFastestInterval(Reminder.MINUTE);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-        mLocationRequest.setSmallestDisplacement(reminder.getRadius());
-        return mLocationRequest;
-    }
-
     protected LocationRequest createUrgentLocationRequest() {
-        urgentRequest = true;
         LocationRequest mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(10000);
         mLocationRequest.setFastestInterval(1000);
@@ -388,6 +373,8 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
     private void checkConditions(){
         if (hasLocation && hasBT && hasWiFi){
             if (reminder.getDisplayScreen()){
+	            makeNoise();
+	            createNotification();
 	            alarm();
             }
 	        else{
@@ -418,8 +405,6 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
         Logger.v("Reminder fired");
         retrieveReminder();
 	    if (dismiss){
-		    Intent stopIntent = new Intent(context, AlertService.class);
-		    context.stopService(stopIntent);
 		    alarm();
 	    }
 	    else {
