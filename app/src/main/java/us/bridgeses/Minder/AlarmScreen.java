@@ -28,7 +28,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import us.bridgeses.Minder.receivers.ReminderReceiver;
-import us.bridgeses.Minder.util.AlertService;
 
 
 public class AlarmScreen extends Activity implements View.OnLongClickListener{
@@ -49,11 +48,6 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
     public void onConfigurationChanged(Configuration newConfig)
     {
         super.onConfigurationChanged(newConfig);
-    }
-
-    private void silence() {
-	    Intent stopIntent = new Intent(context, AlertService.class);
-	    context.stopService(stopIntent);
     }
 
     @Override
@@ -122,7 +116,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
 
         if (dismiss){
             reminder = retrieveReminder(id);
-	        silence();
+	        AlarmClass.silence(reminder,context);
 	        if (reminder.getNeedQr()){
 		        checkQr();
 	        }
@@ -167,6 +161,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
 				dismiss();
 			}
 			if(resultCode == Activity.RESULT_CANCELED){
+				AlarmClass.makeNoise(reminder,context);
                 createScreen();
 			}
 		}
@@ -234,7 +229,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
     }
 
     private void dismiss() {
-	    silence();
+	    AlarmClass.silence(reminder,context);
 	    int id = reminder.getId();
         cancelNotification(id);
 	    cancelAlarm(id);
@@ -265,7 +260,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-
+				AlarmClass.makeNoise(reminder,context);
             }
         });
         builder.create();
@@ -273,6 +268,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
     }
 
     public void checkDismiss(){
+	    AlarmClass.silence(reminder,context);
         if (reminder.getConfirmDismiss()){
             confirmDismiss();
         }
@@ -304,7 +300,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
         alarmManager.set(alarmType, Calendar.getInstance().getTimeInMillis()+duration,
                 PendingIntent.getBroadcast(getApplicationContext(), id, intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
 	    Logger.v("Alarm " + id + " set");
-        silence();
+        AlarmClass.silence(reminder,context);
         if (scheduleTaskExecutor != null){
             scheduleTaskExecutor.shutdownNow();
         }

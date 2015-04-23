@@ -78,7 +78,7 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
 		PendingIntent resultPendingIntent =
 				PendingIntent.getActivity(
 						context,
-						0,
+						reminder.getId()*2,
 						resultIntent,
 						PendingIntent.FLAG_UPDATE_CURRENT
 				);
@@ -90,7 +90,7 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
 		PendingIntent dismissPendingIntent =
 				PendingIntent.getBroadcast(
 						context,
-						1,
+						reminder.getId()*2+1,
 						dismissIntent,
 						PendingIntent.FLAG_UPDATE_CURRENT
 				);
@@ -122,13 +122,22 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
 		mNotifyMgr.notify(reminder.getId(), mBuilder.build());
 	}
 
-	private void makeNoise() {
+	public static void makeNoise(Reminder reminder, Context context) {
+		Logger.d("Making noise");
 		Intent startIntent = new Intent(context, AlertService.class);
 		startIntent.putExtra("StartVibrate", reminder.getVibrate());
 		startIntent.putExtra("VibrateRepeat",reminder.getVibrateRepeat());
 		startIntent.putExtra("StartRingtone",!reminder.getRingtone().equals(""));
 		startIntent.putExtra("ringtone-uri", reminder.getRingtone());
+		startIntent.putExtra("Id",reminder.getId());
 		context.startService(startIntent);
+	}
+
+	public static void silence(Reminder reminder, Context context) {
+		Intent stopIntent = new Intent(context, AlertService.class);
+		stopIntent.putExtra("Id",reminder.getId());
+		context.startService(stopIntent);
+		context.stopService(stopIntent);
 	}
 
     private void retrieveReminder(){
@@ -168,8 +177,8 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
 
     protected LocationRequest createUrgentLocationRequest() {
         LocationRequest mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(10000);
-        mLocationRequest.setFastestInterval(1000);
+        mLocationRequest.setInterval(60000);
+        mLocationRequest.setFastestInterval(30000);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         return mLocationRequest;
     }
@@ -342,12 +351,12 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
     private void checkConditions(){
         if (hasLocation && hasBT && hasWiFi){
             if (reminder.getDisplayScreen()){
-	            makeNoise();
+	            makeNoise(reminder,context);
 	            createNotification();
 	            alarm();
             }
 	        else{
-	            makeNoise();
+	            makeNoise(reminder,context);
 	            createNotification();;
             }
         }
