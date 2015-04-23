@@ -160,7 +160,7 @@ public class AsyncFragment extends ListFragment{
 
                 // mCallbacks.onPostExecute(cursor);
             }
-	        Logger.e("Cursor updated");
+	        Logger.d("Cursor updated");
             mAdapter.swapCursor(cursor);
 	        mAdapter.notifyDataSetChanged();
         }
