@@ -15,11 +15,14 @@ import android.os.Vibrator;
 
 import com.orhanobut.logger.Logger;
 
+import java.util.Hashtable;
+import java.util.Set;
+
 /**
  * Created by Tony on 4/14/2015.
  */
 public class AlertService extends Service {
-	private Ringtone ringtone;
+	Hashtable<Integer,Ringtone> ringtoneHash = new Hashtable<Integer,Ringtone>();
 	private Vibrator vibrator;
 	private int currVolume = -1;
 	private int currRingMode = -1;
@@ -38,7 +41,6 @@ public class AlertService extends Service {
 		manager.setStreamVolume(AudioManager.STREAM_ALARM, (int) Math.round(manager.getStreamMaxVolume(AudioManager.STREAM_ALARM) * 0.8), 0);
 		currRingMode = manager.getRingerMode();
 		manager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
-		ringtone.setStreamType(AudioManager.STREAM_ALARM);
 	}
 
 	@TargetApi(21)
@@ -58,20 +60,35 @@ public class AlertService extends Service {
 		AudioManager manager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 		manager.setStreamVolume(AudioManager.STREAM_ALARM, currVolume, 0);
 		manager.setRingerMode(currRingMode);
+		currVolume = -1;
+		currRingMode = -1;
 	}
 
-	private void startRingtone(Uri ringtoneUri, boolean override){
-		this.ringtone = RingtoneManager.getRingtone(this, ringtoneUri);
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-			overrideVolumeCompat();
+	private void startRingtone(Uri ringtoneUri, boolean override, int id){
+		Ringtone ringtone;
+		Logger.d("Starting ringtone "+id);
+		if (ringtoneHash.containsKey(id)){
+			stopRingtone(id);
 		}
-		else {
-			overrideVolume();
+
+		ringtone = RingtoneManager.getRingtone(this, ringtoneUri);
+		ringtoneHash.put(id,ringtone);
+
+		if (override){
+			if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+				overrideVolumeCompat();
+				ringtone.setStreamType(AudioManager.STREAM_ALARM);
+			}
+			else {
+				overrideVolume();
+			}
 		}
 		ringtone.play();
 	}
 
-	private void stopRingtone(){
+	private void stopRingtone(int id){
+		Ringtone ringtone = ringtoneHash.get(id);
+		Logger.d("Stopping ringtone "+id);
 		if (ringtone != null) {
 			Logger.d("Stopping Ringtone");
 			ringtone.stop();
@@ -79,6 +96,15 @@ public class AlertService extends Service {
 		if (currVolume != -1){
 			restoreVolume();
 		}
+		ringtoneHash.remove(id);
+	}
+
+	private void stopAllRingtones(){
+		Set<Integer> keys = ringtoneHash.keySet();
+		for (Integer key : keys){
+			stopRingtone(key);
+		}
+		ringtoneHash = new Hashtable<Integer,Ringtone>();
 	}
 
 	private void stopVibrate(){
@@ -114,26 +140,26 @@ public class AlertService extends Service {
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId)
 	{
-		boolean startRingtone = intent.getBooleanExtra("StartRingtone",false);
-		boolean startVibrate = intent.getBooleanExtra("StartVibrate",false);
-		if (startRingtone) {
-			Logger.d("Starting ringtone service");
-			Uri ringtoneUri = Uri.parse(intent.getStringExtra("ringtone-uri"));
-			startRingtone(ringtoneUri,false);
+		int id = intent.getIntExtra("Id",-1);
+		if (id != -1) {
+			boolean startRingtone = intent.getBooleanExtra("StartRingtone", false);
+			boolean startVibrate = intent.getBooleanExtra("StartVibrate", false);
+			if (startRingtone) {
+				Logger.d("Starting ringtone service");
+				Uri ringtoneUri = Uri.parse(intent.getStringExtra("ringtone-uri"));
+				startRingtone(ringtoneUri, false, id);
+			} else {
+				stopRingtone(id);
+			}
+			if (startVibrate) {
+				Logger.d("Starting vibrate service");
+				byte pattern = (byte) intent.getIntExtra("VibratePattern", 1);
+				boolean repeat = intent.getBooleanExtra("VibrateRepeat", false);
+				startVibrate(pattern, repeat);
+			} else {
+				stopVibrate();
+			}
 		}
-		else {
-			stopRingtone();
-		}
-		if (startVibrate) {
-			Logger.d("Starting vibrate service");
-			byte pattern = (byte) intent.getIntExtra("VibratePattern",1);
-			boolean repeat = intent.getBooleanExtra("VibrateRepeat",false);
-			startVibrate(pattern,repeat);
-		}
-		else {
-			stopVibrate();
-		}
-
 		return START_NOT_STICKY;
 	}
 
@@ -141,7 +167,7 @@ public class AlertService extends Service {
 	public void onDestroy()
 	{
 
-		stopRingtone();
+		stopAllRingtones();
 
 		stopVibrate();
 		super.onDestroy();
