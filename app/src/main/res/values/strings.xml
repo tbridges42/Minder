@@ -43,6 +43,9 @@
     <string name="short_fri">F</string>
     <string name="short_sun">S</string>
 
+    <!-- Map Activity strings -->
+    <string name="meters">meters</string>
+
     <!-- About screen strings -->
     <string name="site_url">http://apps.bridgeses.us/minder</string>
     <string name="support_url">http://support.bridgeses.us</string>
@@ -51,6 +54,13 @@
     <string name="mailto">mailto:</string>
     <string name="subject_code">"?subject="</string>
     <string name="feedback_subject">Minder Feedback</string>
+    <string name="set_defaults">Set Defaults</string>
+    <string name="about">About</string>
+
+    <!-- Alarm Screen strings -->
+    <string name="snooze">Snooze</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="minutes">minutes</string>
 
     <string-array name="repeat_period">
         <item>None</item>

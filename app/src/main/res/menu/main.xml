@@ -3,18 +3,18 @@
     tools:context="us.bridgeses.Minder.MainListActivity" >
     <item android:id="@+id/action_new"
         android:icon="@drawable/ic_action_new"
-        android:title="New Reminder"
+        android:title="@string/new_reminder"
         android:showAsAction="always" />
     <!--<item android:id="@+id/action_settings"
         android:title="@string/action_settings"
         android:orderInCategory="100"
         android:showAsAction="never" />-->
     <item android:id="@+id/defaults"
-        android:title="Set Defaults"
+        android:title="@string/set_defaults"
         android:orderInCategory="90"
         android:showAsAction="never" />
     <item android:id="@+id/action_about"
-          android:title="About"
+          android:title="@string/about"
           android:orderInCategory="100"
           android:showAsAction="never" />
 </menu>

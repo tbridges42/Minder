@@ -87,7 +87,7 @@ public class MapsActivity extends Activity implements GoogleMap.OnMapLongClickLi
 	    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 	    location = new LatLng(sharedPreferences.getFloat("Latitude",(float)Reminder.LOCATIONDEFAULT.latitude),
                 sharedPreferences.getFloat("Longitude",(float)Reminder.LOCATIONDEFAULT.longitude));
-	    radius = Integer.valueOf(sharedPreferences.getInt("radius",Reminder.RADIUSDEFAULT));
+	    radius = sharedPreferences.getInt("radius",Reminder.RADIUSDEFAULT);
 
         if (isGoogleMapsInstalled()) {
             setUpMapIfNeeded();

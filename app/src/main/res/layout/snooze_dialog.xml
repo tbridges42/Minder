@@ -15,7 +15,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="minutes"
+            android:text="@string/minutes"
             android:layout_toEndOf="@id/snooze_length"
             android:layout_toRightOf="@id/snooze_length"
             android:layout_centerVertical="true"

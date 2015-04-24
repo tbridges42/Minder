@@ -358,7 +358,7 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
             }
 	        else{
 	            makeNoise(reminder,context);
-	            createNotification();;
+	            createNotification();
             }
         }
         else {
