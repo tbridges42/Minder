@@ -144,10 +144,11 @@ public class AlertService extends Service {
 		if (id != -1) {
 			boolean startRingtone = intent.getBooleanExtra("StartRingtone", false);
 			boolean startVibrate = intent.getBooleanExtra("StartVibrate", false);
+			boolean override = intent.getBooleanExtra("Override",false);
 			if (startRingtone) {
 				Logger.d("Starting ringtone service");
 				Uri ringtoneUri = Uri.parse(intent.getStringExtra("ringtone-uri"));
-				startRingtone(ringtoneUri, false, id);
+				startRingtone(ringtoneUri, override, id);
 			} else {
 				stopRingtone(id);
 			}
