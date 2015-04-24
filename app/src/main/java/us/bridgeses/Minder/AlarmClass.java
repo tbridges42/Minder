@@ -128,6 +128,7 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
 		startIntent.putExtra("StartVibrate", reminder.getVibrate());
 		startIntent.putExtra("VibrateRepeat",reminder.getVibrateRepeat());
 		startIntent.putExtra("StartRingtone",!reminder.getRingtone().equals(""));
+		startIntent.putExtra("Override",reminder.getVolumeOverride());
 		startIntent.putExtra("ringtone-uri", reminder.getRingtone());
 		startIntent.putExtra("Id",reminder.getId());
 		context.startService(startIntent);
