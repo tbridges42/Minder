@@ -6,8 +6,7 @@
     <PreferenceScreen
         android:key="website"
         android:title="Official Website"
-        android:summary="http://apps.bridgeses.us/Minder"
-        android:enabled="false"/>
+        android:summary="http://apps.bridgeses.us/Minder"/>
     <PreferenceScreen
         android:key="support"
         android:title="Submit Bugs"
