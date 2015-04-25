@@ -16,6 +16,7 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <application
         android:name=".MyApplication"
@@ -117,7 +118,11 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".editor.EditReminder" />
         </activity>
+        <activity
+            android:name=".util.scanner.ScannerActivity"
+            android:label="Scan Code">
 
+        </activity>
         <activity
             android:name=".editor.EditStyle"
             android:label="@string/title_activity_edit_style" >

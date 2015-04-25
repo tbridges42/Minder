@@ -33,6 +33,7 @@
     <string name="ok">OK</string>
     <string name="code_set">Code set</string>
     <string name="silent">Silent</string>
+    <string name="no_camera">No camera detected</string>
 
     <!-- Repeat Activity strings -->
     <string name="short_sat">S</string>

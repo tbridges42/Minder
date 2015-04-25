@@ -1,11 +1,10 @@
 package us.bridgeses.Minder.editor;
 
+import android.Manifest;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
@@ -13,8 +12,10 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.widget.BaseAdapter;
+import android.widget.Toast;
 
 import us.bridgeses.Minder.R;
+import us.bridgeses.Minder.util.scanner.ScannerActivity;
 
 
 public class PersistenceFragment extends PreferenceFragment implements
@@ -33,46 +34,33 @@ public class PersistenceFragment extends PreferenceFragment implements
 			if (resultCode == Activity.RESULT_OK) {
 				SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
 				SharedPreferences.Editor editor = sharedPreferences.edit();
-				editor.putString("temp_code",data.getStringExtra("SCAN_RESULT"));
+				String code = data.getStringExtra("SCAN_RESULT");
+				editor.putString("temp_code",code);
 				editor.apply();
 				super.findPreference("button_code").setSummary(getResources().getString(R.string.code_set));
+				int duration = Toast.LENGTH_SHORT;
+				Toast toast = Toast.makeText(getActivity(), code, duration);
+				toast.show();
 			}
 			if(resultCode == Activity.RESULT_CANCELED){
 				//handle cancel
 			}
 		}
 	}
+
+	private boolean checkCamera(){
+		PackageManager pm = getActivity().getPackageManager();
+		return pm.hasSystemFeature(PackageManager.FEATURE_CAMERA)
+				&& (pm.checkPermission(Manifest.permission.CAMERA,getActivity().getPackageName())
+					== PackageManager.PERMISSION_GRANTED);
+	}
+
 	@Override
 	public boolean onPreferenceClick(Preference preference) {
 		String key = preference.getKey();
 		if (key.equals("button_code")) {
-			try {
-
-				Intent intent = new Intent("com.google.zxing.client.android.SCAN");
-				//intent.putExtra("SCAN_MODE", "QR_CODE_MODE"); // "PRODUCT_MODE for bar codes
-
-				startActivityForResult(intent, 0);
-
-			} catch (Exception e) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity() );
-
-                builder.setTitle("No QR scanner");
-                builder.setMessage("This function requires the ZXing Bar Code Scanner");
-                builder.setPositiveButton("Play Store", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        Uri marketUri = Uri.parse("market://details?id=com.google.zxing.client.android");
-                        Intent marketIntent = new Intent(Intent.ACTION_VIEW, marketUri);
-                        startActivity(marketIntent);
-                    }
-                });
-                builder.setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-
-                    }
-                });
-                builder.create();
-                builder.show();
-			}
+			Intent intent = new Intent(getActivity(),ScannerActivity.class);
+			startActivityForResult(intent, 0);
 		}
 		return false;
 	}
@@ -100,12 +88,20 @@ public class PersistenceFragment extends PreferenceFragment implements
         CheckBoxPreference outLoudPreference = (CheckBoxPreference) super.findPreference("out_loud");
         CheckBoxPreference displayScreenPreference = (CheckBoxPreference) super.findPreference("display_screen");
         CheckBoxPreference wakeUpPreference = (CheckBoxPreference) super.findPreference("wake_up");
-		codeButton.setEnabled(codeType.isChecked());
-		if (sharedPreferences.getString("button_code","").equals("")){
-			super.findPreference("button_code").setSummary("");
+		if (checkCamera()) {
+			codeButton.setEnabled(codeType.isChecked());
+			if (sharedPreferences.getString("button_code", "").equals("")) {
+				super.findPreference("button_code").setSummary("");
+			} else
+				super.findPreference("button_code").setSummary(getResources().getString(R.string.code_set));
 		}
-		else
-			super.findPreference("button_code").setSummary(getResources().getString(R.string.code_set));
+		else{
+			codeButton.setEnabled(false);
+			codeType.setEnabled(false);
+			codeType.setChecked(false);
+			codeType.setSummary(R.string.no_camera);
+			codeButton.setSummary("");
+		}
         outLoudPreference.setChecked(sharedPreferences.getBoolean("out_loud",false));
         displayScreenPreference.setChecked(sharedPreferences.getBoolean("display_screen",false));
         wakeUpPreference.setChecked(sharedPreferences.getBoolean("wake_up",false));

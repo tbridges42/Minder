@@ -13,8 +13,6 @@ import android.view.View;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
-import com.orhanobut.logger.Logger;
-
 import us.bridgeses.Minder.editor.EditReminder;
 
 /**
@@ -160,7 +158,7 @@ public class AsyncFragment extends ListFragment{
 
                 // mCallbacks.onPostExecute(cursor);
             }
-	        Logger.d("Cursor updated");
+//	        Logger.d("Cursor updated");
             mAdapter.swapCursor(cursor);
 	        mAdapter.notifyDataSetChanged();
         }

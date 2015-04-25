@@ -10,11 +10,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.sqlite.SQLiteDatabase;
-import android.media.Ringtone;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Vibrator;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.NumberPicker;
@@ -28,19 +25,16 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import us.bridgeses.Minder.receivers.ReminderReceiver;
+import us.bridgeses.Minder.util.scanner.ScannerActivity;
 
 
 public class AlarmScreen extends Activity implements View.OnLongClickListener{
 
     private ReminderDBHelper dbHelper;
     private Reminder reminder;
-    private Ringtone ringtone;
-    private Vibrator vibrator;
     private ScheduledExecutorService scheduleTaskExecutor;
 	private Context context;
 	private int snooze;
-    private int curVolume;
-    private int curRingMode;
     private final Handler handler = new Handler();
 
 
@@ -122,7 +116,6 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
 	        }
 	        else
 		        checkDismiss();
-            return;
         }
     }
 
@@ -145,7 +138,6 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
 	    Logger.d(Boolean.toString(dismiss));
         if (dismiss){
             checkDismiss();
-            return;
         }
         else {
             createScreen();
@@ -158,7 +150,10 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
 		if (requestCode == 0) {
 
 			if (resultCode == Activity.RESULT_OK) {
-				dismiss();
+				String code = data.getStringExtra("SCAN_RESULT");
+				if (code.equals(reminder.getQr())) {
+					dismiss();
+				}
 			}
 			if(resultCode == Activity.RESULT_CANCELED){
 				AlarmClass.makeNoise(reminder,context);
@@ -168,30 +163,8 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
 	}
 
 	private void checkQr(){
-		try {
-			Intent intent = new Intent("com.google.zxing.client.android.SCAN");
-			startActivityForResult(intent, 0);
-		}
-		catch (Exception e) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-            builder.setTitle("No QR scanner");
-            builder.setMessage("This function requires the ZXing Bar Code Scanner");
-            builder.setPositiveButton("Play Store", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    Uri marketUri = Uri.parse("market://details?id=com.google.zxing.client.android");
-                    Intent marketIntent = new Intent(Intent.ACTION_VIEW,marketUri);
-                    startActivity(marketIntent);
-                }
-            });
-            builder.setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-
-                }
-            });
-            builder.create();
-            builder.show();
-		}
+		Intent intent = new Intent(context,ScannerActivity.class);
+		startActivityForResult(intent, 0);
 	}
 
     private void cancelNotification(int id){
