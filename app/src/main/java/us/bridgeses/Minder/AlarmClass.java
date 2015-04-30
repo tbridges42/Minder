@@ -83,12 +83,12 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
 						PendingIntent.FLAG_UPDATE_CURRENT
 				);
 
-		Intent dismissIntent = new Intent(context, ReminderReceiver.class);
+		Intent dismissIntent = new Intent(context, AlarmScreen.class);
 		dismissIntent.putExtra("Id",reminder.getId());
 		dismissIntent.putExtra("Dismiss",true);
 
 		PendingIntent dismissPendingIntent =
-				PendingIntent.getBroadcast(
+				PendingIntent.getActivity(
 						context,
 						reminder.getId()*2+1,
 						dismissIntent,
@@ -161,6 +161,7 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
         intent.putExtra("Id",id);
         intent.putExtra("SnoozeNum",snoozeNum);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+	    intent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
 	    intent.putExtra("Dismiss",dismiss);
 	    Logger.d(Boolean.toString(dismiss));
         context.startActivity(intent);

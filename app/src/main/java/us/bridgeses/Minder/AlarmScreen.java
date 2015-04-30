@@ -57,28 +57,26 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
     }
 
 	private void createScreen() {
-        if (reminder.getDisplayScreen()) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON |
-                    //WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
-                    WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
-                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-            setContentView(R.layout.activity_alarm_screen);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON |
+                //WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
+                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+        setContentView(R.layout.activity_alarm_screen);
 
-            TextView titleText = (TextView) findViewById(R.id.fullscreen_name);
-            TextView descriptionText = (TextView) findViewById(R.id.fullscreen_description);
-            titleText.setText(reminder.getName());
-            descriptionText.setText(reminder.getDescription());
+        TextView titleText = (TextView) findViewById(R.id.fullscreen_name);
+        TextView descriptionText = (TextView) findViewById(R.id.fullscreen_description);
+        titleText.setText(reminder.getName());
+        descriptionText.setText(reminder.getDescription());
 
-            findViewById(R.id.snooze_button).setOnLongClickListener(this);
+        findViewById(R.id.snooze_button).setOnLongClickListener(this);
 
-            if (scheduleTaskExecutor != null){
-                scheduleTaskExecutor.schedule(new Runnable() {
-                    public void run() {
-                        snooze(reminder.getSnoozeDuration());
-                    }
+        if (scheduleTaskExecutor != null){
+            scheduleTaskExecutor.schedule(new Runnable() {
+                public void run() {
+                    snooze(reminder.getSnoozeDuration());
+                }
 
-                }, 5, TimeUnit.MINUTES);
-            }
+            }, 5, TimeUnit.MINUTES);
         }
 	}
 
@@ -106,16 +104,14 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
             return;
         }
 
+	    if (reminder.getId() != id){
+		    reminder = retrieveReminder(id);
+	    }
+
         boolean dismiss = intent.getBooleanExtra("Dismiss",false);
 
-        if (dismiss){
-            reminder = retrieveReminder(id);
-	        AlarmClass.silence(reminder,context);
-	        if (reminder.getNeedQr()){
-		        checkQr();
-	        }
-	        else
-		        checkDismiss();
+        if (dismiss) {
+			checkDismiss();
         }
     }
 
@@ -135,12 +131,11 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
 
         boolean dismiss = intent.getBooleanExtra("Dismiss",false);
 
+	    createScreen();
+
 	    Logger.d(Boolean.toString(dismiss));
         if (dismiss){
             checkDismiss();
-        }
-        else {
-            createScreen();
         }
     }
 
@@ -221,6 +216,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
     }
 
     public void confirmDismiss(){
+		createScreen();
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Dismiss Reminder");
         builder.setPositiveButton("Dismiss", new DialogInterface.OnClickListener() {
