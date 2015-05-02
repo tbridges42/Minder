@@ -58,6 +58,7 @@ public class Reminder implements Parcelable{
 	    setConfirmDismiss(DISMISSDIALOGDEFAULT);
 	    setFadeVolume(FADEDEFAULT);
 	    setVibrateRepeat(VIBRATEREPEATDEFAULT);
+	    setVolume(VOLUMEDEFAULT);
     }
 
     public static Reminder reminderFactory(SharedPreferences sharedPreferences, Context context){
@@ -111,6 +112,7 @@ public class Reminder implements Parcelable{
     private String ringtone;                   //A string representing a URI for a ringtone selected by the user, to be played when reminder fires
     private String ssid;                       //A string representing an SSID for a user selected wifi-network
     private String bluetooth;                  //A string representing a user selected bluetooth pairing //TODO: Implement bluetooth
+	private int volume;                        //An integer representing the volume ratio out of 100
 
     //Default constants
     public static final boolean ACTIVEDEFAULT = true;
@@ -143,6 +145,7 @@ public class Reminder implements Parcelable{
 	public static final boolean DISMISSDIALOGDEFAULT = false;
 	public static final boolean FADEDEFAULT = false;
 	public static final boolean VIBRATEREPEATDEFAULT = false;
+	public static final int VOLUMEDEFAULT = 80;
 
     //Time constants
     public static final int MINUTE = 60000;
@@ -407,6 +410,14 @@ public class Reminder implements Parcelable{
 		return radius;
 	}
 
+	public void setVolume(int volume){
+		this.volume = volume;
+	}
+
+	public int getVolume(){
+		return volume;
+	}
+
 	/******************************* Bitwise getters and setters *************************/
     public void setConditions (byte conditions){
         this.conditions = conditions;
@@ -601,6 +612,7 @@ public class Reminder implements Parcelable{
             catch (NullPointerException e){
                 reminder.setRingtone("");
             }
+	        reminder.setVolume(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_VOLUME)));
             reminders[i] = reminder;
             cursor.moveToNext();
         }
@@ -631,6 +643,7 @@ public class Reminder implements Parcelable{
                 ReminderDBHelper.COLUMN_SNOOZEDURATION,
 		        ReminderDBHelper.COLUMN_LEDCOLOR,
 		        ReminderDBHelper.COLUMN_LEDPATTERN,
+		        ReminderDBHelper.COLUMN_VOLUME,
         };
         String sortOrder = ReminderDBHelper.COLUMN_ACTIVE + " DESC, " + ReminderDBHelper.COLUMN_DATE + " ASC";
 
@@ -687,6 +700,7 @@ public class Reminder implements Parcelable{
         values.put(ReminderDBHelper.COLUMN_SNOOZEDURATION, reminder.getSnoozeDuration());
         values.put(ReminderDBHelper.COLUMN_CONDITIONS, reminder.getConditions());
         values.put(ReminderDBHelper.COLUMN_STYLE, reminder.getStyle());
+	    values.put(ReminderDBHelper.COLUMN_VOLUME, reminder.getVolume());
         return database.replace(
 		        ReminderDBHelper.TABLE_NAME,
 		        null,
@@ -721,6 +735,7 @@ public class Reminder implements Parcelable{
         out.writeString(ssid);
         out.writeByte(conditions);
         out.writeByte(style);
+	    out.writeInt(volume);
     }
 
     public void readFromParcel(Parcel in){
@@ -744,6 +759,7 @@ public class Reminder implements Parcelable{
         ssid = in.readString();
         conditions = in.readByte();
         style = in.readByte();
+	    volume = in.readInt();
     }
 
     @Override
@@ -1031,6 +1047,7 @@ public class Reminder implements Parcelable{
         editor.putString("snooze_duration",Integer.toString(reminder.getSnoozeDuration()));
         editor.putBoolean("bluetooth",reminder.getNeedBluetooth());
         editor.putString("bt_name",reminder.getBluetooth());
+	    editor.putInt("volume",reminder.getVolume());
         editor.apply();
     }
 
@@ -1153,6 +1170,7 @@ public class Reminder implements Parcelable{
 	    reminder.setConfirmDismiss(sharedPreferences.getBoolean("dismiss_check",DISMISSDIALOGDEFAULT));
 	    reminder.setVibrateRepeat(sharedPreferences.getBoolean("vibrate_repeat",VIBRATEREPEATDEFAULT));
 	    reminder.setLed(sharedPreferences.getBoolean("led",LEDDEFAULT));
+	    reminder.setVolume(sharedPreferences.getInt("volume",VOLUMEDEFAULT));
         return reminder;
     }
 }

@@ -180,6 +180,8 @@ public class EditReminderFragment extends PreferenceFragment implements SharedPr
 		editor.putBoolean("code_type",reminder.getNeedQr());
 
         editor.putBoolean("out_loud",reminder.getVolumeOverride());
+		editor.putInt("volume",reminder.getVolume());
+
         editor.putBoolean("display_screen",reminder.getDisplayScreen());
         editor.putBoolean("wake_up",reminder.getWakeUp());
 

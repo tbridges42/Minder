@@ -39,6 +39,7 @@ public class ReminderDBHelper extends SQLiteOpenHelper {
     public static final String COLUMN_SSID = "SSID";
     public static final String COLUMN_CONDITIONS = "Conditions";
     public static final String COLUMN_STYLE = "Style";
+	public static final String COLUMN_VOLUME = "Volume";
 
     private static final String SQL_CREATE_ENTRIES =
             "CREATE TABLE " + TABLE_NAME + " (" +
@@ -62,11 +63,12 @@ public class ReminderDBHelper extends SQLiteOpenHelper {
                     COLUMN_LEDPATTERN + " INTEGER, " +
                     COLUMN_RINGTONE + " TEXT, " +
                     COLUMN_RADIUS + " INTEGER, " +
-                    COLUMN_SSID + " TEXT" + ")";
+                    COLUMN_SSID + " TEXT, " +
+		            COLUMN_VOLUME + " INTEGER" + ")";
 
     private static final String SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS " + TABLE_NAME;
 
-    public static final int DATABASE_VERSION = 14;
+    public static final int DATABASE_VERSION = 15;
     public static final String DATABASE_NAME = "Reminders.db";
 
     public static synchronized ReminderDBHelper getInstance(Context context){
@@ -90,6 +92,9 @@ public class ReminderDBHelper extends SQLiteOpenHelper {
             database.execSQL(SQL_DELETE_ENTRIES);     //Versions less than 3 are incompatible and need to be rewritten
             database.execSQL(SQL_CREATE_ENTRIES);
         }
+	    if (oldVersion == 14) {
+		    database.execSQL("ALTER TABLE "+TABLE_NAME+" ADD " + COLUMN_VOLUME + " INTEGER");
+	    }
         Logger.i("Database Upgraded");
     }
 
