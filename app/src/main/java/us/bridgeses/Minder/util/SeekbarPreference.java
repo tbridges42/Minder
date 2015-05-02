@@ -26,6 +26,7 @@ public class SeekbarPreference extends Preference implements SeekBar.OnSeekBarCh
 	private int mMax = 100;
 	private int mPosition;
 	private SeekBar mSeekBar;
+	private boolean mTrackingTouch;
 
 	public void setMax(int max){
 		if (max >= 0) {
@@ -40,34 +41,45 @@ public class SeekbarPreference extends Preference implements SeekBar.OnSeekBarCh
 		}
 	}
 
-	public void setPosition(int position){
+	public void setPosition(int position, boolean notify){
 		if (position > mMax){
-			mPosition = mMax;
-			notifyChanged();
+			position = mMax;
 		}
-		else {
-			if (position < 0) {
-				mPosition = 0;
+		if (position < 0) {
+			position = 0;
+		}
+		if (position != mPosition){
+			mPosition = position;
+			persistInt(mPosition);
+			if (notify){
 				notifyChanged();
 			}
-			else{
-				mPosition = position;
-				notifyChanged();
-			}
 		}
-		if (mSeekBar != null){
-			mSeekBar.setProgress(mPosition);
-		}
+	}
+
+	public void setPosition(int position){
+		setPosition(position,true);
 	}
 
 	public int getPosition(){
 		return mPosition;
 	}
 
+	void syncProgress(SeekBar seekBar) {
+		int progress = seekBar.getProgress();
+		if (progress != mPosition) {
+			if (callChangeListener(progress)) {
+				setPosition(progress, false);
+			} else {
+				seekBar.setProgress(mPosition);
+			}
+		}
+	}
+
 	@Override
 	public void onProgressChanged(SeekBar seekbar, int position, boolean fromUser){
-		if (fromUser){
-			mPosition = position;
+		if (fromUser && !mTrackingTouch) {
+			syncProgress(seekbar);
 		}
 	}
 
@@ -81,12 +93,15 @@ public class SeekbarPreference extends Preference implements SeekBar.OnSeekBarCh
 
 	@Override
 	public void onStartTrackingTouch(SeekBar seekBar){
-
+		mTrackingTouch = true;
 	}
 
 	@Override
 	public void onStopTrackingTouch(SeekBar seekBar){
-		notifyChanged();
+		mTrackingTouch = false;
+		if (seekBar.getProgress() != mPosition) {
+			syncProgress(seekBar);
+		}
 	}
 
 	@Override
