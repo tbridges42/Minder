@@ -9,7 +9,8 @@
             android:summaryOff="No code required"/>
 
         <PreferenceScreen android:key="button_code"
-                          android:title="Set Code"/>
+                          android:title="Set Code"
+                          android:dependency="code_type"/>
     </PreferenceCategory>
     <PreferenceCategory
         android:title="Volume Override">

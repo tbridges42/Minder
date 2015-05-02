@@ -27,24 +27,23 @@
 
         <PreferenceScreen android:key="button_wifi"
                           android:title="Select WiFi"
-                          android:summary="Coming soon"/>
+                          android:summary="Coming soon"
+                          android:dependency="wifi"/>
     </PreferenceCategory>
 
     <PreferenceCategory
         android:title="BlueTooth Settings"
         android:enabled="false">
-        <ListPreference
+        <CheckBoxPreference
             android:key="bt_type"
             android:title="Bluetooth Restriction"
-            android:summary="Coming soon"
-            android:entries="@array/bt_type"
-            android:entryValues="@array/bt_index"/>
+            android:summary="Coming soon"/>
 
 
         <PreferenceScreen android:key="button_bt"
                           android:title="Select Bluetooth"
                           android:summary="Coming soon"
-                          android:enabled="false"/>
+                          android:dependency="bt_type"/>
     </PreferenceCategory>
 </PreferenceScreen>
 

@@ -153,11 +153,6 @@ public class ConditionsFragment extends PreferenceFragment implements SharedPref
 				mapTask.execute();
 			}
 		}
-        if (key.equals("button_wifi")) {
-            if (super.findPreference(key).isEnabled()) {
-                checkWifi();
-            }
-        }
 		return false;
 	}
 

@@ -16,7 +16,7 @@
             android:title="Vibrate Repeat"
             android:summaryOn="Alarm will vibrate until dismissed"
             android:summaryOff="Alarm will vibrate only once"
-            android:enabled="false"/>
+            android:dependency="temp_vibrate"/>
         <PreferenceScreen
             android:title="Vibrate Pattern"
             android:summary="Coming soon!"
