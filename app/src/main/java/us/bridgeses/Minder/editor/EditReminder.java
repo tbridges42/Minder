@@ -16,6 +16,7 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.NavUtils;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.orhanobut.logger.Logger;
@@ -96,9 +97,9 @@ public class EditReminder extends Activity implements DeleteDialogFragment.Notic
         reminder = Reminder.reminderFactory(sharedPreferences, this);
 
         if (defaults) {
-            SharedPreferences defaultPreferences = getApplication().
-                    getSharedPreferences("Defaults", Context.MODE_PRIVATE);
-            Reminder.saveDefaults(defaultPreferences, reminder);
+	        Logger.d("Saving defaults with name: "+reminder.getName());
+            SharedPreferences defaultPreferences = getSharedPreferences("Minder.Defaults", Context.MODE_PRIVATE);
+            Reminder.reminderToPreference(defaultPreferences, reminder);
         }
         else {
 
@@ -106,10 +107,10 @@ public class EditReminder extends Activity implements DeleteDialogFragment.Notic
 
             ReminderDBHelper dbHelper = ReminderDBHelper.getInstance(this);
             SQLiteDatabase database = dbHelper.openDatabase();
-
+			Logger.d("Old ID: "+reminder.getId());
             int id = (int) Reminder.saveReminder(database, reminder);    //Save reminder to database
             reminder.setId(id);
-			Logger.d(Integer.toString(reminder.getVolume()));
+			Logger.d("New ID: "+id);
             dbHelper.closeDatabase();
 
 
@@ -141,20 +142,28 @@ public class EditReminder extends Activity implements DeleteDialogFragment.Notic
 
         Intent intent = getIntent();
         Bundle incoming = intent.getExtras();
+	    SharedPreferences defaultPreferences = getSharedPreferences("Minder.Defaults", Context.MODE_PRIVATE);
+	    Boolean isNew;
         if (incoming != null) {
-            Boolean isNew = incoming.getBoolean("New");
-            if (!isNew) {
-                reminder = incoming.getParcelable("Reminder");
-            }
+            isNew = incoming.getBoolean("New");
             defaults = incoming.getBoolean("default",false);
-            if ((defaults)||(isNew)){
-                SharedPreferences defaultPreferences = getApplication().
-                        getSharedPreferences("Defaults", Context.MODE_PRIVATE);
-                reminder = new Reminder();
-            }
         }
         else
-            reminder = new Reminder();
+            isNew = true;
+
+	    Logger.d("isNew: " + isNew);
+	    Logger.d("defaults: " + defaults);
+	    if (isNew||defaults){
+		    reminder = Reminder.reminderFactory(defaultPreferences,getApplicationContext());
+		    reminder.setDate(Calendar.getInstance());
+		    Logger.d("Loading Defaults with name: "+reminder.getName());
+		    Button deleteButton = (Button)findViewById(R.id.delete_button);
+		    deleteButton.setEnabled(false);
+	    }
+	    else{
+		    reminder = incoming.getParcelable("Reminder");
+	    }
+	    Reminder.reminderToPreference(PreferenceManager.getDefaultSharedPreferences(this),reminder);
 
         EditReminderFragment fragment = EditReminderFragment.newInstance(reminder);
         FragmentManager fragmentManager = getFragmentManager();

@@ -90,14 +90,24 @@ public class ConditionsFragment extends PreferenceFragment implements SharedPref
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     setSSID(finalSSID[which]);
-                    getActivity().unregisterReceiver(wifiReceiver);
+	                try{
+		                getActivity().unregisterReceiver(wifiReceiver);
+	                }
+	                catch(Exception e){
+
+	                }
                     Logger.e(finalSSID[which]);
                 }
             });
             wifiBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    getActivity().unregisterReceiver(wifiReceiver);
+                    try{
+	                    getActivity().unregisterReceiver(wifiReceiver);
+                    }
+                    catch(Exception e){
+
+	                }
                 }
             });
             wifiDialog = wifiBuilder.create();
@@ -152,6 +162,9 @@ public class ConditionsFragment extends PreferenceFragment implements SharedPref
 				mapTask = new MapTask();
 				mapTask.execute();
 			}
+		}
+		if (key.equals("button_wifi")){
+			checkWifi();
 		}
 		return false;
 	}

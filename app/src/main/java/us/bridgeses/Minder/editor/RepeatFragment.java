@@ -1,4 +1,4 @@
-package us.bridgeses.Minder;
+package us.bridgeses.Minder.editor;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -17,6 +17,9 @@ import com.orhanobut.logger.Logger;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+
+import us.bridgeses.Minder.R;
+import us.bridgeses.Minder.Reminder;
 
 /**
  * Created by Tony on 9/13/2014.
@@ -41,10 +44,10 @@ public class RepeatFragment extends PreferenceFragment  implements SharedPrefere
     private void setWeeklyTitle() {
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         String title;
-        if (Integer.parseInt(sharedPreferences.getString("temp_weeks", "0")) == 1)
+        if (sharedPreferences.getString("temp_weeks", "0").equals("1"))
             title = "Every week";
         else
-            title = "Every " + Integer.parseInt(sharedPreferences.getString("temp_weeks", "0")) + " weeks";
+            title = "Every " + sharedPreferences.getString("temp_weeks", "0") + " weeks";
         byte daysOfWeek = setDaysOfWeek();
         if (daysOfWeek != 0) {
             if (daysOfWeek == Reminder.ALL_WEEK) {
@@ -107,12 +110,13 @@ public class RepeatFragment extends PreferenceFragment  implements SharedPrefere
         setRepeatSummary();
         repeatList.setSummary(repeatList.getEntry());
 	    int repeatType = Integer.parseInt(repeatList.getValue());
+	    int numDays = Integer.parseInt(numDaysPreference.getText());
         switch (repeatType) {
             case 1: {
-                if (Integer.parseInt(numDaysPreference.getText()) == 1)
+                if (numDays == 1)
                     numDaysPreference.setTitle("Every day");
                 else
-                    numDaysPreference.setTitle("Every " + Integer.parseInt(numDaysPreference.getText()) + " days");
+                    numDaysPreference.setTitle("Every " + numDays + " days");
 	            setPeriodTitle("temp_days");
 	            break;
             }
@@ -125,15 +129,15 @@ public class RepeatFragment extends PreferenceFragment  implements SharedPrefere
                 if (Integer.parseInt(numMonthsPreference.getText()) == 1)
                     numMonthsPreference.setTitle("Every month");
                 else
-                    numMonthsPreference.setTitle("Every " + Integer.parseInt(numDaysPreference.getText()) + " months");
+                    numMonthsPreference.setTitle("Every " + Integer.parseInt(numMonthsPreference.getText()) + " months");
 	            setPeriodTitle("temp_months");
 	            break;
             }
             case 4: {
-                if (Integer.parseInt(numWeeksPreference.getText()) == 1)
+                if (Integer.parseInt(numYearsPreference.getText()) == 1)
                     numYearsPreference.setTitle("Every year");
                 else
-                    numYearsPreference.setTitle("Every " + Integer.parseInt(numDaysPreference.getText()) + " years");
+                    numYearsPreference.setTitle("Every " + Integer.parseInt(numYearsPreference.getText()) + " years");
 	            setPeriodTitle("temp_years");
 	            break;
             }
@@ -141,7 +145,7 @@ public class RepeatFragment extends PreferenceFragment  implements SharedPrefere
     }
 
     private void expandRepeatMenu() {
-        int repeatType = Integer.parseInt(sharedPreferences.getString("temp_repeat_type","0"));
+        int repeatType = Integer.parseInt(sharedPreferences.getString("temp_repeat_type", "0"));
         switch (repeatType) {
             case 0: {
                 repeatScreenPreference.removePreference(dailyRepeatMenu);
@@ -413,7 +417,7 @@ public class RepeatFragment extends PreferenceFragment  implements SharedPrefere
                     repeatScreenPreference.setSummary("Repeat every day");
                 }
                 else
-                    repeatScreenPreference.setSummary("Repeat every " + Integer.parseInt(sharedPreferences.getString("temp_days", "0")) + " days");
+                    repeatScreenPreference.setSummary("Repeat every " + sharedPreferences.getString("temp_days", "0") + " days");
                 ((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
                 break;
             }
@@ -429,7 +433,7 @@ public class RepeatFragment extends PreferenceFragment  implements SharedPrefere
                     repeatScreenPreference.setSummary("Repeat every week");
                 }
                 else
-                    repeatScreenPreference.setSummary("Repeat every " + Integer.parseInt(sharedPreferences.getString("temp_weeks", "0")) + " weeks");
+                    repeatScreenPreference.setSummary("Repeat every " + sharedPreferences.getString("temp_weeks", "0") + " weeks");
                 ((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
                 break;
             }
@@ -447,7 +451,7 @@ public class RepeatFragment extends PreferenceFragment  implements SharedPrefere
                     repeatScreenPreference.setSummary("Repeat every month");
                 }
                 else
-                    repeatScreenPreference.setSummary("Repeat every " + Integer.parseInt(sharedPreferences.getString("temp_months", "0")) + " months");
+                    repeatScreenPreference.setSummary("Repeat every " + sharedPreferences.getString("temp_months", "0") + " months");
                 ((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
                 break;
             }
@@ -463,7 +467,7 @@ public class RepeatFragment extends PreferenceFragment  implements SharedPrefere
                     repeatScreenPreference.setSummary("Repeat every year");
                 }
                 else
-                    repeatScreenPreference.setSummary("Repeat every " + Integer.parseInt(sharedPreferences.getString("temp_years", "0")) + " years");
+                    repeatScreenPreference.setSummary("Repeat every " + sharedPreferences.getString("temp_years", "0") + " years");
                 ((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
                 break;
             }

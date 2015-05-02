@@ -146,6 +146,7 @@ public class Reminder implements Parcelable{
 	public static final boolean FADEDEFAULT = false;
 	public static final boolean VIBRATEREPEATDEFAULT = false;
 	public static final int VOLUMEDEFAULT = 80;
+	public static final boolean INSISTENTDEFAULT = true;
 
     //Time constants
     public static final int MINUTE = 60000;
@@ -178,6 +179,7 @@ public class Reminder implements Parcelable{
     public static final byte WIFINEEDED = 4;
     public static final byte BLUETOOTHNEEDED = 8;
     public static final byte ACTIVE = 16;
+	public static final byte INSISTENT = 32;
 
     //Style constants
     public static final byte LED = 1;
@@ -418,6 +420,16 @@ public class Reminder implements Parcelable{
 		return volume;
 	}
 
+	public int getLocationType(){
+		if (this.getOnlyAtLocation()){
+			return 1;
+		}
+		if (this.getUntilLocation()){
+			return 2;
+		}
+		return 0;
+	}
+
 	/******************************* Bitwise getters and setters *************************/
     public void setConditions (byte conditions){
         this.conditions = conditions;
@@ -543,6 +555,14 @@ public class Reminder implements Parcelable{
 
 	public void setConfirmDismiss(boolean dismissDialog){
 		this.setPersistence(makeBitwise(this.getPersistence(),DISMISS_DIALOG,dismissDialog));
+	}
+
+	public boolean isInsistent(){
+		return getBitwise(this.getPersistence(),INSISTENT);
+	}
+
+	public void setInsistent(boolean insistent){
+		this.setPersistence(makeBitwise(this.getPersistence(),INSISTENT,insistent));
 	}
 
 	/*************************** Style bitwise getters and setters ************************/
@@ -980,43 +1000,35 @@ public class Reminder implements Parcelable{
         return appendix;
     }
 
-	/******************************** Save methods ****************************************/
+	/******************************** Preference methods ****************************************/
 
-    public static void saveDefaults(SharedPreferences sharedPreferences, Reminder reminder){
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EEEE, MMMM d, yyyy");
-        SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm aa");
-
+    public static void reminderToPreference(SharedPreferences sharedPreferences, Reminder reminder){
         SharedPreferences.Editor editor = sharedPreferences.edit();
+	    editor.putInt("temp_id",reminder.getId());
         editor.putString("temp_name",reminder.getName());
         editor.putString("temp_description",reminder.getDescription());
         editor.putBoolean("temp_vibrate",reminder.getVibrate());
         editor.putString("temp_ringtone",reminder.getRingtone());
         editor.putBoolean("volume_override", reminder.getVolumeOverride());
-        if (reminder.getOnlyAtLocation()){
-            editor.putString("location_type", Integer.toString(1));
-        }
-        else {
-            if (reminder.getUntilLocation()) {
-                editor.putString("location_type", Integer.toString(2));
-            }
-            else {
-                editor.putString("location_type",Integer.toString(0));
-            }
-        }
+	    editor.putString("location_type",Integer.toString(reminder.getLocationType()));
         LatLng location = reminder.getLocation();
         editor.putFloat("Latitude",(float) location.latitude);
         editor.putFloat("Longitude",(float) location.longitude);
-        editor.putString("radius",Integer.toString(reminder.getRadius()));
+        editor.putInt("radius",reminder.getRadius());
         editor.putString("temp_code",reminder.getQr());
         editor.putBoolean("code_type",reminder.getNeedQr());
 
         editor.putBoolean("out_loud",reminder.getVolumeOverride());
         editor.putBoolean("display_screen",reminder.getDisplayScreen());
         editor.putBoolean("wake_up",reminder.getWakeUp());
-        int repeatTypeIndex = reminder.getRepeatType();
-        editor.putString("temp_repeat_type", Integer.toString(repeatTypeIndex));
+        editor.putString("temp_repeat_type", Integer.toString(reminder.getRepeatType()));
+	    
+	    //These four are EditTextPreferences and must be handled as strings
         editor.putString("temp_days", Integer.toString(reminder.getRepeatLength()));
         editor.putString("temp_weeks", Integer.toString(reminder.getRepeatLength()));
+	    editor.putString("temp_months", Integer.toString(reminder.getRepeatLength()));
+	    editor.putString("temp_years", Integer.toString(reminder.getRepeatLength()));
+	    
         byte daysOfWeek = reminder.getDaysOfWeek();
         if (Reminder.checkDayOfWeek(daysOfWeek, 1)) {
             editor.putBoolean("temp_sunday",true);
@@ -1039,15 +1051,19 @@ public class Reminder implements Parcelable{
         if (Reminder.checkDayOfWeek(daysOfWeek, 7)) {
             editor.putBoolean("temp_saturday",true);
         }
-        editor.putString("temp_months", Integer.toString(reminder.getRepeatLength()));
+        
         editor.putString("temp_monthly_type", Integer.toString(reminder.getMonthType()));
-        editor.putString("temp_years", Integer.toString(reminder.getRepeatLength()));
+        
         editor.putString("ssid",reminder.getSSID());
         editor.putBoolean("wifi",reminder.getNeedWifi());
         editor.putString("snooze_duration",Integer.toString(reminder.getSnoozeDuration()));
         editor.putBoolean("bluetooth",reminder.getNeedBluetooth());
         editor.putString("bt_name",reminder.getBluetooth());
 	    editor.putInt("volume",reminder.getVolume());
+	    editor.putBoolean("vibrate_repeat",reminder.getVibrateRepeat());
+	    editor.putBoolean("led",reminder.getLed());
+	    editor.putBoolean("dismiss_check",reminder.getConfirmDismiss());
+	    editor.putBoolean("try_again",reminder.isInsistent());
         editor.apply();
     }
 
@@ -1151,7 +1167,7 @@ public class Reminder implements Parcelable{
         reminder.setDate(sharedPreferences, context);
         reminder.setRepeat(sharedPreferences);
         reminder.setLocation(sharedPreferences);
-        reminder.setRadius(sharedPreferences.getInt("radius",Reminder.RADIUSDEFAULT));
+        reminder.setRadius(sharedPreferences.getInt("radius",RADIUSDEFAULT));
         reminder.setVibrate(sharedPreferences.getBoolean("temp_vibrate", VIBRATEDEFAULT));
         reminder.setRingtone(sharedPreferences.getString("temp_ringtone", RINGTONEDEFAULT));
         reminder.setActive(reminder.getDate().after(Calendar.getInstance()));
@@ -1171,6 +1187,7 @@ public class Reminder implements Parcelable{
 	    reminder.setVibrateRepeat(sharedPreferences.getBoolean("vibrate_repeat",VIBRATEREPEATDEFAULT));
 	    reminder.setLed(sharedPreferences.getBoolean("led",LEDDEFAULT));
 	    reminder.setVolume(sharedPreferences.getInt("volume",VOLUMEDEFAULT));
+	    reminder.setInsistent(sharedPreferences.getBoolean("try_again",INSISTENTDEFAULT));
         return reminder;
     }
 }
