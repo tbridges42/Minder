@@ -34,21 +34,24 @@ public class AlertService extends Service {
 	}
 
 	@SuppressWarnings("deprecation")
-	private void overrideVolumeCompat(){
+	private void overrideVolumeCompat(int volume){
 		AudioManager manager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 		Logger.d("Maxing out volume");
 		currVolume = manager.getStreamVolume(AudioManager.STREAM_ALARM);
-		manager.setStreamVolume(AudioManager.STREAM_ALARM, (int) Math.round(manager.getStreamMaxVolume(AudioManager.STREAM_ALARM) * 0.8), 0);
+		manager.setStreamVolume(AudioManager.STREAM_ALARM, (int) Math.round(manager
+				.getStreamMaxVolume(AudioManager.STREAM_ALARM) * volume / 100), 0);
+		Logger.d("Ringing at "+Integer.toString(volume));
 		currRingMode = manager.getRingerMode();
 		manager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
 	}
 
 	@TargetApi(21)
-	private void overrideVolume(){
+	private void overrideVolume(int volume){
 		AudioManager manager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 		Logger.d("Maxing out volume, Lollipop");
 		currVolume = manager.getStreamVolume(AudioManager.STREAM_ALARM);
-		manager.setStreamVolume(AudioManager.STREAM_ALARM, (int) Math.round(manager.getStreamMaxVolume(AudioManager.STREAM_ALARM) * 0.8), 0);
+		manager.setStreamVolume(AudioManager.STREAM_ALARM, (int) Math.round(manager
+				.getStreamMaxVolume(AudioManager.STREAM_ALARM) * volume / 100), 0);
 		AudioAttributes.Builder builder = new AudioAttributes.Builder();
 		builder.setUsage(AudioAttributes.USAGE_ALARM);
 		builder.setFlags(AudioAttributes.FLAG_AUDIBILITY_ENFORCED);
@@ -64,7 +67,7 @@ public class AlertService extends Service {
 		currRingMode = -1;
 	}
 
-	private void startRingtone(Uri ringtoneUri, boolean override, int id){
+	private void startRingtone(Uri ringtoneUri, boolean override, int volume, int id){
 		Ringtone ringtone;
 		Logger.d("Starting ringtone "+id);
 		if (ringtoneHash.containsKey(id)){
@@ -76,11 +79,11 @@ public class AlertService extends Service {
 
 		if (override){
 			if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-				overrideVolumeCompat();
+				overrideVolumeCompat(volume);
 				ringtone.setStreamType(AudioManager.STREAM_ALARM);
 			}
 			else {
-				overrideVolume();
+				overrideVolume(volume);
 			}
 		}
 		ringtone.play();
@@ -145,10 +148,11 @@ public class AlertService extends Service {
 			boolean startRingtone = intent.getBooleanExtra("StartRingtone", false);
 			boolean startVibrate = intent.getBooleanExtra("StartVibrate", false);
 			boolean override = intent.getBooleanExtra("Override",false);
+			int volume = intent.getIntExtra("Volume",80);
 			if (startRingtone) {
 				Logger.d("Starting ringtone service");
 				Uri ringtoneUri = Uri.parse(intent.getStringExtra("ringtone-uri"));
-				startRingtone(ringtoneUri, override, id);
+				startRingtone(ringtoneUri, override, volume, id);
 			} else {
 				stopRingtone(id);
 			}

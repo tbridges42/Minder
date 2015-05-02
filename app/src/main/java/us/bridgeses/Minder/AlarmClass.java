@@ -131,6 +131,7 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
 		startIntent.putExtra("Override",reminder.getVolumeOverride());
 		startIntent.putExtra("ringtone-uri", reminder.getRingtone());
 		startIntent.putExtra("Id",reminder.getId());
+		startIntent.putExtra("Volume", reminder.getVolume());
 		context.startService(startIntent);
 	}
 

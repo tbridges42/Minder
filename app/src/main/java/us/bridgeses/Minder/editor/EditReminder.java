@@ -109,7 +109,7 @@ public class EditReminder extends Activity implements DeleteDialogFragment.Notic
 
             int id = (int) Reminder.saveReminder(database, reminder);    //Save reminder to database
             reminder.setId(id);
-
+			Logger.d(Integer.toString(reminder.getVolume()));
             dbHelper.closeDatabase();
 
 
