@@ -14,6 +14,7 @@ import android.preference.PreferenceScreen;
 import android.widget.BaseAdapter;
 
 import us.bridgeses.Minder.R;
+import us.bridgeses.Minder.util.SeekbarPreference;
 import us.bridgeses.Minder.util.scanner.ScannerActivity;
 
 
@@ -84,6 +85,8 @@ public class PersistenceFragment extends PreferenceFragment implements
         CheckBoxPreference outLoudPreference = (CheckBoxPreference) super.findPreference("out_loud");
         CheckBoxPreference displayScreenPreference = (CheckBoxPreference) super.findPreference("display_screen");
         CheckBoxPreference wakeUpPreference = (CheckBoxPreference) super.findPreference("wake_up");
+		SeekbarPreference seekbarPreference = (SeekbarPreference) super.findPreference("volume");
+		seekbarPreference.setPosition(80);
 		if (checkCamera()) {
 			codeButton.setEnabled(codeType.isChecked());
 			if (sharedPreferences.getString("button_code", "").equals("")) {

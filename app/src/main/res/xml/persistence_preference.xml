@@ -18,7 +18,10 @@
             android:title="Override Volume Settings"
             android:summaryOff="Reminder will use system settings"
             android:summaryOn="Reminder will override system settings" />
-
+        <us.bridgeses.Minder.util.SeekbarPreference
+            android:key="volume"
+            android:title="Volume Level"
+            android:dependency="out_loud"/>
     </PreferenceCategory>
     <PreferenceCategory
         android:title="Notification Options">
