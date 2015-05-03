@@ -1,6 +1,8 @@
 package us.bridgeses.Minder.util;
 
 import android.annotation.TargetApi;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -15,8 +17,14 @@ import android.os.Vibrator;
 
 import com.orhanobut.logger.Logger;
 
+import java.util.Calendar;
 import java.util.Hashtable;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import us.bridgeses.Minder.receivers.ReminderReceiver;
 
 /**
  * Created by Tony on 4/14/2015.
@@ -26,6 +34,7 @@ public class AlertService extends Service {
 	private Vibrator vibrator;
 	private int currVolume = -1;
 	private int currRingMode = -1;
+	private ScheduledExecutorService scheduleTaskExecutor;
 
 	@Override
 	public IBinder onBind(Intent intent)
@@ -140,6 +149,40 @@ public class AlertService extends Service {
 		}
 	}
 
+	private void startTimer(int id, int duration, boolean wakeUp){
+		SnoozeTimer timer = new SnoozeTimer(id,duration,wakeUp);
+		scheduleTaskExecutor = Executors.newScheduledThreadPool(2);
+		scheduleTaskExecutor.schedule(timer,5, TimeUnit.MINUTES);
+	}
+
+	private void stopTimer(){
+		if (scheduleTaskExecutor != null) {
+			scheduleTaskExecutor.shutdownNow();
+		}
+	}
+
+	private void snooze(int id, int duration, boolean wakeUp){
+		Logger.d("Snoozing");
+		Context context = getApplicationContext();
+		Intent intentAlarm = new Intent(context, ReminderReceiver.class);//Create alarm intent
+		intentAlarm.putExtra("Id", id);           //Associate intent with specific reminder
+		AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+		int alarmType;
+		if (wakeUp){
+			alarmType = AlarmManager.RTC_WAKEUP;
+		}
+		else {
+			alarmType = AlarmManager.RTC;
+		}
+		alarmManager.set(alarmType, Calendar.getInstance().getTimeInMillis() + duration,
+				PendingIntent.getBroadcast(context, id, intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
+		if (scheduleTaskExecutor != null) {
+			scheduleTaskExecutor.shutdownNow();
+		}
+		stopRingtone(id);
+		stopVibrate();
+	}
+
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId)
 	{
@@ -148,21 +191,36 @@ public class AlertService extends Service {
 			boolean startRingtone = intent.getBooleanExtra("StartRingtone", false);
 			boolean startVibrate = intent.getBooleanExtra("StartVibrate", false);
 			boolean override = intent.getBooleanExtra("Override",false);
+			boolean insist = intent.getBooleanExtra("Insistent",false);
+			boolean snooze = intent.getBooleanExtra("Snooze",false);
+			boolean wakeUp = intent.getBooleanExtra("WakeUp",false);
+			int duration = intent.getIntExtra("Duration",5);
 			int volume = intent.getIntExtra("Volume",80);
-			if (startRingtone) {
-				Logger.d("Starting ringtone service");
-				Uri ringtoneUri = Uri.parse(intent.getStringExtra("ringtone-uri"));
-				startRingtone(ringtoneUri, override, volume, id);
-			} else {
-				stopRingtone(id);
+			Logger.d("Snooze: "+snooze);
+			if (!snooze) {
+				if (insist) {
+					startTimer(id, duration, wakeUp);
+				} else {
+					stopTimer();
+				}
+				if (startRingtone) {
+					Logger.d("Starting ringtone service");
+					Uri ringtoneUri = Uri.parse(intent.getStringExtra("ringtone-uri"));
+					startRingtone(ringtoneUri, override, volume, id);
+				} else {
+					stopRingtone(id);
+				}
+				if (startVibrate) {
+					Logger.d("Starting vibrate service");
+					byte pattern = (byte) intent.getIntExtra("VibratePattern", 1);
+					boolean repeat = intent.getBooleanExtra("VibrateRepeat", false);
+					startVibrate(pattern, repeat);
+				} else {
+					stopVibrate();
+				}
 			}
-			if (startVibrate) {
-				Logger.d("Starting vibrate service");
-				byte pattern = (byte) intent.getIntExtra("VibratePattern", 1);
-				boolean repeat = intent.getBooleanExtra("VibrateRepeat", false);
-				startVibrate(pattern, repeat);
-			} else {
-				stopVibrate();
+			else{
+				snooze(id,duration,wakeUp);
 			}
 		}
 		return START_NOT_STICKY;
@@ -176,5 +234,25 @@ public class AlertService extends Service {
 
 		stopVibrate();
 		super.onDestroy();
+	}
+
+	protected class SnoozeTimer implements Runnable{
+
+		int id;
+		int duration;
+		boolean wakeUp;
+
+		public SnoozeTimer(int id, int duration, boolean wakeUp){
+			this.id = id;
+			this.duration = duration;
+			this.wakeUp = wakeUp;
+			Logger.d("SnoozeTimer created");
+		}
+
+		@Override
+		public void run() {
+			Logger.d("SnoozeTimer fired");
+			snooze(id,duration,wakeUp);
+		}
 	}
 }

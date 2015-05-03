@@ -19,12 +19,8 @@ import android.widget.TextView;
 
 import com.orhanobut.logger.Logger;
 
-import java.util.Calendar;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
 import us.bridgeses.Minder.receivers.ReminderReceiver;
+import us.bridgeses.Minder.util.AlertService;
 import us.bridgeses.Minder.util.scanner.ScannerActivity;
 
 
@@ -32,7 +28,6 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
 
     private ReminderDBHelper dbHelper;
     private Reminder reminder;
-    private ScheduledExecutorService scheduleTaskExecutor;
 	private Context context;
 	private int snooze;
     private final Handler handler = new Handler();
@@ -69,15 +64,6 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
         descriptionText.setText(reminder.getDescription());
 
         findViewById(R.id.snooze_button).setOnLongClickListener(this);
-
-        if (scheduleTaskExecutor != null){
-            scheduleTaskExecutor.schedule(new Runnable() {
-                public void run() {
-                    snooze(reminder.getSnoozeDuration());
-                }
-
-            }, 5, TimeUnit.MINUTES);
-        }
 	}
 
     private Reminder retrieveReminder(int id){
@@ -119,7 +105,6 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 	    context = this.getApplicationContext();
-        scheduleTaskExecutor = Executors.newScheduledThreadPool(2);
 
         Intent intent = getIntent();
         int id = intent.getIntExtra("Id", -1);
@@ -133,7 +118,6 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
 
 	    createScreen();
 
-	    Logger.d(Boolean.toString(dismiss));
         if (dismiss){
             checkDismiss();
         }
@@ -209,9 +193,6 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
 	    if ((reminder.getActive()) && (reminder.getId() != -1)) {
 		    setNewAlarm(id);
 	    }
-        if (scheduleTaskExecutor != null) {
-            scheduleTaskExecutor.shutdownNow();
-        }
         finish();
     }
 
@@ -254,26 +235,14 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
 	}
 
     private void snooze(int duration) {
-	    Intent intentAlarm = new Intent(context, ReminderReceiver.class);//Create alarm intent
-	    int id = reminder.getId();
-	    intentAlarm.putExtra("Id", id);           //Associate intent with specific reminder
-	    intentAlarm.putExtra("Snooze",snooze++);                       //Increment snooze count
-	    AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        int alarmType;
-        if (reminder.getWakeUp()){
-            alarmType = AlarmManager.RTC_WAKEUP;
-        }
-        else {
-            alarmType = AlarmManager.RTC;
-        }
-        alarmManager.set(alarmType, Calendar.getInstance().getTimeInMillis()+duration,
-                PendingIntent.getBroadcast(getApplicationContext(), id, intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
-	    Logger.v("Alarm " + id + " set");
-        AlarmClass.silence(reminder,context);
-        if (scheduleTaskExecutor != null){
-            scheduleTaskExecutor.shutdownNow();
-        }
-        finish();
+	    AlarmClass.silence(reminder,context);
+	    Intent snoozeIntent = new Intent(context,AlertService.class);
+	    snoozeIntent.putExtra("Id",reminder.getId());
+	    snoozeIntent.putExtra("Snooze",true);
+	    Logger.d("Snooze before sending: " + snoozeIntent.getBooleanExtra("Snooze", false));
+	    snoozeIntent.putExtra("Duration", duration);
+	    context.startService(snoozeIntent);
+	    finish();
     }
 
     private void customSnooze(View view) {

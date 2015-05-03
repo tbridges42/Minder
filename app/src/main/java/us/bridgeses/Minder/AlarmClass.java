@@ -1,6 +1,5 @@
 package us.bridgeses.Minder;
 
-import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -9,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
-import android.media.Ringtone;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
@@ -25,7 +23,6 @@ import com.orhanobut.logger.Logger;
 
 import java.util.Calendar;
 
-import us.bridgeses.Minder.receivers.ReminderReceiver;
 import us.bridgeses.Minder.util.AlertService;
 
 /**
@@ -33,19 +30,19 @@ import us.bridgeses.Minder.util.AlertService;
  */
 public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
+
     private int id = -1;
     private int snoozeNum = 0;
     private Context context;
     private Reminder reminder;
 	private boolean dismiss = false;
+	private boolean snooze = false;
+	private int duration;
     private boolean hasLocation;
     private boolean hasWiFi;
     private boolean hasBT;
     private WifiReceiver wifiReceiver;
     private GoogleApiClient mGoogleApiClient;
-	private int curVolume;
-	private int curRingMode;
-	private Ringtone ringtone;
 
 
     public AlarmClass(Context context, int id){
@@ -57,6 +54,21 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
 		this.context = context;
 		this.id = id;
 		this.dismiss = dismiss;
+	}
+
+	public AlarmClass(Context context, int id, boolean dismiss, boolean snooze){
+		this.context = context;
+		this.id = id;
+		this.dismiss = dismiss;
+		this.snooze = snooze;
+	}
+
+	public AlarmClass(Context context, int id, boolean dismiss, boolean snooze, int duration){
+		this.context = context;
+		this.id = id;
+		this.dismiss = dismiss;
+		this.snooze = snooze;
+		this.duration = duration;
 	}
 
     public AlarmClass(Context context, int id, int snoozeNum){
@@ -90,7 +102,7 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
 		PendingIntent dismissPendingIntent =
 				PendingIntent.getActivity(
 						context,
-						reminder.getId()*2+1,
+						reminder.getId() * 2 + 1,
 						dismissIntent,
 						PendingIntent.FLAG_UPDATE_CURRENT
 				);
@@ -132,6 +144,8 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
 		startIntent.putExtra("ringtone-uri", reminder.getRingtone());
 		startIntent.putExtra("Id",reminder.getId());
 		startIntent.putExtra("Volume", reminder.getVolume());
+		startIntent.putExtra("Insistent",reminder.isInsistent());
+		startIntent.putExtra("Duration",reminder.getSnoozeDuration());
 		context.startService(startIntent);
 	}
 
@@ -163,7 +177,7 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
         intent.putExtra("SnoozeNum",snoozeNum);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 	    intent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
-	    intent.putExtra("Dismiss",dismiss);
+	    intent.putExtra("Dismiss", dismiss);
 	    Logger.d(Boolean.toString(dismiss));
         context.startActivity(intent);
     }
@@ -186,22 +200,13 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
         return mLocationRequest;
     }
 
-    private void snooze(int duration){
-        Intent intentAlarm = new Intent(context, ReminderReceiver.class);//Create alarm intent
-        int id = reminder.getId();
-        intentAlarm.putExtra("Id", id);           //Associate intent with specific reminder
-        intentAlarm.putExtra("Snooze", snoozeNum);                       //Increment snooze count
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        int alarmType;
-        if (reminder.getWakeUp()){
-            alarmType = AlarmManager.RTC_WAKEUP;
-        }
-        else {
-            alarmType = AlarmManager.RTC;
-        }
-        alarmManager.set(alarmType, Calendar.getInstance().getTimeInMillis() + duration,
-		        PendingIntent.getBroadcast(context, id, intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
-    }
+	private void snooze(int duration){
+		Intent snoozeIntent = new Intent(context,AlarmScreen.class);
+		snoozeIntent.putExtra("Id",reminder.getId());
+		snoozeIntent.putExtra("Snooze",true);
+		snoozeIntent.putExtra("Duration",duration);
+		context.startService(snoozeIntent);
+	}
 
     @Override
     public void onLocationChanged(Location mLastLocation) {
@@ -385,10 +390,10 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
     public void run(){
         Logger.v("Reminder fired");
         retrieveReminder();
-	    if (dismiss){
+	    if (dismiss) {
+
 		    alarm();
-	    }
-	    else {
+	    } else {
 		    initConditions();
 		    checkConditions();
 	    }

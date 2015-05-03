@@ -18,14 +18,14 @@ public class ReminderReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent alarmIntent) {
         final PendingResult result = goAsync();                         //Move off UI thread
 
-        int id = alarmIntent.getIntExtra("Id", -1);                     //These lines create an intent
+        int id = alarmIntent.getIntExtra("Id", -1);
         if (id == -1){
             return;
         }
-	    int snooze = alarmIntent.getIntExtra("Snooze",0);               //for the alarm screen based
 	    boolean dismiss = alarmIntent.getBooleanExtra("Dismiss",false);
+	    boolean snooze = alarmIntent.getBooleanExtra("Snooze",false);
 	    Logger.d(Boolean.toString(dismiss));
-        AlarmClass alarmClass = new AlarmClass(context,id,alarmIntent.getBooleanExtra("Dismiss",false));
+        AlarmClass alarmClass = new AlarmClass(context,id,dismiss,snooze);
         alarmClass.run();
         result.finish();
     }

@@ -1002,10 +1002,20 @@ public class Reminder implements Parcelable{
 
 	/******************************** Preference methods ****************************************/
 
+	public static SharedPreferences.Editor dateToPreference(SharedPreferences.Editor editor, Calendar calendar){
+		SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm aa;MMMM d, yyyy");
+		String fullString = timeFormat.format(calendar.getTime());
+		String[] results = fullString.split("[;]");
+		editor.putString("temp_time",results[0]);
+		editor.putString("temp_date",results[1]);
+		return editor;
+	}
+
     public static void reminderToPreference(SharedPreferences sharedPreferences, Reminder reminder){
         SharedPreferences.Editor editor = sharedPreferences.edit();
 	    editor.putInt("temp_id",reminder.getId());
         editor.putString("temp_name",reminder.getName());
+	    editor = dateToPreference(editor,reminder.getDate());
         editor.putString("temp_description",reminder.getDescription());
         editor.putBoolean("temp_vibrate",reminder.getVibrate());
         editor.putString("temp_ringtone",reminder.getRingtone());
@@ -1139,10 +1149,11 @@ public class Reminder implements Parcelable{
 
     public void setDate(SharedPreferences sharedPreferences, Context context) {
         Calendar date = Calendar.getInstance();
-        SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm aa EEEE, MMMM d, yyyy");
+        SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm aa MMMM d, yyyy");
         try {
             String newDate = sharedPreferences.getString("temp_time", "") + " " + sharedPreferences.getString("temp_date", "");
             if (!newDate.equals(" ")) {
+	            Logger.d("Date set: "+newDate);
                 date.setTime(timeFormat.parse(newDate));
             }
         }

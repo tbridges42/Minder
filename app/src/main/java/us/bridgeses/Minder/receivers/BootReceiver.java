@@ -23,7 +23,6 @@ public class BootReceiver extends BroadcastReceiver{
 		Intent intentAlarm = new Intent(context, ReminderReceiver.class);//Create alarm intent
 		int id = reminder.getId();
 		intentAlarm.putExtra("Id", id);           //Associate intent with specific reminder
-		intentAlarm.putExtra("Snooze",0);                       //This alarm has not been snoozed
 		if (alarmManager != null) {                             //Check against null
 			alarmManager.set(AlarmManager.RTC_WAKEUP, reminder.getDate().getTimeInMillis(),
 					PendingIntent.getBroadcast(context, id, intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
