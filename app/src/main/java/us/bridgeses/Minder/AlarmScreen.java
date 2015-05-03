@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.NumberPicker;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.orhanobut.logger.Logger;
 
@@ -29,7 +30,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
     private ReminderDBHelper dbHelper;
     private Reminder reminder;
 	private Context context;
-	private int snooze;
+	private int snoozeNum;
     private final Handler handler = new Handler();
 
 
@@ -115,6 +116,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
         reminder = retrieveReminder(id);
 
         boolean dismiss = intent.getBooleanExtra("Dismiss",false);
+	    snoozeNum = intent.getIntExtra("SnoozeNum",0);
 
 	    createScreen();
 
@@ -239,6 +241,9 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
 	    Intent snoozeIntent = new Intent(context,AlertService.class);
 	    snoozeIntent.putExtra("Id",reminder.getId());
 	    snoozeIntent.putExtra("Snooze",true);
+	    snoozeNum++;
+	    Logger.d("Sending SnoozeNum: "+snoozeNum);
+	    snoozeIntent.putExtra("SnoozeNum",snoozeNum);
 	    Logger.d("Snooze before sending: " + snoozeIntent.getBooleanExtra("Snooze", false));
 	    snoozeIntent.putExtra("Duration", duration);
 	    context.startService(snoozeIntent);
@@ -270,6 +275,15 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
     }
 
     public void snoozeButton(View view) {
-        snooze(reminder.getSnoozeDuration());
+	    if ((snoozeNum < reminder.getSnoozeNumber())||(reminder.getSnoozeNumber() < 0)) {
+		    if (reminder.getSnoozeNumber() > 0){
+			    String snoozeText = (reminder.getSnoozeNumber() - snoozeNum - 1) +" snoozes remaining";
+			    Toast.makeText(this,snoozeText,Toast.LENGTH_SHORT).show();
+		    }
+		    snooze(reminder.getSnoozeDuration());
+	    }
+	    else {
+		    Toast.makeText(this,"Snooze limit reached",Toast.LENGTH_SHORT).show();
+	    }
     }
 }

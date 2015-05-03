@@ -149,8 +149,8 @@ public class AlertService extends Service {
 		}
 	}
 
-	private void startTimer(int id, int duration, boolean wakeUp){
-		SnoozeTimer timer = new SnoozeTimer(id,duration,wakeUp);
+	private void startTimer(int id, int duration, boolean wakeUp, int snoozeNum){
+		SnoozeTimer timer = new SnoozeTimer(id,duration,wakeUp,snoozeNum);
 		scheduleTaskExecutor = Executors.newScheduledThreadPool(2);
 		scheduleTaskExecutor.schedule(timer,5, TimeUnit.MINUTES);
 	}
@@ -161,11 +161,12 @@ public class AlertService extends Service {
 		}
 	}
 
-	private void snooze(int id, int duration, boolean wakeUp){
-		Logger.d("Snoozing");
+	private void snooze(int id, int duration, boolean wakeUp, int snoozeNum){
+		Logger.d("Snoozing: "+snoozeNum);
 		Context context = getApplicationContext();
 		Intent intentAlarm = new Intent(context, ReminderReceiver.class);//Create alarm intent
 		intentAlarm.putExtra("Id", id);           //Associate intent with specific reminder
+		intentAlarm.putExtra("SnoozeNum",snoozeNum);
 		AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 		int alarmType;
 		if (wakeUp){
@@ -194,12 +195,14 @@ public class AlertService extends Service {
 			boolean insist = intent.getBooleanExtra("Insistent",false);
 			boolean snooze = intent.getBooleanExtra("Snooze",false);
 			boolean wakeUp = intent.getBooleanExtra("WakeUp",false);
+			int snoozeNum = intent.getIntExtra("SnoozeNum",0);
+			Logger.d("Received snoozeNum:" + snoozeNum);
 			int duration = intent.getIntExtra("Duration",5);
 			int volume = intent.getIntExtra("Volume",80);
 			Logger.d("Snooze: "+snooze);
 			if (!snooze) {
 				if (insist) {
-					startTimer(id, duration, wakeUp);
+					startTimer(id, duration, wakeUp, snoozeNum);
 				} else {
 					stopTimer();
 				}
@@ -220,7 +223,7 @@ public class AlertService extends Service {
 				}
 			}
 			else{
-				snooze(id,duration,wakeUp);
+				snooze(id,duration,wakeUp,snoozeNum);
 			}
 		}
 		return START_NOT_STICKY;
@@ -240,19 +243,21 @@ public class AlertService extends Service {
 
 		int id;
 		int duration;
+		int snoozeNum;
 		boolean wakeUp;
 
-		public SnoozeTimer(int id, int duration, boolean wakeUp){
+		public SnoozeTimer(int id, int duration, boolean wakeUp, int snoozeNum){
 			this.id = id;
 			this.duration = duration;
 			this.wakeUp = wakeUp;
+			this.snoozeNum = snoozeNum;
 			Logger.d("SnoozeTimer created");
 		}
 
 		@Override
 		public void run() {
 			Logger.d("SnoozeTimer fired");
-			snooze(id,duration,wakeUp);
+			snooze(id,duration,wakeUp,snoozeNum);
 		}
 	}
 }

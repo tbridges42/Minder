@@ -59,6 +59,7 @@ public class Reminder implements Parcelable{
 	    setFadeVolume(FADEDEFAULT);
 	    setVibrateRepeat(VIBRATEREPEATDEFAULT);
 	    setVolume(VOLUMEDEFAULT);
+	    setSnoozeNumber(SNOOZENUMDEFAULT);
     }
 
     public static Reminder reminderFactory(SharedPreferences sharedPreferences, Context context){
@@ -106,6 +107,7 @@ public class Reminder implements Parcelable{
     private byte style;                        //Bitwise byte representing an array of boolean values related to reminder Style
     private Calendar date;                     //The date and time at which the reminder should fire, truncated to second
     private String qr;                         //A string representing the encoded value of a barcode or QR code, scanned in by user
+	private int snoozeNumber;                  //A limit on the number of times the reminder can be snoozed
     private int snoozeDuration;                //The default duration before trying the reminder again if not dismissed
     private int ledColor;                      //An int representing the hexadecimal color of the LED //TODO: Implement ledColor
     private int ledPattern;                    //An int representing the pattern in which the LED should flash //TODO: Implement led
@@ -147,6 +149,7 @@ public class Reminder implements Parcelable{
 	public static final boolean VIBRATEREPEATDEFAULT = false;
 	public static final int VOLUMEDEFAULT = 80;
 	public static final boolean INSISTENTDEFAULT = true;
+	public static final int SNOOZENUMDEFAULT = -1;
 
     //Time constants
     public static final int MINUTE = 60000;
@@ -349,6 +352,14 @@ public class Reminder implements Parcelable{
 	public void setQr(String qr) {
 		//TODO: Does this need sanitizing?
 		this.qr = qr;
+	}
+
+	public int getSnoozeNumber() {
+		return snoozeNumber;
+	}
+
+	public void setSnoozeNumber(int snoozeNumber){
+		this.snoozeNumber = snoozeNumber;
 	}
 
 	public int getSnoozeDuration() {
@@ -626,6 +637,7 @@ public class Reminder implements Parcelable{
             reminder.setSnoozeDuration(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_SNOOZEDURATION)));
 	        reminder.setLedColor(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_LEDCOLOR)));
 	        reminder.setLedPattern(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_LEDPATTERN)));
+	        reminder.setSnoozeNumber(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_SNOOZENUM)));
             try {
                 reminder.setRingtone(cursor.getString(cursor.getColumnIndex(ReminderDBHelper.COLUMN_RINGTONE)));
             }
@@ -664,6 +676,7 @@ public class Reminder implements Parcelable{
 		        ReminderDBHelper.COLUMN_LEDCOLOR,
 		        ReminderDBHelper.COLUMN_LEDPATTERN,
 		        ReminderDBHelper.COLUMN_VOLUME,
+		        ReminderDBHelper.COLUMN_SNOOZENUM,
         };
         String sortOrder = ReminderDBHelper.COLUMN_ACTIVE + " DESC, " + ReminderDBHelper.COLUMN_DATE + " ASC";
 
@@ -721,6 +734,7 @@ public class Reminder implements Parcelable{
         values.put(ReminderDBHelper.COLUMN_CONDITIONS, reminder.getConditions());
         values.put(ReminderDBHelper.COLUMN_STYLE, reminder.getStyle());
 	    values.put(ReminderDBHelper.COLUMN_VOLUME, reminder.getVolume());
+	    values.put(ReminderDBHelper.COLUMN_SNOOZENUM, reminder.getSnoozeNumber());
         return database.replace(
 		        ReminderDBHelper.TABLE_NAME,
 		        null,
@@ -756,6 +770,7 @@ public class Reminder implements Parcelable{
         out.writeByte(conditions);
         out.writeByte(style);
 	    out.writeInt(volume);
+	    out.writeInt(snoozeNumber);
     }
 
     public void readFromParcel(Parcel in){
@@ -780,6 +795,7 @@ public class Reminder implements Parcelable{
         conditions = in.readByte();
         style = in.readByte();
 	    volume = in.readInt();
+	    snoozeNumber = in.readInt();
     }
 
     @Override
@@ -1038,6 +1054,7 @@ public class Reminder implements Parcelable{
         editor.putString("temp_weeks", Integer.toString(reminder.getRepeatLength()));
 	    editor.putString("temp_months", Integer.toString(reminder.getRepeatLength()));
 	    editor.putString("temp_years", Integer.toString(reminder.getRepeatLength()));
+	    editor.putString("snooze_number", Integer.toString(reminder.getSnoozeNumber()));
 	    
         byte daysOfWeek = reminder.getDaysOfWeek();
         if (Reminder.checkDayOfWeek(daysOfWeek, 1)) {
@@ -1193,6 +1210,8 @@ public class Reminder implements Parcelable{
         reminder.setBluetooth(sharedPreferences.getString("bt_name",BTDEFAULT));
         reminder.setSnoozeDuration(Integer.parseInt(sharedPreferences
                 .getString("snooze_duration",Integer.toString(SNOOZEDURATIONDEFAULT))));
+	    reminder.setSnoozeNumber(Integer.parseInt(sharedPreferences
+	            .getString("snooze_number",Integer.toString(SNOOZENUMDEFAULT))));
 	    reminder.setFadeVolume(sharedPreferences.getBoolean("fade",FADEDEFAULT));
 	    reminder.setConfirmDismiss(sharedPreferences.getBoolean("dismiss_check",DISMISSDIALOGDEFAULT));
 	    reminder.setVibrateRepeat(sharedPreferences.getBoolean("vibrate_repeat",VIBRATEREPEATDEFAULT));
