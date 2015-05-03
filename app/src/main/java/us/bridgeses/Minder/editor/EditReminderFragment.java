@@ -18,8 +18,6 @@ import android.preference.PreferenceScreen;
 import android.preference.RingtonePreference;
 import android.widget.BaseAdapter;
 
-import com.google.android.gms.maps.model.LatLng;
-
 import java.text.SimpleDateFormat;
 
 import us.bridgeses.Minder.R;
@@ -133,82 +131,6 @@ public class EditReminderFragment extends PreferenceFragment implements SharedPr
         editor.apply();
     }
 
-	private SharedPreferences.Editor initRepeatValues(SharedPreferences.Editor editor) {
-		int repeatTypeIndex = reminder.getRepeatType();
-		editor.putString("temp_repeat_type", Integer.toString(repeatTypeIndex));
-		editor.putString("temp_days", Integer.toString(reminder.getRepeatLength()));
-		editor.putString("temp_weeks", Integer.toString(reminder.getRepeatLength()));
-		initWeekly();
-		editor.putString("temp_months", Integer.toString(reminder.getRepeatLength()));
-		editor.putString("temp_monthly_type", Integer.toString(reminder.getMonthType()));
-		editor.putString("temp_years", Integer.toString(reminder.getRepeatLength()));
-		return editor;
-	}
-
-	private SharedPreferences.Editor initConditionsValues(SharedPreferences.Editor editor) {
-		if (reminder.getOnlyAtLocation()){
-			editor.putString("location_type", "1");
-		}
-		else {
-			if (reminder.getUntilLocation()) {
-				editor.putString("location_type", "2");
-			}
-			else {
-				editor.putString("location_type","0");
-			}
-		}
-		LatLng location = reminder.getLocation();
-		editor.putFloat("Latitude",(float) location.latitude);
-		editor.putFloat("Longitude",(float) location.longitude);
-		editor.putInt("radius",reminder.getRadius());
-        editor.putBoolean("wifi",reminder.getNeedWifi());
-        editor.putString("ssid",reminder.getSSID());
-		return editor;
-	}
-
-    private SharedPreferences.Editor initStyleValues(SharedPreferences.Editor editor){
-        editor.putString("snooze_duration",Integer.toString(reminder.getSnoozeDuration()));
-        editor.putBoolean("led",reminder.getLed());
-        editor.putString("led_pattern",Integer.toString(reminder.getLedPattern()));
-        editor.putInt("led_color",reminder.getLedColor());
-	    editor.putBoolean("vibrate_repeat",reminder.getVibrateRepeat());
-        return editor;
-    }
-
-	private SharedPreferences.Editor initPersistenceValues(SharedPreferences.Editor editor) {
-		editor.putString("temp_code",reminder.getQr());
-		editor.putBoolean("code_type",reminder.getNeedQr());
-
-        editor.putBoolean("out_loud",reminder.getVolumeOverride());
-        editor.putBoolean("display_screen",reminder.getDisplayScreen());
-        editor.putBoolean("wake_up",reminder.getWakeUp());
-
-		editor.putBoolean("dismiss_check",reminder.getConfirmDismiss());
-		return editor;
-	}
-
-    private void initValues(){
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.clear().commit();
-	    editor.putInt("temp_id",reminder.getId());
-        editor.putString("temp_name",reminder.getName());
-        editor.putString("temp_description",reminder.getDescription());
-        editor.putString("temp_time",timeFormat.format(reminder.getDate().getTime()));
-        editor.putString("temp_date",dateFormat.format(reminder.getDate().getTime()));
-        editor.putBoolean("temp_vibrate",reminder.getVibrate());
-        editor.putString("temp_ringtone",reminder.getRingtone());
-	    editor = initConditionsValues(editor);
-
-	    editor = initRepeatValues(editor);
-
-        editor = initStyleValues(editor);
-
-	    editor = initPersistenceValues(editor);
-
-        editor.apply();
-    }
-
 	private void initPreferences(){
 		preferenceScreen = (PreferenceScreen) super.findPreference("preference_screen");
 		namePreference = (EditTextPreference) super.findPreference("temp_name");
@@ -255,7 +177,7 @@ public class EditReminderFragment extends PreferenceFragment implements SharedPr
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 	    Bundle args = getArguments();
-	    reminder = args.getParcelable("Reminder");
+	    //reminder = args.getParcelable("Reminder");
 	    progressDialog = new ProgressDialog(getActivity());
 	    progressDialog.setIndeterminate(true);
 	    progressDialog.setTitle("");
@@ -283,8 +205,10 @@ public class EditReminderFragment extends PreferenceFragment implements SharedPr
     }
 
     private void setRepeatSummary(){
-        int repeatType = Integer.parseInt(sharedPreferences.getString("temp_repeat_type",
-                Integer.toString(Reminder.REPEATTYPEDEFAULT)));
+	    if (sharedPreferences == null){
+		    sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+	    }
+        int repeatType = Integer.parseInt(sharedPreferences.getString("temp_repeat_type", Integer.toString(Reminder.REPEATTYPEDEFAULT)));
         switch (repeatType) {
             case 0: {
                 repeatScreenPreference.setSummary("Do not repeat");
@@ -385,7 +309,7 @@ public class EditReminderFragment extends PreferenceFragment implements SharedPr
 		@Override
 		protected Void doInBackground(Integer... id) {
 			reminder = getArguments().getParcelable("Reminder");
-			initValues();
+			//initValues();
 
 			return null;
 		}

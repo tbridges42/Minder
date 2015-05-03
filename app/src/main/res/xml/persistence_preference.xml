@@ -9,7 +9,8 @@
             android:summaryOff="No code required"/>
 
         <PreferenceScreen android:key="button_code"
-                          android:title="Set Code"/>
+                          android:title="Set Code"
+                          android:dependency="code_type"/>
     </PreferenceCategory>
     <PreferenceCategory
         android:title="Volume Override">
@@ -18,7 +19,10 @@
             android:title="Override Volume Settings"
             android:summaryOff="Reminder will use system settings"
             android:summaryOn="Reminder will override system settings" />
-
+        <us.bridgeses.Minder.util.SeekbarPreference
+            android:key="volume"
+            android:title="Volume Level"
+            android:dependency="out_loud"/>
     </PreferenceCategory>
     <PreferenceCategory
         android:title="Notification Options">
@@ -32,10 +36,18 @@
             android:title="Wake Up For Reminder"
             android:summaryOn="Phone will wake up for reminder"
             android:summaryOff="Reminder will only trigger is screen is on"/>
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:title="Insistence Options">
         <CheckBoxPreference
             android:key="dismiss_check"
             android:title="Dismiss Dialog"
             android:summaryOff="No dismiss dialog required"
             android:summaryOn="Must confirm to dismiss alarm" />
+        <CheckBoxPreference
+            android:key="try_again"
+            android:title="Keep Trying"
+            android:summaryOn="Reminder will repeat until dismissed"
+            android:summaryOff="Reminder will go off only once" />
     </PreferenceCategory>
 </PreferenceScreen>

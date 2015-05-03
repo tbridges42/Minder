@@ -12,9 +12,10 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.widget.BaseAdapter;
-import android.widget.Toast;
 
 import us.bridgeses.Minder.R;
+import us.bridgeses.Minder.Reminder;
+import us.bridgeses.Minder.util.SeekbarPreference;
 import us.bridgeses.Minder.util.scanner.ScannerActivity;
 
 
@@ -38,9 +39,6 @@ public class PersistenceFragment extends PreferenceFragment implements
 				editor.putString("temp_code",code);
 				editor.apply();
 				super.findPreference("button_code").setSummary(getResources().getString(R.string.code_set));
-				int duration = Toast.LENGTH_SHORT;
-				Toast toast = Toast.makeText(getActivity(), code, duration);
-				toast.show();
 			}
 			if(resultCode == Activity.RESULT_CANCELED){
 				//handle cancel
@@ -88,6 +86,8 @@ public class PersistenceFragment extends PreferenceFragment implements
         CheckBoxPreference outLoudPreference = (CheckBoxPreference) super.findPreference("out_loud");
         CheckBoxPreference displayScreenPreference = (CheckBoxPreference) super.findPreference("display_screen");
         CheckBoxPreference wakeUpPreference = (CheckBoxPreference) super.findPreference("wake_up");
+		SeekbarPreference seekbarPreference = (SeekbarPreference) super.findPreference("volume");
+		seekbarPreference.setPosition(sharedPreferences.getInt("volume", Reminder.VOLUMEDEFAULT));
 		if (checkCamera()) {
 			codeButton.setEnabled(codeType.isChecked());
 			if (sharedPreferences.getString("button_code", "").equals("")) {

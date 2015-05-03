@@ -35,7 +35,10 @@ public class EditConditions extends EditorActivity {
 	public void cancel(View view) {
 		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 		SharedPreferences.Editor editor = sharedPreferences.edit();
-		editor.putString("location_type", saved.getString("location_type", "-1"));
+		
+		//This is a ListPreference, and must be treated as a string
+		editor.putString("location_type", saved.getString("location_type", "0"));
+		
 		editor.putFloat("Latitude",
                 saved.getFloat("Latitude",(float) Reminder.LOCATIONDEFAULT.latitude));
 		editor.putFloat("Longitude",
@@ -51,8 +54,11 @@ public class EditConditions extends EditorActivity {
 		if (saved == null) {
 			saved = new Bundle();
 			SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+			
+			//This is a ListPreference, and must be treated as a string
 			saved.putString("location_type",
-					sharedPreferences.getString("location_type", "-1"));
+					sharedPreferences.getString("location_type", "0"));
+			
 			saved.putFloat("Latitude",
 					sharedPreferences.getFloat("Latitude", (float)Reminder.LOCATIONDEFAULT.latitude));
 			saved.putFloat("Longitude",

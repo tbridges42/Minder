@@ -126,7 +126,7 @@ public class MainListActivity extends Activity implements AsyncFragment.TaskCall
         if (firstRun){
             SharedPreferences.Editor editor = defaultPreferences.edit();
             Reminder reminder = new Reminder();
-            Reminder.saveDefaults(defaultPreferences,reminder);
+            Reminder.reminderToPreference(defaultPreferences, reminder);
 
             editor.putBoolean("first_run-0.7.1", false);
             editor.apply();
