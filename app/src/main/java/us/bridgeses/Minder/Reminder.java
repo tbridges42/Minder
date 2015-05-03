@@ -756,6 +756,7 @@ public class Reminder implements Parcelable{
         out.writeString(name);
         out.writeInt(repeatType);
         out.writeInt(repeatLength);
+	    out.writeByte(monthType);
         out.writeByte(daysOfWeek);
         out.writeByte(persistence);
         out.writeSerializable(date);
@@ -781,6 +782,7 @@ public class Reminder implements Parcelable{
         name = in.readString();
         repeatType = in.readInt();
         repeatLength = in.readInt();
+	    monthType = in.readByte();
         daysOfWeek = in.readByte();
         persistence = in.readByte();
         date = (Calendar) in.readSerializable();
@@ -939,6 +941,24 @@ public class Reminder implements Parcelable{
                 date.roll(Calendar.MONTH,-delta);
                 break;
             }
+	        case 3:{            //Monthly on Day of Week from end of month
+		        int dayOfWeek = date.get(Calendar.DAY_OF_WEEK);
+		        int weekOfMonth = date.get(Calendar.WEEK_OF_MONTH);
+		        int weeksInMonth = date.getActualMaximum(Calendar.WEEK_OF_MONTH);
+		        int weeksFromEnd = weeksInMonth - weekOfMonth;
+		        date.add(Calendar.MONTH,reminder.getRepeatLength()+1);
+		        while (weeksFromEnd > date.getActualMaximum(Calendar.WEEK_OF_MONTH)) {
+			        if (count == 13){
+				        Logger.e("Next Monthly Repeat does not exist");
+				        reminder.setActive(false);
+				        return;
+			        }
+			        date.add(Calendar.MONTH,1);
+			        count++;
+		        }
+		        date.set(Calendar.DAY_OF_WEEK,dayOfWeek);
+		        date.set(Calendar.DAY_OF_WEEK_IN_MONTH,0-weeksFromEnd);
+	        }
         }
         reminder.setDate(date); //Commit change
     }
@@ -1019,7 +1039,7 @@ public class Reminder implements Parcelable{
 	/******************************** Preference methods ****************************************/
 
 	public static SharedPreferences.Editor dateToPreference(SharedPreferences.Editor editor, Calendar calendar){
-		SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm aa;MMMM d, yyyy");
+		SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm aa;EEEE, MMMM d, yyyy");
 		String fullString = timeFormat.format(calendar.getTime());
 		String[] results = fullString.split("[;]");
 		editor.putString("temp_time",results[0]);
@@ -1166,7 +1186,7 @@ public class Reminder implements Parcelable{
 
     public void setDate(SharedPreferences sharedPreferences, Context context) {
         Calendar date = Calendar.getInstance();
-        SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm aa MMMM d, yyyy");
+        SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm aa EEEE, MMMM d, yyyy");
         try {
             String newDate = sharedPreferences.getString("temp_time", "") + " " + sharedPreferences.getString("temp_date", "");
             if (!newDate.equals(" ")) {
