@@ -36,9 +36,9 @@ public abstract class EditorActivity extends Activity{
 		saved = savedInstanceState;
 		saveState();
 
-		Fragment fragment = (Fragment) EditorFragmentFactory.newInstance(type);
+		Fragment fragment = EditorFragmentFactory.newInstance(type);
 		FragmentManager fragmentManager = getFragmentManager();
-		mFragment = (PersistenceFragment) fragmentManager.findFragmentByTag(type);
+		mFragment = fragmentManager.findFragmentByTag(type);
 
 		if (mFragment == null) {
 			fragmentManager.beginTransaction().replace(R.id.reminder_frame, fragment,type).commit();
