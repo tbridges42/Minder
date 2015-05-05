@@ -221,7 +221,7 @@ public class AlertService extends Service {
 			}
 			else{
                 stopTimer();
-				snooze(id,duration,wakeUp);
+				snooze(id,duration,wakeUp,snoozeNum);
 			}
 		}
 		return START_NOT_STICKY;
