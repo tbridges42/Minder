@@ -54,6 +54,8 @@ public class AsyncFragment extends ListFragment{
         super.onResume();
         if (progressDialog != null)
             progressDialog.dismiss();
+        mTask = new QueryTask();
+        mTask.execute();
     }
 
     /**
@@ -81,8 +83,10 @@ public class AsyncFragment extends ListFragment{
         this.setListAdapter(mAdapter);
 
         // Create and execute the background task.
-        mTask = new QueryTask();
-        mTask.execute();
+        if (mTask == null){
+            mTask = new QueryTask();
+            mTask.execute();
+        }
     }
 
     @Override
