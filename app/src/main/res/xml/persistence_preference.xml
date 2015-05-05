@@ -50,4 +50,15 @@
             android:summaryOn="Reminder will repeat until dismissed"
             android:summaryOff="Reminder will go off only once" />
     </PreferenceCategory>
+    <PreferenceCategory
+        android:title="Snooze Options">
+        <EditTextPreference
+            android:key="snooze_number"
+            android:title="Snooze Limit"
+            android:summary="Limit how many times you can snooze an alarm"/>
+        <EditTextPreference
+            android:key="snooze_duration"
+            android:title="Snooze Time"
+            android:summary="Set the default snooze duration"/>
+    </PreferenceCategory>
 </PreferenceScreen>

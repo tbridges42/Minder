@@ -63,12 +63,12 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
 		this.snooze = snooze;
 	}
 
-	public AlarmClass(Context context, int id, boolean dismiss, boolean snooze, int duration){
+	public AlarmClass(Context context, int id, boolean dismiss, boolean snooze, int snoozeNum){
 		this.context = context;
 		this.id = id;
 		this.dismiss = dismiss;
 		this.snooze = snooze;
-		this.duration = duration;
+		this.snoozeNum = snoozeNum;
 	}
 
     public AlarmClass(Context context, int id, int snoozeNum){
@@ -84,6 +84,7 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
 
 		Intent resultIntent = new Intent(context, AlarmScreen.class);
 		resultIntent.putExtra("Id",reminder.getId());
+		resultIntent.putExtra("SnoozeNum",snoozeNum);
 
 		// Because clicking the notification opens a new ("special") activity, there's
 		// no need to create an artificial back stack.

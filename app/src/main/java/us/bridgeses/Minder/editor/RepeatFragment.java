@@ -17,6 +17,7 @@ import com.orhanobut.logger.Logger;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Locale;
 
 import us.bridgeses.Minder.R;
 import us.bridgeses.Minder.Reminder;
@@ -337,10 +338,10 @@ public class RepeatFragment extends PreferenceFragment  implements SharedPrefere
                 break;
             }
             case 1: {
-                int dayOfWeek = date.get(Calendar.DAY_OF_WEEK);
+	            String nameOfDay = date.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, Locale.getDefault());
                 int weekOfMonth = date.get(Calendar.WEEK_OF_MONTH);
-                monthlyTypePreference.setTitle("On the " + dayOfWeek + Reminder.appendInt(dayOfWeek) +
-                        " day of the " + weekOfMonth + Reminder.appendInt(weekOfMonth) + " week");
+                monthlyTypePreference.setTitle("On the " +  weekOfMonth + Reminder.appendInt(weekOfMonth)
+		                + " " + nameOfDay);
                 set = true;
                 break;
             }
@@ -351,6 +352,29 @@ public class RepeatFragment extends PreferenceFragment  implements SharedPrefere
                 set = true;
                 break;
             }
+	        case 3: {
+		        String nameOfDay = date.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, Locale.getDefault());
+		        int weekOfMonth = date.get(Calendar.WEEK_OF_MONTH);
+		        int weeksInMonth = date.getActualMaximum(Calendar.WEEK_OF_MONTH)+1;
+		        int weeksFromEnd = weeksInMonth - weekOfMonth;
+		        if (weeksFromEnd == 1){
+			        monthlyTypePreference.setTitle("The last " + nameOfDay + " of the month");
+			        set = true;
+		        }
+		        if (weeksFromEnd == 2){
+			        monthlyTypePreference.setTitle("The next to last " + nameOfDay + " of the month");
+			        set = true;
+		        }
+		        if (weeksFromEnd >= 3) {
+			        monthlyTypePreference.setTitle(weeksFromEnd + " " + nameOfDay +
+					        "s from the end of the month");
+			        set = true;
+		        }
+		        if (!set){
+			        Logger.e("Negative weeks in month");
+		        }
+		        break;
+	        }
         }
         return set;
     }

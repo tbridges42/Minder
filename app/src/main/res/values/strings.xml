@@ -81,11 +81,13 @@
         <item>By Date</item>
         <item>By Day of Week</item>
         <item>Count From End of Month</item>
+        <item>By Day of Week from End of Month</item>
     </string-array>
     <string-array name="monthly_index">
         <item>0</item>
         <item>1</item>
         <item>2</item>
+        <item>3</item>
     </string-array>
     <string-array name="location_type">
         <item>None</item>
