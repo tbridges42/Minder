@@ -220,6 +220,7 @@ public class AlertService extends Service {
 				}
 			}
 			else{
+                stopTimer();
 				snooze(id,duration,wakeUp);
 			}
 		}
