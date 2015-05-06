@@ -34,6 +34,7 @@ public class EditReminder extends Activity implements DeleteDialogFragment.Notic
     EditReminderFragment mFragment;
     private static final String TAG_TASK_FRAGMENT = "task_fragment";
     private Boolean defaults = false;
+    DeleteDialogFragment df;
 
     @Override
     public void onDialogNegativeClick(DialogFragment dialog) {
@@ -60,7 +61,7 @@ public class EditReminder extends Activity implements DeleteDialogFragment.Notic
     }
 
     public void delete(View view) {
-        DeleteDialogFragment df = new DeleteDialogFragment();
+        df = new DeleteDialogFragment();
         df.show(getFragmentManager(),"DeleteDialogFragment");
     }
 
@@ -122,6 +123,14 @@ public class EditReminder extends Activity implements DeleteDialogFragment.Notic
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         Logger.v("Activity Configuration Changed");
+    }
+
+    @Override
+    protected void onPause(){
+        super.onPause();
+        if ((df != null)&&(df.isVisible())){
+            df.dismiss();
+        }
     }
 
     @Override
