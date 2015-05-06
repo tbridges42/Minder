@@ -10,7 +10,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NavUtils;
@@ -26,7 +25,6 @@ import java.util.Calendar;
 
 import us.bridgeses.Minder.R;
 import us.bridgeses.Minder.Reminder;
-import us.bridgeses.Minder.ReminderDBHelper;
 import us.bridgeses.Minder.receivers.ReminderReceiver;
 
 
@@ -48,11 +46,7 @@ public class EditReminder extends Activity implements DeleteDialogFragment.Notic
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         alarmManager.cancel(PendingIntent.getBroadcast(getApplicationContext(), reminder.getId(), intentAlarm,
                 PendingIntent.FLAG_UPDATE_CURRENT));
-
-        ReminderDBHelper dbHelper = ReminderDBHelper.getInstance(this);
-        SQLiteDatabase database = dbHelper.openDatabase();
-        Reminder.deleteReminder(database,reminder.getId());
-	    dbHelper.closeDatabase();
+        reminder.delete(this);
 	    // Gets an instance of the NotificationManager service
 	    NotificationManager mNotifyMgr =
 			    (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -104,15 +98,10 @@ public class EditReminder extends Activity implements DeleteDialogFragment.Notic
         else {
 
             reminder.setActive(reminder.getDate().after(Calendar.getInstance()));
-
-            ReminderDBHelper dbHelper = ReminderDBHelper.getInstance(this);
-            SQLiteDatabase database = dbHelper.openDatabase();
 			Logger.d("Old ID: "+reminder.getId());
-            int id = (int) Reminder.saveReminder(database, reminder);    //Save reminder to database
-            reminder.setId(id);
+            reminder = reminder.save(this);
+            int id = reminder.getId();
 			Logger.d("New ID: "+id);
-            dbHelper.closeDatabase();
-
 
             if ((id != -1) && (reminder.getActive())) {
                 setAlarm(id, reminder);

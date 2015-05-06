@@ -43,15 +43,12 @@ public class MainListActivity extends Activity implements AsyncFragment.TaskCall
 	@Override
 	public void onDialogPositiveClick(DialogFragment dialog, int id) {
 		Logger.e(Integer.toString(id));
-		ReminderDBHelper dbHelper;
-		dbHelper  = ReminderDBHelper.getInstance(this);
-		SQLiteDatabase database = dbHelper.openDatabase();
-		Reminder reminder = Reminder.getReminder(database,id);
+		Reminder reminder = Reminder.get(this,id);
         Intent intentAlarm = new Intent(this, ReminderReceiver.class);      //Create alarm intent
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         alarmManager.cancel(PendingIntent.getBroadcast(getApplicationContext(), reminder.getId(), intentAlarm,
                 PendingIntent.FLAG_UPDATE_CURRENT));
-		reminder = Reminder.nextRepeat(database, reminder);
+		reminder = Reminder.nextRepeat(reminder).save(this);
         if ((reminder.getActive()) && (reminder.getId() != -1)) {
             int alarmType;
             if (reminder.getWakeUp()){
@@ -75,7 +72,6 @@ public class MainListActivity extends Activity implements AsyncFragment.TaskCall
 		// Builds the notification and issues it.
 		mNotifyMgr.cancel(reminder.getId());
 		mAsyncFragment.update();
-		dbHelper.closeDatabase();
         mAsyncFragment = new AsyncFragment();
         FragmentManager fm = getFragmentManager();
         fm.beginTransaction().replace(R.id.list,mAsyncFragment,TAG_ASYNC_FRAGMENT).commit();

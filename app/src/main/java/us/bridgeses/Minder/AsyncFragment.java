@@ -102,8 +102,6 @@ public class AsyncFragment extends ListFragment{
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
-
-
         LoadReminderTask mTask = new LoadReminderTask();
         mTask.execute((int) id);
     }
@@ -147,7 +145,8 @@ public class AsyncFragment extends ListFragment{
         @Override
         protected Void doInBackground(Void... ignore) {
             if (database.isOpen()) {
-                cursor = Reminder.getCursor(database);
+                ReminderSqlDao dao = new ReminderSqlDao();
+                cursor = dao.getCursor(database);
             }
             return null;
         }
@@ -202,7 +201,7 @@ public class AsyncFragment extends ListFragment{
          */
         @Override
         protected Void doInBackground(Integer... id) {
-            reminder = Reminder.getReminder(context,id[0]);
+            reminder = Reminder.get(context,id[0]);
             Bundle bundle = new Bundle();
             bundle.putParcelable("Reminder", reminder);
             intent.putExtras(bundle);

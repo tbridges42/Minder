@@ -36,13 +36,8 @@ public class ReminderListAdapter extends SimpleCursorAdapter implements View.OnC
 
 	@Override
 	public void onDialogPositiveClick(DialogFragment dialog, int id) {
-		ReminderDBHelper dbHelper;
-		dbHelper  = ReminderDBHelper.getInstance(mContext);
-		SQLiteDatabase database = dbHelper.openDatabase();
-		Reminder reminder = Reminder.getReminder(database,id);
-		reminder = Reminder.nextRepeat(database, reminder);
-		//mAdapter.changeCursor(cursor);
-		dbHelper.closeDatabase();
+		Reminder reminder = Reminder.get(mContext,id);
+		Reminder.nextRepeat(reminder).save(mContext);
 	}
 
 	public ReminderListAdapter(Context context,int layout, Cursor c,String[] from,int[] to,FragmentManager fragmentManager) {

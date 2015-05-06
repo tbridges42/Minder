@@ -166,10 +166,9 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
             Logger.e("Invalid context");
             return;
         }
-        ReminderDBHelper dbHelper  = ReminderDBHelper.getInstance(context);
-        SQLiteDatabase database = dbHelper.openDatabase();
-        reminder = Reminder.getReminder(database,id);
-        dbHelper.closeDatabase();
+
+        reminder = Reminder.get(context,id);
+
     }
 
     private void alarm(){

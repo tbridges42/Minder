@@ -1,12 +1,10 @@
 package us.bridgeses.Minder;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -65,6 +63,11 @@ public class Reminder implements Parcelable{
     public static Reminder reminderFactory(SharedPreferences sharedPreferences, Context context){
         return preferenceToReminder(sharedPreferences, context);
     }
+
+	public static Reminder reminderFactory(Context context){
+		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+		return preferenceToReminder(sharedPreferences, context);
+	}
 
     /* Parcelable constructor methods */
     public Reminder(Parcel in){
@@ -607,144 +610,30 @@ public class Reminder implements Parcelable{
 	}
 
 	public void setVibrateRepeat(boolean vibrateRepeat) {
-		this.setStyle(makeBitwise(this.getStyle(),VIBRATEREPEAT,vibrateRepeat));
+		this.setStyle(makeBitwise(this.getStyle(), VIBRATEREPEAT, vibrateRepeat));
 	}
 
-	/**************************** Database methods ***************************************/
+	/***************************** Storage methods ********************************/
 
-    private static Reminder[] cursorToReminders(Cursor cursor){
-        cursor.moveToFirst();
-        Reminder[] reminders = new Reminder[cursor.getCount()];
-        for (int i=0; i<cursor.getCount(); i++) {
-            Reminder reminder = new Reminder();
-            reminder.setId(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_ID)));
-            reminder.setActive(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_ACTIVE)) == 1);
-            reminder.setName(cursor.getString(cursor.getColumnIndex(ReminderDBHelper.COLUMN_NAME)));
-            reminder.setDescription(cursor.getString(cursor.getColumnIndex(ReminderDBHelper.COLUMN_DESCRIPTION)));
-            reminder.setDate(cursor.getLong(cursor.getColumnIndex(ReminderDBHelper.COLUMN_DATE))*1000);
-            reminder.setDaysOfWeek((byte) cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_DAYSOFWEEK)));
-            reminder.setMonthType((byte) cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_MONTHTYPE)));
-            reminder.setLocation(new LatLng(cursor.getFloat(cursor.getColumnIndex(ReminderDBHelper.COLUMN_LATITUDE)),
-		            cursor.getFloat(cursor.getColumnIndex(ReminderDBHelper.COLUMN_LONGITUDE))));
-            reminder.setRepeatLength(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_REPEATLENGTH)));
-            reminder.setRepeatType(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_REPEATTYPE)));
-            reminder.setRadius(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_RADIUS)));
-	        reminder.setQr(cursor.getString(cursor.getColumnIndex(ReminderDBHelper.COLUMN_QR)));
-	        reminder.setPersistence((byte)cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_PERSISTENCE)));
-            reminder.setConditions((byte)cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_CONDITIONS)));
-            reminder.setStyle((byte)cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_STYLE)));
-            reminder.setSSID(cursor.getString(cursor.getColumnIndex(ReminderDBHelper.COLUMN_SSID)));
-            reminder.setSnoozeDuration(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_SNOOZEDURATION)));
-	        reminder.setLedColor(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_LEDCOLOR)));
-	        reminder.setLedPattern(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_LEDPATTERN)));
-	        reminder.setSnoozeNumber(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_SNOOZENUM)));
-            try {
-                reminder.setRingtone(cursor.getString(cursor.getColumnIndex(ReminderDBHelper.COLUMN_RINGTONE)));
-            }
-            catch (NullPointerException e){
-                reminder.setRingtone("");
-            }
-	        reminder.setVolume(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_VOLUME)));
-            reminders[i] = reminder;
-            cursor.moveToNext();
-        }
-        cursor.close();
-        return reminders;
-    }
+	public Reminder save(Context context){
+		ReminderDAO dao = DaoFactory.getDao(context);
+		return dao.saveReminder(this);
+	}
 
-    protected static Cursor getCursor(SQLiteDatabase database){
-        String[] projection = {
-                ReminderDBHelper.COLUMN_ID,
-                ReminderDBHelper.COLUMN_ACTIVE,
-                ReminderDBHelper.COLUMN_NAME,
-                ReminderDBHelper.COLUMN_DESCRIPTION,
-                ReminderDBHelper.COLUMN_DATE,
-                ReminderDBHelper.COLUMN_DAYSOFWEEK,
-                ReminderDBHelper.COLUMN_MONTHTYPE,
-                ReminderDBHelper.COLUMN_REPEATTYPE,
-                ReminderDBHelper.COLUMN_REPEATLENGTH,
-                ReminderDBHelper.COLUMN_LATITUDE,
-                ReminderDBHelper.COLUMN_LONGITUDE,
-                ReminderDBHelper.COLUMN_RINGTONE,
-		        ReminderDBHelper.COLUMN_PERSISTENCE,
-                ReminderDBHelper.COLUMN_RADIUS,
-		        ReminderDBHelper.COLUMN_QR,
-                ReminderDBHelper.COLUMN_SSID,
-                ReminderDBHelper.COLUMN_CONDITIONS,
-                ReminderDBHelper.COLUMN_STYLE,
-                ReminderDBHelper.COLUMN_SNOOZEDURATION,
-		        ReminderDBHelper.COLUMN_LEDCOLOR,
-		        ReminderDBHelper.COLUMN_LEDPATTERN,
-		        ReminderDBHelper.COLUMN_VOLUME,
-		        ReminderDBHelper.COLUMN_SNOOZENUM,
-        };
-        String sortOrder = ReminderDBHelper.COLUMN_ACTIVE + " DESC, " + ReminderDBHelper.COLUMN_DATE + " ASC";
+	public int delete(Context context){
+		ReminderDAO dao = DaoFactory.getDao(context);
+		return dao.deleteReminder(getId());
+	}
 
-        return database.query(
-                ReminderDBHelper.TABLE_NAME,
-                projection,
-                null,
-                null,
-                null,
-                null,
-                sortOrder,
-                null
-        );
-    }
+	public static Reminder get(Context context, int id){
+		ReminderDAO dao = DaoFactory.getDao(context);
+		return dao.getReminder(id);
+	}
 
-    public static Reminder[] readReminders(SQLiteDatabase database){
-        Cursor cursor = getCursor(database);
-        return cursorToReminders(cursor);
-    }
-
-    public static Reminder getReminder(SQLiteDatabase database, int id){
-        Cursor cursor = database.rawQuery("select * from " + ReminderDBHelper.TABLE_NAME
-                                            + " where " + ReminderDBHelper.COLUMN_ID + "="
-                                            + id,null);
-        if (cursor.getCount()>=1) {
-            Reminder[] reminders = cursorToReminders(cursor);
-            return reminders[0];
-        }
-        else {
-            return new Reminder();
-        }
-    }
-
-    public static long saveReminder(SQLiteDatabase database, Reminder reminder) {
-        ContentValues values = new ContentValues();
-        if (reminder.getId() != -1)
-            values.put(ReminderDBHelper.COLUMN_ID,reminder.getId());
-
-        values.put(ReminderDBHelper.COLUMN_ACTIVE,reminder.getActive());
-        values.put(ReminderDBHelper.COLUMN_NAME,reminder.getName());
-        values.put(ReminderDBHelper.COLUMN_DESCRIPTION,reminder.getDescription());
-        values.put(ReminderDBHelper.COLUMN_DATE,reminder.getDate().getTimeInMillis()/1000);
-        values.put(ReminderDBHelper.COLUMN_DAYSOFWEEK,reminder.getDaysOfWeek());
-        values.put(ReminderDBHelper.COLUMN_MONTHTYPE,reminder.getMonthType());
-        values.put(ReminderDBHelper.COLUMN_LATITUDE,reminder.getLocation().latitude);
-        values.put(ReminderDBHelper.COLUMN_LONGITUDE,reminder.getLocation().longitude);
-        values.put(ReminderDBHelper.COLUMN_REPEATTYPE,reminder.getRepeatType());
-        values.put(ReminderDBHelper.COLUMN_REPEATLENGTH,reminder.getRepeatLength());
-        values.put(ReminderDBHelper.COLUMN_RINGTONE,reminder.getRingtone());
-	    values.put(ReminderDBHelper.COLUMN_PERSISTENCE,reminder.getPersistence());
-        values.put(ReminderDBHelper.COLUMN_RADIUS,reminder.getRadius());
-	    values.put(ReminderDBHelper.COLUMN_QR,reminder.getQr());
-        values.put(ReminderDBHelper.COLUMN_SSID, reminder.getSSID());
-        values.put(ReminderDBHelper.COLUMN_SNOOZEDURATION, reminder.getSnoozeDuration());
-        values.put(ReminderDBHelper.COLUMN_CONDITIONS, reminder.getConditions());
-        values.put(ReminderDBHelper.COLUMN_STYLE, reminder.getStyle());
-	    values.put(ReminderDBHelper.COLUMN_VOLUME, reminder.getVolume());
-	    values.put(ReminderDBHelper.COLUMN_SNOOZENUM, reminder.getSnoozeNumber());
-        return database.replace(
-		        ReminderDBHelper.TABLE_NAME,
-		        null,
-		        values);
-    }
-
-    public static int deleteReminder(SQLiteDatabase database, int id){
-        String[] args = { String.valueOf(id) };
-        return database.delete(ReminderDBHelper.TABLE_NAME,ReminderDBHelper.COLUMN_ID+" LIKE ?",args);
-    }
+	public static Reminder[] getAll(Context context){
+		ReminderDAO dao = DaoFactory.getDao(context);
+		return dao.getReminders();
+	}
 
 	/******************************** Parcel Methods ******************************/
 
@@ -886,7 +775,6 @@ public class Reminder implements Parcelable{
     //the month)
     //Case 3: Monthly on this day of week, counting from end of the month (e.g. the last friday, not
     //yet implemented
-    //TODO: Implement case 3
     private static void nextMonthlyRepeat(Reminder reminder) {
         Calendar date = reminder.getDate();
         int count = 0;              //Count checks for error conditions and prevents infinite loops
@@ -973,7 +861,7 @@ public class Reminder implements Parcelable{
 
     //If the reminder is set to repeat, set its Date to the next repeat time
     //Otherwise, deactivate the reminder
-    protected static Reminder nextRepeat(SQLiteDatabase database, Reminder reminder){
+    protected static Reminder nextRepeat(Reminder reminder){
         switch (reminder.getRepeatType()) {
             case 0: {
                 reminder.setActive(false);          //Deactivate
@@ -996,7 +884,6 @@ public class Reminder implements Parcelable{
                 break;
             }
         }
-        reminder.setId((int) Reminder.saveReminder(database, reminder));
 	    return reminder;
     }
 
@@ -1006,7 +893,7 @@ public class Reminder implements Parcelable{
     public static String appendInt(int number) {
         if (number <= 0) throw new IllegalArgumentException("Cardinal must be positive.");
         String value = String.valueOf(number);
-        String appendix = "";
+        String appendix;
         if(value.length() > 1) {
             // Check for special case: 11 - 19 are all "th".
             // So if the second to last digit is 1, it is "th".
@@ -1199,10 +1086,7 @@ public class Reminder implements Parcelable{
         }
         if ((!Reminder.checkDayOfWeek(getDaysOfWeek(),          //If initial day is not in
                 date.get(Calendar.DAY_OF_WEEK)))&&(getRepeatType()==2)){                       //repeat pattern, skip
-            ReminderDBHelper dbHelper = ReminderDBHelper.getInstance(context);
-            SQLiteDatabase database = dbHelper.openDatabase();
-            Reminder.nextRepeat(database,this);
-            dbHelper.closeDatabase();
+            Reminder.nextRepeat(this).save(context);
         }
         setDate(date);                                         //Store reminder date + time
     }

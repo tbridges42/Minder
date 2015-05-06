@@ -108,6 +108,10 @@ public class ReminderDBHelper extends SQLiteOpenHelper {
         database.execSQL(SQL_CREATE_ENTRIES);
     }
 
+    public boolean isOpen(){
+        return database.isOpen();
+    }
+
     public synchronized SQLiteDatabase openDatabase() {
         if(openCounter.incrementAndGet() == 1) {
             // Opening new database

@@ -27,7 +27,6 @@ import us.bridgeses.Minder.util.scanner.ScannerActivity;
 
 public class AlarmScreen extends Activity implements View.OnLongClickListener{
 
-    private ReminderDBHelper dbHelper;
     private Reminder reminder;
 	private Context context;
 	private int snoozeNum;
@@ -76,10 +75,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
             Logger.e("Invalid context");
             return new Reminder();
         }
-        ReminderDBHelper dbHelper  = ReminderDBHelper.getInstance(context);
-        SQLiteDatabase database = dbHelper.openDatabase();
-        reminder = Reminder.getReminder(database,id);
-        dbHelper.closeDatabase();
+        reminder = Reminder.get(context,id);
         return reminder;
     }
 
@@ -183,15 +179,11 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
     }
 
     private void dismiss() {
-	    AlarmClass.silence(reminder,context);
+	    AlarmClass.silence(reminder, context);
 	    int id = reminder.getId();
         cancelNotification(id);
 	    cancelAlarm(id);
-        dbHelper = ReminderDBHelper.getInstance(context);
-	    SQLiteDatabase database = dbHelper.openDatabase();
-	    reminder = Reminder.nextRepeat(database,reminder);
-	    dbHelper.closeDatabase();
-
+	    reminder = Reminder.nextRepeat(reminder).save(context);
 	    if ((reminder.getActive()) && (reminder.getId() != -1)) {
 		    setNewAlarm(id);
 	    }

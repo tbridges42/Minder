@@ -34,12 +34,8 @@ public class BootReceiver extends BroadcastReceiver{
     public void onReceive(Context context, Intent intent) {
         final PendingResult result = goAsync();
 
-	    ReminderDBHelper dbHelper = ReminderDBHelper.getInstance(context);
-	    SQLiteDatabase database = dbHelper.openDatabase();                      //Open database
-
-	    Reminder[] reminders = Reminder.readReminders(database);                //Get all reminders
+	    Reminder[] reminders = Reminder.getAll(context);                //Get all reminders
 		Logger.v("Reminders received");
-	    dbHelper.closeDatabase();                                               //Close database
 	    if (reminders.length != 0) {                                            //If there are reminders
 
 		    alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
