@@ -26,6 +26,7 @@ public class AsyncFragment extends ListFragment{
         void onPostExecute();
     }
 
+    ReminderDBHelper dbHelper;
     private TaskCallbacks mCallbacks;
     private QueryTask mTask;
     protected SimpleCursorAdapter mAdapter;
@@ -54,8 +55,18 @@ public class AsyncFragment extends ListFragment{
         super.onResume();
         if (progressDialog != null)
             progressDialog.dismiss();
+        if (!dbHelper.isOpen()){
+            dbHelper.openDatabase();
+        }
         mTask = new QueryTask();
         mTask.execute();
+    }
+
+    @Override
+    public void onPause(){
+        super.onPause();
+        mAdapter.getCursor().close();
+        dbHelper.closeDatabase();
     }
 
     /**
@@ -117,7 +128,6 @@ public class AsyncFragment extends ListFragment{
      */
     private class QueryTask extends AsyncTask<Void, Integer, Void> {
 
-        ReminderDBHelper dbHelper;
         SQLiteDatabase database;
 
         @Override
@@ -171,16 +181,12 @@ public class AsyncFragment extends ListFragment{
     private class LoadReminderTask extends AsyncTask<Integer, Integer, Void> {
 
         Reminder reminder;
-        ReminderDBHelper dbHelper;
-        SQLiteDatabase database;
         Intent intent = new Intent(context, EditReminder.class);
 
         @Override
         protected void onPreExecute() {
             if (mCallbacks != null) {
                 mCallbacks.onPreExecute();
-                dbHelper = ReminderDBHelper.getInstance(context);
-                database = dbHelper.openDatabase();
 	            progressDialog = new ProgressDialog(getActivity());
 	            progressDialog.setIndeterminate(true);
 	            progressDialog.setTitle("");
@@ -196,9 +202,7 @@ public class AsyncFragment extends ListFragment{
          */
         @Override
         protected Void doInBackground(Integer... id) {
-            if (database.isOpen()) {
-                reminder = Reminder.getReminder(database,id[0]);
-            }
+            reminder = Reminder.getReminder(context,id[0]);
             Bundle bundle = new Bundle();
             bundle.putParcelable("Reminder", reminder);
             intent.putExtras(bundle);
