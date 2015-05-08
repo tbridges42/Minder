@@ -7,10 +7,10 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.Menu;
@@ -27,13 +27,25 @@ import us.bridgeses.Minder.receivers.ReminderReceiver;
 /**
  * Created by Tony on 8/8/2014.
  */
-public class MainListActivity extends Activity implements AsyncFragment.TaskCallbacks,SkipDialogFragment.NoticeDialogListener{
+public class MainListActivity extends Activity implements ReminderListFragment.TaskCallbacks,SkipDialogFragment.NoticeDialogListener,ReminderListAdapter.ListClicksListener{
 
     private static final String TAG_ASYNC_FRAGMENT = "Async_fragment";
-    private AsyncFragment mAsyncFragment;
+    private ReminderListFragment mReminderListFragment;
 	private AboutFragment mAboutFragment;
 	private Boolean firstRun;
+    private FragmentManager fragmentManager;
+    private ProgressDialog progressDialog;
 
+    @Override
+    public void SkipClick(int id){
+        SkipDialogFragment df = SkipDialogFragment.newInstance(id);
+        df.show(fragmentManager, "SkipDialog");
+    }
+
+    @Override
+    public void IconClick(int id){
+        Logger.d("IconClick");
+    }
 
 	@Override
 	public void onDialogNegativeClick(DialogFragment dialog) {
@@ -43,7 +55,7 @@ public class MainListActivity extends Activity implements AsyncFragment.TaskCall
 	@Override
 	public void onDialogPositiveClick(DialogFragment dialog, int id) {
 		Logger.e(Integer.toString(id));
-		Reminder reminder = Reminder.get(this,id);
+		Reminder reminder = Reminder.get(this, id);
         Intent intentAlarm = new Intent(this, ReminderReceiver.class);      //Create alarm intent
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         alarmManager.cancel(PendingIntent.getBroadcast(getApplicationContext(), reminder.getId(), intentAlarm,
@@ -71,10 +83,10 @@ public class MainListActivity extends Activity implements AsyncFragment.TaskCall
 				(NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		// Builds the notification and issues it.
 		mNotifyMgr.cancel(reminder.getId());
-		mAsyncFragment.update();
-        mAsyncFragment = new AsyncFragment();
-        FragmentManager fm = getFragmentManager();
-        fm.beginTransaction().replace(R.id.list,mAsyncFragment,TAG_ASYNC_FRAGMENT).commit();
+		mReminderListFragment.update();
+        mReminderListFragment = new ReminderListFragment();
+        fragmentManager = getFragmentManager();
+        fragmentManager.beginTransaction().replace(R.id.list, mReminderListFragment,TAG_ASYNC_FRAGMENT).commit();
 	}
 
 	private void setTracker(){
@@ -100,12 +112,12 @@ public class MainListActivity extends Activity implements AsyncFragment.TaskCall
 	@Override
 	public void onBackPressed()
 	{
-		FragmentManager fm = getFragmentManager();
-        Fragment fragment = fm.findFragmentByTag(TAG_ASYNC_FRAGMENT);
+		fragmentManager = getFragmentManager();
+        Fragment fragment = fragmentManager.findFragmentByTag(TAG_ASYNC_FRAGMENT);
         if (!(fragment instanceof AboutFragment)){
             finish();
         }
-		fm.popBackStack();
+		fragmentManager.popBackStack();
 	}
 
 
@@ -130,10 +142,10 @@ public class MainListActivity extends Activity implements AsyncFragment.TaskCall
             editor.clear().apply();
         }
 
-        FragmentManager fm = getFragmentManager();
-	    Fragment fragment = fm.findFragmentByTag(TAG_ASYNC_FRAGMENT);
-	    if (fragment instanceof AsyncFragment){
-		    mAsyncFragment = (AsyncFragment) fragment;
+        fragmentManager = getFragmentManager();
+	    Fragment fragment = fragmentManager.findFragmentByTag(TAG_ASYNC_FRAGMENT);
+	    if (fragment instanceof ReminderListFragment){
+		    mReminderListFragment = (ReminderListFragment) fragment;
 	    }
 	    else{
 		    if (fragment instanceof AboutFragment){
@@ -145,18 +157,20 @@ public class MainListActivity extends Activity implements AsyncFragment.TaskCall
         if (fragment == null) {
 	        // create new fragment
             setTracker();
-            mAsyncFragment = new AsyncFragment();
-	        fm.beginTransaction().replace(R.id.list,mAsyncFragment,TAG_ASYNC_FRAGMENT).commit();
+            mReminderListFragment = new ReminderListFragment();
+	        fragmentManager.beginTransaction().replace(R.id.list, mReminderListFragment,TAG_ASYNC_FRAGMENT).commit();
         }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        FragmentManager fm = getFragmentManager();
-	    Fragment fragment = fm.findFragmentByTag(TAG_ASYNC_FRAGMENT);
-	    if (fragment instanceof AsyncFragment){
-		    mAsyncFragment = (AsyncFragment) fragment;
+        if (fragmentManager == null) {
+            fragmentManager = getFragmentManager();
+        }
+	    Fragment fragment = fragmentManager.findFragmentByTag(TAG_ASYNC_FRAGMENT);
+	    if (fragment instanceof ReminderListFragment){
+		    mReminderListFragment = (ReminderListFragment) fragment;
 	    }
 	    else{
 		    if (fragment instanceof AboutFragment){
@@ -165,9 +179,9 @@ public class MainListActivity extends Activity implements AsyncFragment.TaskCall
 	    }
         // If the Fragment is non-null, then it is currently being
         // retained across a configuration change.
-        if (mAsyncFragment == null) {
-            mAsyncFragment = new AsyncFragment();
-            fm.beginTransaction().replace(R.id.list,mAsyncFragment,TAG_ASYNC_FRAGMENT).commit();
+        if (mReminderListFragment == null) {
+            mReminderListFragment = new ReminderListFragment();
+            fragmentManager.beginTransaction().replace(R.id.list, mReminderListFragment,TAG_ASYNC_FRAGMENT).commit();
         }
     }
 
@@ -205,17 +219,25 @@ public class MainListActivity extends Activity implements AsyncFragment.TaskCall
 
     @Override
     public void onPreExecute() {
-
+        progressDialog = ProgressDialog.show(this, "", "Loading. . .", true, true);
+        Logger.d("New ProgressDialog");
     }
 
     @Override
     public void onCancelled() {
-
+        if (progressDialog != null) {
+            progressDialog.dismiss();
+            progressDialog = null;
+        }
     }
 
     @Override
     public void onPostExecute() {
-
+        if (progressDialog != null) {
+            Logger.d("Dismissing progress dialog");
+            progressDialog.dismiss();
+            progressDialog = null;
+        }
     }
 
     @Override

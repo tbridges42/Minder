@@ -138,13 +138,12 @@ public class EditReminder extends Activity implements DeleteDialogFragment.Notic
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_preference_test);
 
-        Intent intent = getIntent();
-        Bundle incoming = intent.getExtras();
+        Intent incoming = getIntent();
 	    SharedPreferences defaultPreferences = getSharedPreferences("Minder.Defaults", Context.MODE_PRIVATE);
 	    Boolean isNew;
         if (incoming != null) {
-            isNew = incoming.getBoolean("New");
-            defaults = incoming.getBoolean("default",false);
+            isNew = incoming.getBooleanExtra("New",false);
+            defaults = incoming.getBooleanExtra("default",false);
         }
         else
             isNew = true;
@@ -159,7 +158,7 @@ public class EditReminder extends Activity implements DeleteDialogFragment.Notic
 		    deleteButton.setEnabled(false);
 	    }
 	    else{
-		    reminder = incoming.getParcelable("Reminder");
+		    reminder = incoming.getParcelableExtra("Reminder");
 	    }
 	    Reminder.reminderToPreference(PreferenceManager.getDefaultSharedPreferences(this),reminder);
 

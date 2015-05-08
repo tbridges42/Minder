@@ -103,7 +103,7 @@ public class Reminder implements Parcelable{
                                                  2: Monthly this many days from the end of the month 
                                                      (e.g. three days before the end of the month)
                                                  3: Monthly on this day of week, counting from end of the month 
-                                                     (e.g. the last friday, not yet implemented)*///TODO: Implement
+                                                     (e.g. the last friday, not yet implemented)*/
     private byte daysOfWeek;                   //Bitwise byte representing seven boolean values for the seven days of the week
     private byte persistence;                  //Bitwise byte representing an array of boolean values related to reminder Persistence
     private byte conditions;                   //Bitwise byte representing an array of boolean values related to reminder Conditions
@@ -616,22 +616,26 @@ public class Reminder implements Parcelable{
 	/***************************** Storage methods ********************************/
 
 	public Reminder save(Context context){
-		ReminderDAO dao = DaoFactory.getDao(context);
+		DaoFactory daoFactory = DaoFactory.getInstance();
+		ReminderDAO dao = daoFactory.getDao(context);
 		return dao.saveReminder(this);
 	}
 
 	public int delete(Context context){
-		ReminderDAO dao = DaoFactory.getDao(context);
+		DaoFactory daoFactory = DaoFactory.getInstance();
+		ReminderDAO dao = daoFactory.getDao(context);
 		return dao.deleteReminder(getId());
 	}
 
 	public static Reminder get(Context context, int id){
-		ReminderDAO dao = DaoFactory.getDao(context);
+		DaoFactory daoFactory = DaoFactory.getInstance();
+		ReminderDAO dao = daoFactory.getDao(context);
 		return dao.getReminder(id);
 	}
 
 	public static Reminder[] getAll(Context context){
-		ReminderDAO dao = DaoFactory.getDao(context);
+		DaoFactory daoFactory = DaoFactory.getInstance();
+		ReminderDAO dao = daoFactory.getDao(context);
 		return dao.getReminders();
 	}
 

@@ -49,7 +49,7 @@ public class AlertService extends Service {
 		currVolume = manager.getStreamVolume(AudioManager.STREAM_ALARM);
 		manager.setStreamVolume(AudioManager.STREAM_ALARM, (int) Math.round(manager
 				.getStreamMaxVolume(AudioManager.STREAM_ALARM) * volume / 100), 0);
-		Logger.d("Ringing at "+Integer.toString(volume));
+		Logger.d("Ringing at " + Integer.toString(volume));
 		currRingMode = manager.getRingerMode();
 		manager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
 	}
@@ -84,7 +84,7 @@ public class AlertService extends Service {
 		}
 
 		ringtone = RingtoneManager.getRingtone(this, ringtoneUri);
-		ringtoneHash.put(id,ringtone);
+		ringtoneHash.put(id, ringtone);
 
 		if (override){
 			if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
@@ -149,10 +149,22 @@ public class AlertService extends Service {
 		}
 	}
 
-	private void startTimer(int id, int duration, boolean wakeUp, int snoozeNum){
-		SnoozeTimer timer = new SnoozeTimer(id,duration,wakeUp,snoozeNum);
-		scheduleTaskExecutor = Executors.newScheduledThreadPool(2);
-		scheduleTaskExecutor.schedule(timer,5, TimeUnit.MINUTES);
+	private void startTimer(final int id, int duration, boolean insist, boolean wakeUp, int snoozeNum){
+		if (insist) {
+			SnoozeTimer timer = new SnoozeTimer(id, duration, wakeUp, snoozeNum);
+			scheduleTaskExecutor = Executors.newScheduledThreadPool(2);
+			scheduleTaskExecutor.schedule(timer, 5, TimeUnit.MINUTES);
+		}
+		else {
+			scheduleTaskExecutor = Executors.newScheduledThreadPool(2);
+			scheduleTaskExecutor.schedule(new Runnable() {
+				@Override
+				public void run() {
+					stopVibrate();
+					stopRingtone(id);
+				}
+			}, 2, TimeUnit.MINUTES);
+		}
 	}
 
 	private void stopTimer(){
@@ -201,11 +213,8 @@ public class AlertService extends Service {
 			int volume = intent.getIntExtra("Volume",80);
 			Logger.d("Snooze: "+snooze);
 			if (!snooze) {
-				if (insist) {
-					startTimer(id, duration, wakeUp, snoozeNum);
-				} else {
-					stopTimer();
-				}
+				startTimer(id, duration, insist, wakeUp, snoozeNum);
+
 				if (startRingtone) {
 					Logger.d("Starting ringtone service");
 					Uri ringtoneUri = Uri.parse(intent.getStringExtra("ringtone-uri"));

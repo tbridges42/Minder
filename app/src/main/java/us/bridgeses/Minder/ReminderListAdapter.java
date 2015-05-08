@@ -4,7 +4,6 @@ import android.app.DialogFragment;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,29 +15,24 @@ import com.orhanobut.logger.Logger;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.InputMismatchException;
 
 /**
  * Created by Tony on 1/23/2015.
  */
-public class ReminderListAdapter extends SimpleCursorAdapter implements View.OnClickListener, SkipDialogFragment.NoticeDialogListener{
+public class ReminderListAdapter extends SimpleCursorAdapter implements View.OnClickListener{
+
+	interface ListClicksListener {
+		void SkipClick(int id);
+		void IconClick(int id);
+	}
 
 	private Context mContext;
-	private Context appContext;
 	private int layout;
 	private Cursor myCursor;
 	private final LayoutInflater inflater;
-	private final FragmentManager fragmentManager;
-
-	@Override
-	public void onDialogNegativeClick(DialogFragment dialog) {
-
-	}
-
-	@Override
-	public void onDialogPositiveClick(DialogFragment dialog, int id) {
-		Reminder reminder = Reminder.get(mContext,id);
-		Reminder.nextRepeat(reminder).save(mContext);
-	}
+	private ListClicksListener callbacks;
 
 	public ReminderListAdapter(Context context,int layout, Cursor c,String[] from,int[] to,FragmentManager fragmentManager) {
 		super(context,layout,c,from,to);
@@ -46,7 +40,14 @@ public class ReminderListAdapter extends SimpleCursorAdapter implements View.OnC
 		this.mContext = context;
 		this.inflater=LayoutInflater.from(context);
 		this.myCursor=c;
-		this.fragmentManager = fragmentManager;
+		try {
+			callbacks = (ListClicksListener) context;
+		}
+		catch (ClassCastException e) {
+			// The activity doesn't implement the interface, throw exception
+			throw new ClassCastException(context.toString()
+					+ " must implement ListClicksListener");
+		}
 	}
 
 	@Override
@@ -57,10 +58,26 @@ public class ReminderListAdapter extends SimpleCursorAdapter implements View.OnC
 
 
 	public void onClick(View v){
-		int id = (int)v.getTag();
-		Logger.e(Integer.toString(id));
-		SkipDialogFragment df = SkipDialogFragment.newInstance(id);
-		df.show(fragmentManager,"SkipDialog");
+		HashMap<String, Integer> hashMap;
+		try {
+			hashMap = (HashMap<String,Integer>) v.getTag();
+		}
+		catch (Exception e){
+			throw e;
+		}
+		int id = hashMap.get("id");
+		int type = hashMap.get("type");
+		Logger.d(Integer.toString(id));
+		switch (type) {
+			case 1: {
+				callbacks.SkipClick(id);
+				break;
+			}
+			case 2: {
+				callbacks.IconClick(id);
+				break;
+			}
+		}
 	}
 
 	private String getNext(Calendar calendar){
@@ -138,9 +155,19 @@ public class ReminderListAdapter extends SimpleCursorAdapter implements View.OnC
 		Boolean active = cursor.getInt(activeIndex)==1;
 
 
-			ImageView finish = (ImageView) view.findViewById(R.id.finished_button);
-			finish.setTag(cursor.getInt(idIndex));
-			finish.setOnClickListener(this);
+		ImageView finish = (ImageView) view.findViewById(R.id.finished_button);
+		HashMap<String,Integer> hashMap = new HashMap<>(2);
+		hashMap.put("id", cursor.getInt(idIndex));
+		hashMap.put("type", 1);
+		finish.setTag(hashMap);
+		finish.setOnClickListener(this);
+
+		ImageView icon = (ImageView) view.findViewById(R.id.list_icon);
+		HashMap<String,Integer> iconMap = new HashMap<>(2);
+		iconMap.put("id", cursor.getInt(idIndex));
+		iconMap.put("type",2);
+		icon.setTag(iconMap);
+		icon.setOnClickListener(this);
 
 		if (!active) {
 			view.setAlpha((float)0.4);

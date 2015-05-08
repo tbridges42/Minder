@@ -13,13 +13,15 @@ import android.view.View;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
+import com.orhanobut.logger.Logger;
+
 import us.bridgeses.Minder.editor.EditReminder;
 
 /**
  * Created by Tony on 8/9/2014.
  */
-public class AsyncFragment extends ListFragment{
-    static interface TaskCallbacks {
+public class ReminderListFragment extends ListFragment{
+    interface TaskCallbacks {
         void onPreExecute();
         void onProgressUpdate(int percent);
         void onCancelled();
@@ -31,12 +33,13 @@ public class AsyncFragment extends ListFragment{
     private QueryTask mTask;
     protected SimpleCursorAdapter mAdapter;
     private Context context;
-	private ProgressDialog progressDialog;
 	protected Cursor cursor;
 
 	public void update(){
 
 	}
+
+
 
     /**
      * Hold a reference to the parent Activity so we can report the
@@ -53,20 +56,24 @@ public class AsyncFragment extends ListFragment{
     @Override
     public void onResume() {
         super.onResume();
-        if (progressDialog != null)
-            progressDialog.dismiss();
         if (!dbHelper.isOpen()){
             dbHelper.openDatabase();
         }
-        mTask = new QueryTask();
-        mTask.execute();
+        if (mTask == null) {
+            mTask = new QueryTask();
+            mTask.execute();
+        }
     }
 
     @Override
-    public void onPause(){
-        super.onPause();
-        mAdapter.getCursor().close();
-        dbHelper.closeDatabase();
+    public void onDestroy(){
+        super.onDestroy();
+        if (mAdapter != null) {
+            mAdapter.getCursor().close();
+        }
+        if (dbHelper != null) {
+            dbHelper.closeDatabase();
+        }
     }
 
     /**
@@ -77,7 +84,7 @@ public class AsyncFragment extends ListFragment{
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getActivity() != null) {
-            context = getActivity().getApplicationContext();
+            context = getActivity();
         }
 
         // Retain this fragment across configuration changes.
@@ -168,8 +175,8 @@ public class AsyncFragment extends ListFragment{
         @Override
         protected void onPostExecute(Void ignore) {
             if (mCallbacks != null) {
-
-                // mCallbacks.onPostExecute(cursor);
+                Logger.d("Post Execute");
+                mCallbacks.onPostExecute();
             }
 //	        Logger.d("Cursor updated");
             mAdapter.swapCursor(cursor);
@@ -186,11 +193,6 @@ public class AsyncFragment extends ListFragment{
         protected void onPreExecute() {
             if (mCallbacks != null) {
                 mCallbacks.onPreExecute();
-	            progressDialog = new ProgressDialog(getActivity());
-	            progressDialog.setIndeterminate(true);
-	            progressDialog.setTitle("");
-	            progressDialog.setMessage(getResources().getString(R.string.loading));
-	            progressDialog.show();
             }
         }
 
@@ -202,9 +204,7 @@ public class AsyncFragment extends ListFragment{
         @Override
         protected Void doInBackground(Integer... id) {
             reminder = Reminder.get(context,id[0]);
-            Bundle bundle = new Bundle();
-            bundle.putParcelable("Reminder", reminder);
-            intent.putExtras(bundle);
+            intent.putExtra("Reminder", reminder);
             intent.setExtrasClassLoader(Reminder.class.getClassLoader());
             return null;
         }
@@ -227,13 +227,8 @@ public class AsyncFragment extends ListFragment{
         @Override
         protected void onPostExecute(Void ignore) {
             if (mCallbacks != null) {
-
                 mCallbacks.onPostExecute();
             }
-	        if (progressDialog != null) {
-		        progressDialog.dismiss();
-		        progressDialog = null;
-	        }
             startActivity(intent);
         }
     }
