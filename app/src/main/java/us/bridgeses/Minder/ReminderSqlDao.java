@@ -13,6 +13,8 @@ import com.google.android.gms.maps.model.LatLng;
 public class ReminderSqlDao implements ReminderDAO {
 
     Context context;
+    SQLiteDatabase database;
+    ReminderDBHelper dbHelper;
 
     @Override
     public void setContext(Context context){
@@ -100,20 +102,40 @@ public class ReminderSqlDao implements ReminderDAO {
 
     @Override
     public Reminder[] getReminders(){
-        ReminderDBHelper dbHelper  = ReminderDBHelper.getInstance(context);
-        SQLiteDatabase database = dbHelper.openDatabase();
+        if (dbHelper == null){
+            dbHelper  = ReminderDBHelper.getInstance(context);
+        }
+        database = dbHelper.openDatabase();
         Cursor cursor = getCursor(database);
         Reminder[] reminders = cursorToReminders(cursor);
         cursor.close();
         dbHelper.closeDatabase();
         return reminders;
+    }
 
+    @Override
+    public Cursor getAndKeepOpen(){
+        if (dbHelper == null){
+            dbHelper  = ReminderDBHelper.getInstance(context);
+        }
+        database = dbHelper.openDatabase();
+        Cursor cursor = getCursor(database);
+        return cursor;
+    }
+
+    @Override
+    public void close(){
+        if (dbHelper != null){
+            dbHelper.closeDatabase();
+        }
     }
 
     @Override
     public Reminder getReminder(int id){
-        ReminderDBHelper dbHelper  = ReminderDBHelper.getInstance(context);
-        SQLiteDatabase database = dbHelper.openDatabase();
+        if (dbHelper == null){
+            dbHelper  = ReminderDBHelper.getInstance(context);
+        }
+        database = dbHelper.openDatabase();
         Cursor cursor = database.rawQuery("select * from " + ReminderDBHelper.TABLE_NAME
                 + " where " + ReminderDBHelper.COLUMN_ID + "="
                 + id, null);
@@ -132,8 +154,10 @@ public class ReminderSqlDao implements ReminderDAO {
 
     @Override
     public Reminder saveReminder(Reminder reminder) {
-        ReminderDBHelper dbHelper = ReminderDBHelper.getInstance(context);
-        SQLiteDatabase database = dbHelper.openDatabase();
+        if (dbHelper == null){
+            dbHelper  = ReminderDBHelper.getInstance(context);
+        }
+        database = dbHelper.openDatabase();
         ContentValues values = new ContentValues();
         if (reminder.getId() != -1)
             values.put(ReminderDBHelper.COLUMN_ID,reminder.getId());
@@ -168,11 +192,18 @@ public class ReminderSqlDao implements ReminderDAO {
 
     @Override
     public int deleteReminder(int id){
-        ReminderDBHelper dbHelper = ReminderDBHelper.getInstance(context);
-        SQLiteDatabase database = dbHelper.openDatabase();
+        if (dbHelper == null){
+            dbHelper  = ReminderDBHelper.getInstance(context);
+        }
+        database = dbHelper.openDatabase();
         String[] args = { String.valueOf(id) };
         int result = database.delete(ReminderDBHelper.TABLE_NAME,ReminderDBHelper.COLUMN_ID+" LIKE ?",args);
         dbHelper.closeDatabase();
         return result;
+    }
+
+    @Override
+    public boolean isOpen(){
+        return database.isOpen();
     }
 }

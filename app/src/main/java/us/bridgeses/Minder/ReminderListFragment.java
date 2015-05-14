@@ -34,6 +34,7 @@ public class ReminderListFragment extends ListFragment{
     protected SimpleCursorAdapter mAdapter;
     private Context context;
 	protected Cursor cursor;
+    ReminderDAO dao;
 
 	public void update(){
 
@@ -56,9 +57,6 @@ public class ReminderListFragment extends ListFragment{
     @Override
     public void onResume() {
         super.onResume();
-        if (!dbHelper.isOpen()){
-            dbHelper.openDatabase();
-        }
         if (mTask == null) {
             mTask = new QueryTask();
             mTask.execute();
@@ -68,12 +66,6 @@ public class ReminderListFragment extends ListFragment{
     @Override
     public void onDestroy(){
         super.onDestroy();
-        if (mAdapter != null) {
-            mAdapter.getCursor().close();
-        }
-        if (dbHelper != null) {
-            dbHelper.closeDatabase();
-        }
     }
 
     /**
@@ -139,8 +131,6 @@ public class ReminderListFragment extends ListFragment{
         protected void onPreExecute() {
             if (mCallbacks != null) {
                 mCallbacks.onPreExecute();
-                dbHelper = ReminderDBHelper.getInstance(context);
-                database = dbHelper.openDatabase();
             }
         }
 
@@ -151,10 +141,8 @@ public class ReminderListFragment extends ListFragment{
          */
         @Override
         protected Void doInBackground(Void... ignore) {
-            if (database.isOpen()) {
-                ReminderSqlDao dao = new ReminderSqlDao();
-                cursor = dao.getCursor(database);
-            }
+            dao = DaoFactory.getInstance().getDao(context);
+            cursor = dao.getAndKeepOpen();
             return null;
         }
 
@@ -226,6 +214,9 @@ public class ReminderListFragment extends ListFragment{
 
         @Override
         protected void onPostExecute(Void ignore) {
+            if (dao.isOpen()){
+                dao.close();
+            }
             if (mCallbacks != null) {
                 mCallbacks.onPostExecute();
             }

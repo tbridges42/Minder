@@ -30,7 +30,6 @@ public class ReminderListAdapter extends SimpleCursorAdapter implements View.OnC
 
 	private Context mContext;
 	private int layout;
-	private Cursor myCursor;
 	private final LayoutInflater inflater;
 	private ListClicksListener callbacks;
 
@@ -39,7 +38,6 @@ public class ReminderListAdapter extends SimpleCursorAdapter implements View.OnC
 		this.layout=layout;
 		this.mContext = context;
 		this.inflater=LayoutInflater.from(context);
-		this.myCursor=c;
 		try {
 			callbacks = (ListClicksListener) context;
 		}
@@ -171,6 +169,9 @@ public class ReminderListAdapter extends SimpleCursorAdapter implements View.OnC
 
 		if (!active) {
 			view.setAlpha((float)0.4);
+		}
+		else{
+			view.setAlpha((float)1.0);
 		}
 	}
 
