@@ -251,7 +251,7 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
 
         long timeDelta = Calendar.getInstance().getTimeInMillis() - mLastLocation.getTime();
 
-        if ((mLastLocation == null) ||  (timeDelta > (Reminder.MINUTE * 10))
+        if (timeDelta > (Reminder.MINUTE * 10)
                 ||mLastLocation.getAccuracy() > 1.5*reminder.getRadius()){
             Logger.i("Location is stale");
             try {
