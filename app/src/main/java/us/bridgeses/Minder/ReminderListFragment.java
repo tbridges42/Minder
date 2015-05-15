@@ -28,7 +28,6 @@ public class ReminderListFragment extends ListFragment{
         void onPostExecute();
     }
 
-    ReminderDBHelper dbHelper;
     private TaskCallbacks mCallbacks;
     private QueryTask mTask;
     protected SimpleCursorAdapter mAdapter;
@@ -39,8 +38,6 @@ public class ReminderListFragment extends ListFragment{
 	public void update(){
 
 	}
-
-
 
     /**
      * Hold a reference to the parent Activity so we can report the
@@ -110,8 +107,9 @@ public class ReminderListFragment extends ListFragment{
      * Activity instance.
      */
     @Override
-    public void onDetach() {
-        super.onDetach();
+    public void onPause() {
+        super.onPause();
+        mTask = null;
         mCallbacks = null;
     }
 
