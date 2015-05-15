@@ -1,6 +1,8 @@
 package us.bridgeses.Minder;
 
 import android.content.Context;
+import android.database.Cursor;
+import android.database.MatrixCursor;
 
 import com.google.android.gms.maps.model.LatLng;
 
@@ -235,5 +237,20 @@ public class TestDao implements ReminderDAO {
     @Override
     public int deleteReminder(int id){
         return 1;
+    }
+
+    @Override
+    public Cursor getAndKeepOpen(){
+        return new MatrixCursor(new String[] { "colName1", "colName2" });
+    }
+
+    @Override
+    public void close(){
+
+    }
+
+    @Override
+    public boolean isOpen(){
+        return false;
     }
 }
