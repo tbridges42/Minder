@@ -22,7 +22,7 @@ import com.orhanobut.logger.Logger;
 
 import us.bridgeses.Minder.receivers.ReminderReceiver;
 import us.bridgeses.Minder.util.AlertService;
-import us.bridgeses.Minder.util.scanner.ScannerActivity;
+import us.bridgeses.Minder.util.Scanner.ScannerActivity;
 
 
 public class AlarmScreen extends Activity implements View.OnLongClickListener{
@@ -229,15 +229,16 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
 	}
 
     private void snooze(int duration) {
-	    AlarmClass.silence(reminder,context);
+	    AlarmClass.silence(reminder, context);
 	    Intent snoozeIntent = new Intent(context,AlertService.class);
 	    snoozeIntent.putExtra("Id",reminder.getId());
 	    snoozeIntent.putExtra("Snooze",true);
 	    snoozeNum++;
 	    Logger.d("Sending SnoozeNum: "+snoozeNum);
-	    snoozeIntent.putExtra("SnoozeNum",snoozeNum);
+	    snoozeIntent.putExtra("SnoozeNum", snoozeNum);
 	    Logger.d("Snooze before sending: " + snoozeIntent.getBooleanExtra("Snooze", false));
 	    snoozeIntent.putExtra("Duration", duration);
+        Logger.d("Sending duration: " + duration);
 	    context.startService(snoozeIntent);
 	    finish();
     }
@@ -253,6 +254,8 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
         picker.setValue(reminder.getSnoozeDuration()/Reminder.MINUTE);
         builder.setPositiveButton("Snooze", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
+                picker.clearFocus(); //Hopefully makes picker read keyboard entered values
+                Logger.d("Entered " + picker.getValue() + " minutes");
                 snooze(picker.getValue()*Reminder.MINUTE);
             }
         });
