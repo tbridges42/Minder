@@ -30,7 +30,7 @@ import us.bridgeses.Minder.receivers.ReminderReceiver;
  * Created by Tony on 4/14/2015.
  */
 public class AlertService extends Service {
-	Hashtable<Integer,Ringtone> ringtoneHash = new Hashtable<Integer,Ringtone>();
+	Hashtable<Integer,Ringtone> ringtoneHash = new Hashtable<>();
 	private Vibrator vibrator;
 	private int currVolume = -1;
 	private int currRingMode = -1;
