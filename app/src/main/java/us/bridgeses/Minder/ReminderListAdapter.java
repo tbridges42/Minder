@@ -53,16 +53,10 @@ public class ReminderListAdapter extends SimpleCursorAdapter implements View.OnC
 		return inflater.inflate(layout, null);
 	}
 
-
-
+    @SuppressWarnings("unchecked")
 	public void onClick(View v){
 		HashMap<String, Integer> hashMap;
-		try {
-			hashMap = (HashMap<String,Integer>) v.getTag();
-		}
-		catch (Exception e){
-			throw e;
-		}
+        hashMap = (HashMap<String,Integer>) v.getTag();
 		int id = hashMap.get("id");
 		int type = hashMap.get("type");
 		Logger.d(Integer.toString(id));
@@ -89,7 +83,8 @@ public class ReminderListAdapter extends SimpleCursorAdapter implements View.OnC
 		}
 		else {
 			if (calendar.get(Calendar.DAY_OF_YEAR) - 6 <= now.get(Calendar.DAY_OF_YEAR)) {
-				if (calendar.get(Calendar.DAY_OF_YEAR) == now.get(Calendar.DAY_OF_YEAR)) {
+				if ((calendar.get(Calendar.DAY_OF_YEAR) == now.get(Calendar.DAY_OF_YEAR))||
+						(calendar.getTimeInMillis()) - 72000000 <= now.getTimeInMillis()){
 					sdf = new SimpleDateFormat(mContext.getResources().getString(R.string.time_code));
 				}
 				else {

@@ -16,7 +16,7 @@ import android.widget.BaseAdapter;
 import us.bridgeses.Minder.R;
 import us.bridgeses.Minder.Reminder;
 import us.bridgeses.Minder.util.SeekbarPreference;
-import us.bridgeses.Minder.util.scanner.ScannerActivity;
+import us.bridgeses.Minder.util.Scanner.ScannerActivity;
 
 
 public class PersistenceFragment extends PreferenceFragment implements

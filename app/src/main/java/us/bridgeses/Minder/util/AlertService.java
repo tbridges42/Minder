@@ -24,6 +24,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import us.bridgeses.Minder.Reminder;
 import us.bridgeses.Minder.receivers.ReminderReceiver;
 
 /**
@@ -175,7 +176,7 @@ public class AlertService extends Service {
 	}
 
 	private void snooze(int id, int duration, boolean wakeUp, int snoozeNum){
-		Logger.d("Snoozing: "+snoozeNum);
+		Logger.d("Snoozing for: "+duration);
 		Context context = getApplicationContext();
 		Intent intentAlarm = new Intent(context, ReminderReceiver.class);//Create alarm intent
 		intentAlarm.putExtra("Id", id);           //Associate intent with specific reminder
@@ -210,7 +211,8 @@ public class AlertService extends Service {
 			boolean wakeUp = intent.getBooleanExtra("WakeUp",false);
 			int snoozeNum = intent.getIntExtra("SnoozeNum",0);
 			Logger.d("Received snoozeNum:" + snoozeNum);
-			int duration = intent.getIntExtra("Duration",5);
+			int duration = intent.getIntExtra("Duration",5* Reminder.MINUTE);
+			Logger.d("Received duration:" + duration);
 			int volume = intent.getIntExtra("Volume",80);
 			Logger.d("Snooze: "+snooze);
 			if (!snooze) {

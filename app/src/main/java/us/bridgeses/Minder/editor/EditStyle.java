@@ -5,6 +5,9 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
+import android.widget.Toast;
+
+import com.orhanobut.logger.Logger;
 
 import us.bridgeses.Minder.Reminder;
 
@@ -16,6 +19,17 @@ public class EditStyle extends EditorActivity {
         Intent intent = new Intent();
         setResult(RESULT_OK, intent);
         finish();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data){
+        if (requestCode == 1 && resultCode == RESULT_OK){
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString("image", data.getDataString());
+            editor.apply();
+            Toast.makeText(this,data.getDataString(),Toast.LENGTH_SHORT).show();
+        }
     }
 
 	@Override

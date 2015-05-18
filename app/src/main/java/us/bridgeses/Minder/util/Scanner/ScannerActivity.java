@@ -1,4 +1,4 @@
-package us.bridgeses.Minder.util.scanner;
+package us.bridgeses.Minder.util.Scanner;
 
 /*
  * Basic no frills app which integrates the ZBar barcode scanner with
@@ -38,7 +38,7 @@ import us.bridgeses.Minder.R;
 
 public class ScannerActivity extends Activity{
 	private Camera mCamera;
-	private CameraPreview mPreview;
+	private us.bridgeses.Minder.util.Scanner.CameraPreview mPreview;
 	private Handler autoFocusHandler;
 
 	TextView scanText;

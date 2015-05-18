@@ -1,4 +1,4 @@
-package us.bridgeses.Minder.util.scanner;
+package us.bridgeses.Minder.util.Scanner;
 
 /*
  * Barebones implementation of displaying camera preview.

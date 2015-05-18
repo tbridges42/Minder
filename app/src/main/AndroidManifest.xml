@@ -119,7 +119,7 @@
                 android:value=".editor.EditReminder" />
         </activity>
         <activity
-            android:name=".util.scanner.ScannerActivity"
+            android:name=".util.Scanner.ScannerActivity"
             android:label="Scan Code">
 
         </activity>

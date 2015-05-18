@@ -33,18 +33,17 @@
             android:title="LED Pattern"
             android:summary="Coming soon!"
             android:enabled="false"/>
-        <PreferenceScreen
+        <yuku.ambilwarna.widget.AmbilWarnaPreference
             android:title="LED Color"
-            android:summary="Coming soon!"
-            android:enabled="false"/>
+            android:summary="Coming soon!"/>
     </PreferenceCategory>
     <PreferenceCategory
-        android:title="Alarm Screen Settings"
-        android:enabled="false">
-        <PreferenceScreen
+        android:title="Alarm Screen Settings">
+        <us.bridgeses.Minder.util.ImagePreference
             android:title="Background Image"
+            android:key="image"
             android:summary="Coming soon!"/>
-        <PreferenceScreen
+        <yuku.ambilwarna.widget.AmbilWarnaPreference
             android:title="Font Color"
             android:summary="Coming soon!"/>
     </PreferenceCategory>

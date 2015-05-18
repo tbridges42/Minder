@@ -1,5 +1,6 @@
 package us.bridgeses.Minder.editor;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
@@ -7,10 +8,16 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.widget.BaseAdapter;
 
+import com.orhanobut.logger.Logger;
+
 import us.bridgeses.Minder.R;
+import us.bridgeses.Minder.util.ImagePreference;
 
 public class StyleFragment extends PreferenceFragment implements 
         SharedPreferences.OnSharedPreferenceChangeListener{
+
+    ImagePreference imagePreference;
+    SharedPreferences sharedPreferences;
 
     public static PreferenceFragment newInstance(){
         return new StyleFragment();
@@ -29,13 +36,17 @@ public class StyleFragment extends PreferenceFragment implements
 			CheckBoxPreference mPreference = (CheckBoxPreference) findPreference(key);
 			super.findPreference("vibrate_repeat").setEnabled(mPreference.isChecked());
 		}
+        if (key.equals("image")){
+            imagePreference.setImage(sharedPreferences.getString("image",null));
+        }
 		((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
 	}
 
     private void initSummaries(){
 	    CheckBoxPreference vibrateRepeat = (CheckBoxPreference) super.findPreference("vibrate_repeat");
 	    CheckBoxPreference led = (CheckBoxPreference) super.findPreference("led");
-	    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+	    sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        imagePreference = (ImagePreference) super.findPreference("image");
 	    vibrateRepeat.setChecked(sharedPreferences.getBoolean("vibrate_repeat",false));
 	    vibrateRepeat.setEnabled(sharedPreferences.getBoolean("temp_vibrate",false));
 	    led.setChecked(sharedPreferences.getBoolean("led",false));
