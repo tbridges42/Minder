@@ -84,7 +84,7 @@ public class ReminderListAdapter extends SimpleCursorAdapter implements View.OnC
 		else {
 			if (calendar.get(Calendar.DAY_OF_YEAR) - 6 <= now.get(Calendar.DAY_OF_YEAR)) {
 				if ((calendar.get(Calendar.DAY_OF_YEAR) == now.get(Calendar.DAY_OF_YEAR))||
-						(calendar.getTimeInMillis()) - 72000000 <= now.getTimeInMillis()){
+						(calendar.getTimeInMillis()) - Reminder.HOUR * 16 <= now.getTimeInMillis()){
 					sdf = new SimpleDateFormat(mContext.getResources().getString(R.string.time_code));
 				}
 				else {
