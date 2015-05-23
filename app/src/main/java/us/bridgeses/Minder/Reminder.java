@@ -143,7 +143,7 @@ public class Reminder implements Parcelable{
     public static final boolean VIBRATEDEFAULT = false;
     public static final String RINGTONEDEFAULT = "";
     public static final boolean LEDDEFAULT = true;
-    public static final int LEDCOLORDEFAULT = 0xffffff;
+    public static final int LEDCOLORDEFAULT = 0xff000000;
     public static final int LEDPATTERNDEFAULT = -1;
     public static final int IDDEFAULT = -1;
     public static final int RADIUSDEFAULT = 200;
@@ -158,7 +158,7 @@ public class Reminder implements Parcelable{
 	public static final boolean INSISTENTDEFAULT = true;
 	public static final int SNOOZENUMDEFAULT = -1;
     public static final String IMAGEDEFAULT = "";
-    public static final int TEXTCOLORDEFAULT = 0xffffff;
+    public static final int TEXTCOLORDEFAULT = 0xff000000;
 
     //Time constants
     public static final int MINUTE = 60000;
