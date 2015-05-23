@@ -153,6 +153,7 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
 	public static void silence(Reminder reminder, Context context) {
 		Intent stopIntent = new Intent(context, AlertService.class);
 		stopIntent.putExtra("Id",reminder.getId());
+        stopIntent.putExtra("Stop",true);
 		context.startService(stopIntent);
 		context.stopService(stopIntent);
 	}

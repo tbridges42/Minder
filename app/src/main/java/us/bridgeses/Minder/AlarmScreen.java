@@ -67,29 +67,6 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
         return true;
     }
 
-    public static int calculateInSampleSize(
-            BitmapFactory.Options options, int reqWidth, int reqHeight) {
-        // Raw height and width of image
-        final int height = options.outHeight;
-        final int width = options.outWidth;
-        int inSampleSize = 1;
-
-        if (height > reqHeight || width > reqWidth) {
-
-            final int halfHeight = height / 2;
-            final int halfWidth = width / 2;
-
-            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
-            // height and width larger than the requested height and width.
-            while ((halfHeight / inSampleSize) > reqHeight
-                    && (halfWidth / inSampleSize) > reqWidth) {
-                inSampleSize *= 2;
-            }
-        }
-
-        return inSampleSize;
-    }
-
     private int getOrientation(String path){
         Cursor cursor = context.getContentResolver().query(Uri.parse(path),
                 new String[] { MediaStore.Images.ImageColumns.ORIENTATION },
@@ -146,6 +123,9 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
             getWindowManager().getDefaultDisplay().getSize(size);
 
             Bitmap thumbBM = shrinkBitmap(reminder.getImage(),size.x,size.y);
+            if (thumbBM == null){
+                return;
+            }
             Logger.d("Created raw image");
 
             Matrix matrix = new Matrix();
@@ -282,7 +262,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
     }
 
     private void cancelAlarm(int id){
-        Intent intentAlarm = new Intent(this, ReminderReceiver.class);      //Create alarm intent
+        Intent intentAlarm = new Intent(getApplicationContext(), ReminderReceiver.class);      //Create alarm intent
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 
         alarmManager.cancel(PendingIntent.getBroadcast(getApplicationContext(),

@@ -31,7 +31,7 @@ import us.bridgeses.Minder.receivers.ReminderReceiver;
  * Created by Tony on 4/14/2015.
  */
 public class AlertService extends Service {
-	Hashtable<Integer,Ringtone> ringtoneHash = new Hashtable<>();
+	Hashtable<Integer,Ringtone> ringtoneHash = new Hashtable<Integer, Ringtone>();
 	private Vibrator vibrator;
 	private int currVolume = -1;
 	private int currRingMode = -1;
@@ -118,7 +118,7 @@ public class AlertService extends Service {
 		for (Integer key : keys){
 			stopRingtone(key);
 		}
-		ringtoneHash = new Hashtable<>();
+		ringtoneHash = new Hashtable<Integer, Ringtone>();
 	}
 
 	private void stopVibrate(){
@@ -203,6 +203,12 @@ public class AlertService extends Service {
 	{
 		int id = intent.getIntExtra("Id",-1);
 		if (id != -1) {
+			boolean stop = intent.getBooleanExtra("Stop", false);
+			if (stop){
+				stopRingtone(id);
+				stopVibrate();
+				stopTimer();
+			}
 			boolean startRingtone = intent.getBooleanExtra("StartRingtone", false);
 			boolean startVibrate = intent.getBooleanExtra("StartVibrate", false);
 			boolean override = intent.getBooleanExtra("Override",false);
