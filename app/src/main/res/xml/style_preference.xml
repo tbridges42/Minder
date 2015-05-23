@@ -33,8 +33,9 @@
             android:title="LED Pattern"
             android:summary="Coming soon!"
             android:enabled="false"/>
-        <yuku.ambilwarna.widget.AmbilWarnaPreference
+        <us.bridgeses.Minder.util.ColorPreference
             android:title="LED Color"
+            android:key="led_color"
             android:summary="Coming soon!"/>
     </PreferenceCategory>
     <PreferenceCategory
@@ -43,8 +44,9 @@
             android:title="Background Image"
             android:key="image"
             android:summary="Coming soon!"/>
-        <yuku.ambilwarna.widget.AmbilWarnaPreference
+        <us.bridgeses.Minder.util.ColorPreference
             android:title="Font Color"
+            android:key="font_color"
             android:summary="Coming soon!"/>
     </PreferenceCategory>
     <PreferenceCategory

@@ -58,6 +58,8 @@ public class Reminder implements Parcelable{
 	    setVibrateRepeat(VIBRATEREPEATDEFAULT);
 	    setVolume(VOLUMEDEFAULT);
 	    setSnoozeNumber(SNOOZENUMDEFAULT);
+        setImage(IMAGEDEFAULT);
+        setTextColor(TEXTCOLORDEFAULT);
     }
 
     public static Reminder reminderFactory(SharedPreferences sharedPreferences, Context context){
@@ -118,6 +120,8 @@ public class Reminder implements Parcelable{
     private String ssid;                       //A string representing an SSID for a user selected wifi-network
     private String bluetooth;                  //A string representing a user selected bluetooth pairing //TODO: Implement bluetooth
 	private int volume;                        //An integer representing the volume ratio out of 100
+	private String image;                      //A path to a background image
+    private int textColor;                     //A hexadecimal representation of font color
 
     //Default constants
     public static final boolean ACTIVEDEFAULT = true;
@@ -139,7 +143,7 @@ public class Reminder implements Parcelable{
     public static final boolean VIBRATEDEFAULT = false;
     public static final String RINGTONEDEFAULT = "";
     public static final boolean LEDDEFAULT = true;
-    public static final int LEDCOLORDEFAULT = -1;
+    public static final int LEDCOLORDEFAULT = 0xffffff;
     public static final int LEDPATTERNDEFAULT = -1;
     public static final int IDDEFAULT = -1;
     public static final int RADIUSDEFAULT = 200;
@@ -153,6 +157,8 @@ public class Reminder implements Parcelable{
 	public static final int VOLUMEDEFAULT = 80;
 	public static final boolean INSISTENTDEFAULT = true;
 	public static final int SNOOZENUMDEFAULT = -1;
+    public static final String IMAGEDEFAULT = "";
+    public static final int TEXTCOLORDEFAULT = 0xffffff;
 
     //Time constants
     public static final int MINUTE = 60000;
@@ -195,6 +201,21 @@ public class Reminder implements Parcelable{
 
     public static final String PREFS_NAME = "ReminderPrefs";
 
+    public void setImage(String image){
+        this.image = image;
+    }
+
+    public String getImage(){
+        return image;
+    }
+
+    public void setTextColor(int textColor){
+        this.textColor = textColor;
+    }
+
+    public int getTextColor(){
+        return textColor;
+    }
 
     public void setSSID(String ssid){
         //TODO: determine ssid input requirements
@@ -383,12 +404,7 @@ public class Reminder implements Parcelable{
 	}
 
 	public void setLedColor(int ledColor) {
-		if ((0 <= ledColor) && (ledColor <= 0xffffff)){
-			this.ledColor = ledColor;
-		}
-		else {
-			throw new IllegalArgumentException("LED Color must be a valid color");
-		}
+        this.ledColor = ledColor;
 	}
 
 	public int getLedPattern() {
@@ -665,6 +681,8 @@ public class Reminder implements Parcelable{
         out.writeByte(style);
 	    out.writeInt(volume);
 	    out.writeInt(snoozeNumber);
+        out.writeString(image);
+        out.writeInt(textColor);
     }
 
     public void readFromParcel(Parcel in){
@@ -691,6 +709,8 @@ public class Reminder implements Parcelable{
         style = in.readByte();
 	    volume = in.readInt();
 	    snoozeNumber = in.readInt();
+        image = in.readString();
+        textColor = in.readInt();
     }
 
     @Override
@@ -1002,6 +1022,9 @@ public class Reminder implements Parcelable{
 	    editor.putBoolean("led",reminder.getLed());
 	    editor.putBoolean("dismiss_check",reminder.getConfirmDismiss());
 	    editor.putBoolean("try_again",reminder.isInsistent());
+        editor.putString("image",reminder.getImage());
+        editor.putInt("font_color",reminder.getTextColor());
+        editor.putInt("led_color",reminder.getLedColor());
         editor.apply();
     }
 
@@ -1126,6 +1149,9 @@ public class Reminder implements Parcelable{
 	    reminder.setLed(sharedPreferences.getBoolean("led",LEDDEFAULT));
 	    reminder.setVolume(sharedPreferences.getInt("volume",VOLUMEDEFAULT));
 	    reminder.setInsistent(sharedPreferences.getBoolean("try_again",INSISTENTDEFAULT));
+        reminder.setImage(sharedPreferences.getString("image",IMAGEDEFAULT));
+        reminder.setTextColor(sharedPreferences.getInt("font_color",TEXTCOLORDEFAULT));
+        reminder.setLedColor(sharedPreferences.getInt("led_color",LEDCOLORDEFAULT));
         return reminder;
     }
 }

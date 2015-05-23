@@ -30,7 +30,7 @@ public class ReminderSqlDao implements ReminderDAO {
             reminder.setActive(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_ACTIVE)) == 1);
             reminder.setName(cursor.getString(cursor.getColumnIndex(ReminderDBHelper.COLUMN_NAME)));
             reminder.setDescription(cursor.getString(cursor.getColumnIndex(ReminderDBHelper.COLUMN_DESCRIPTION)));
-            reminder.setDate(cursor.getLong(cursor.getColumnIndex(ReminderDBHelper.COLUMN_DATE))*1000);
+            reminder.setDate(cursor.getLong(cursor.getColumnIndex(ReminderDBHelper.COLUMN_DATE)) * 1000);
             reminder.setDaysOfWeek((byte) cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_DAYSOFWEEK)));
             reminder.setMonthType((byte) cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_MONTHTYPE)));
             reminder.setLocation(new LatLng(cursor.getFloat(cursor.getColumnIndex(ReminderDBHelper.COLUMN_LATITUDE)),
@@ -39,9 +39,9 @@ public class ReminderSqlDao implements ReminderDAO {
             reminder.setRepeatType(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_REPEATTYPE)));
             reminder.setRadius(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_RADIUS)));
             reminder.setQr(cursor.getString(cursor.getColumnIndex(ReminderDBHelper.COLUMN_QR)));
-            reminder.setPersistence((byte)cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_PERSISTENCE)));
-            reminder.setConditions((byte)cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_CONDITIONS)));
-            reminder.setStyle((byte)cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_STYLE)));
+            reminder.setPersistence((byte) cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_PERSISTENCE)));
+            reminder.setConditions((byte) cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_CONDITIONS)));
+            reminder.setStyle((byte) cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_STYLE)));
             reminder.setSSID(cursor.getString(cursor.getColumnIndex(ReminderDBHelper.COLUMN_SSID)));
             reminder.setSnoozeDuration(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_SNOOZEDURATION)));
             reminder.setLedColor(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_LEDCOLOR)));
@@ -54,6 +54,9 @@ public class ReminderSqlDao implements ReminderDAO {
                 reminder.setRingtone("");
             }
             reminder.setVolume(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_VOLUME)));
+            reminder.setLedColor(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_LEDCOLOR)));
+            reminder.setTextColor(cursor.getInt(cursor.getColumnIndex(ReminderDBHelper.COLUMN_TEXTCOLOR)));
+            reminder.setImage(cursor.getString(cursor.getColumnIndex(ReminderDBHelper.COLUMN_IMAGE)));
             reminders[i] = reminder;
             cursor.moveToNext();
         }
@@ -86,6 +89,9 @@ public class ReminderSqlDao implements ReminderDAO {
                 ReminderDBHelper.COLUMN_LEDPATTERN,
                 ReminderDBHelper.COLUMN_VOLUME,
                 ReminderDBHelper.COLUMN_SNOOZENUM,
+                ReminderDBHelper.COLUMN_TEXTCOLOR,
+                ReminderDBHelper.COLUMN_LEDCOLOR,
+                ReminderDBHelper.COLUMN_IMAGE,
         };
         String sortOrder = ReminderDBHelper.COLUMN_ACTIVE + " DESC, " + ReminderDBHelper.COLUMN_DATE + " ASC";
         Cursor cursor =database.query(
@@ -182,6 +188,9 @@ public class ReminderSqlDao implements ReminderDAO {
         values.put(ReminderDBHelper.COLUMN_STYLE, reminder.getStyle());
         values.put(ReminderDBHelper.COLUMN_VOLUME, reminder.getVolume());
         values.put(ReminderDBHelper.COLUMN_SNOOZENUM, reminder.getSnoozeNumber());
+        values.put(ReminderDBHelper.COLUMN_LEDCOLOR, reminder.getLedColor());
+        values.put(ReminderDBHelper.COLUMN_TEXTCOLOR, reminder.getTextColor());
+        values.put(ReminderDBHelper.COLUMN_IMAGE, reminder.getImage());
         reminder.setId((int) database.replace(
                 ReminderDBHelper.TABLE_NAME,
                 null,

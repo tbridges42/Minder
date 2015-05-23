@@ -41,6 +41,8 @@ public class ReminderDBHelper extends SQLiteOpenHelper {
     public static final String COLUMN_STYLE = "Style";
 	public static final String COLUMN_VOLUME = "Volume";
 	public static final String COLUMN_SNOOZENUM = "SnoozeNum";
+    public static final String COLUMN_IMAGE = "Image";
+    public static final String COLUMN_TEXTCOLOR = "TextColor";
 
     private static final String SQL_CREATE_ENTRIES =
             "CREATE TABLE " + TABLE_NAME + " (" +
@@ -66,11 +68,13 @@ public class ReminderDBHelper extends SQLiteOpenHelper {
                     COLUMN_RADIUS + " INTEGER, " +
                     COLUMN_SSID + " TEXT, " +
 		            COLUMN_VOLUME + " INTEGER, " +
-		            COLUMN_SNOOZENUM + " INTEGER " + ")";
+		            COLUMN_SNOOZENUM + " INTEGER, " +
+                    COLUMN_IMAGE + " TEXT, " +
+                    COLUMN_TEXTCOLOR + " INTEGER " + ")";
 
     private static final String SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS " + TABLE_NAME;
 
-    public static final int DATABASE_VERSION = 16;
+    public static final int DATABASE_VERSION = 17;
     public static final String DATABASE_NAME = "Reminders.db";
 
     public static synchronized ReminderDBHelper getInstance(Context context){
@@ -100,6 +104,10 @@ public class ReminderDBHelper extends SQLiteOpenHelper {
 	    if (oldVersion == 15) {
 		    database.execSQL("ALTER TABLE "+TABLE_NAME+" ADD " + COLUMN_SNOOZENUM + " INTEGER");
 	    }
+        if (oldVersion == 16){
+            database.execSQL("ALTER TABLE "+TABLE_NAME+" ADD " + COLUMN_IMAGE + " STRING" );
+            database.execSQL("ALTER TABLE "+TABLE_NAME+" ADD " + COLUMN_TEXTCOLOR + " INTEGER");
+        }
         Logger.i("Database Upgraded");
     }
 

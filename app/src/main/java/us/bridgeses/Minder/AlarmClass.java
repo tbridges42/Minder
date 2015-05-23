@@ -124,7 +124,7 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
 		}
 
 		if (reminder.getLed()){
-			mBuilder.setLights(0xFF0000FF,250,250);
+			mBuilder.setLights(reminder.getLedColor(),250,250);
 		}
 
 		mBuilder.setContentIntent(resultPendingIntent);

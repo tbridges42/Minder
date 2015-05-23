@@ -9,16 +9,32 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.graphics.Point;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.MediaStore;
+import android.util.Log;
+import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.NumberPicker;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.orhanobut.logger.Logger;
+
+import java.io.IOException;
 
 import us.bridgeses.Minder.receivers.ReminderReceiver;
 import us.bridgeses.Minder.util.AlertService;
@@ -51,6 +67,109 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
         return true;
     }
 
+    public static int calculateInSampleSize(
+            BitmapFactory.Options options, int reqWidth, int reqHeight) {
+        // Raw height and width of image
+        final int height = options.outHeight;
+        final int width = options.outWidth;
+        int inSampleSize = 1;
+
+        if (height > reqHeight || width > reqWidth) {
+
+            final int halfHeight = height / 2;
+            final int halfWidth = width / 2;
+
+            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+            // height and width larger than the requested height and width.
+            while ((halfHeight / inSampleSize) > reqHeight
+                    && (halfWidth / inSampleSize) > reqWidth) {
+                inSampleSize *= 2;
+            }
+        }
+
+        return inSampleSize;
+    }
+
+    private int getOrientation(String path){
+        Cursor cursor = context.getContentResolver().query(Uri.parse(path),
+                new String[] { MediaStore.Images.ImageColumns.ORIENTATION },
+                null, null, null);
+
+        try {
+            if (cursor.moveToFirst()) {
+                return cursor.getInt(0);
+            } else {
+                return -1;
+            }
+        } finally {
+            cursor.close();
+        }
+    }
+
+    private Bitmap shrinkBitmap(String path, int width, int height) {
+        // TODO Auto-generated method stub
+        try{
+            BitmapFactory.Options bmpFactoryOptions = new BitmapFactory.Options();
+            bmpFactoryOptions.inJustDecodeBounds = true;
+
+            BitmapFactory.decodeStream(getContentResolver().openInputStream(Uri.parse(path)),null, bmpFactoryOptions);
+
+
+            int heightRatio = (int)Math.ceil(bmpFactoryOptions.outHeight/(float)height);
+            int widthRatio = (int)Math.ceil(bmpFactoryOptions.outWidth/(float)width);
+
+            if (heightRatio > 1 || widthRatio > 1)
+            {
+                if (heightRatio > widthRatio)
+                {
+                    bmpFactoryOptions.inSampleSize = heightRatio;
+                } else {
+                    bmpFactoryOptions.inSampleSize = widthRatio;
+                }
+            }
+
+            bmpFactoryOptions.inJustDecodeBounds = false;
+            return BitmapFactory.decodeStream(getContentResolver().openInputStream(Uri.parse(path)), null, bmpFactoryOptions);
+        }
+        catch (IOException e){
+            Toast.makeText(context, "Background Image Missing", Toast.LENGTH_SHORT).show();
+            return null;
+        }
+    }
+
+    private void setBackground(){
+        try{
+            int orientation = getOrientation(reminder.getImage());
+            Logger.d("Found orientation: " + orientation);
+
+            Point size = new Point();
+            getWindowManager().getDefaultDisplay().getSize(size);
+
+            Bitmap thumbBM = shrinkBitmap(reminder.getImage(),size.x,size.y);
+            Logger.d("Created raw image");
+
+            Matrix matrix = new Matrix();
+            if (orientation != 0f) {
+                matrix.preRotate(orientation);
+                thumbBM = Bitmap.createBitmap(thumbBM, 0, 0, thumbBM.getWidth(), thumbBM.getHeight(), matrix, true);
+            }
+            Logger.d("Rotated image");
+            Logger.d("Set thumbnail");
+            LinearLayout layout = (LinearLayout) findViewById(R.id.background);
+            BitmapDrawable background = new BitmapDrawable(getResources(),thumbBM);
+
+            int sdk = android.os.Build.VERSION.SDK_INT;
+            if(sdk < android.os.Build.VERSION_CODES.JELLY_BEAN) {
+                layout.setBackgroundDrawable( background );
+            } else {
+                layout.setBackground( background );
+            }
+        }
+        catch (OutOfMemoryError e){
+            Toast.makeText(context, "Background Image Too Large", Toast.LENGTH_SHORT).show();
+        }
+    }
+
 	private void createScreen() {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON |
                 //WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
@@ -60,8 +179,18 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
 
         TextView titleText = (TextView) findViewById(R.id.fullscreen_name);
         TextView descriptionText = (TextView) findViewById(R.id.fullscreen_description);
+        TextView snooze = (TextView) findViewById(R.id.snooze_button);
+        TextView dismiss = (TextView) findViewById(R.id.dismiss_button);
         titleText.setText(reminder.getName());
+        titleText.setTextColor(reminder.getTextColor());
         descriptionText.setText(reminder.getDescription());
+        descriptionText.setTextColor(reminder.getTextColor());
+        snooze.setTextColor(reminder.getTextColor());
+        dismiss.setTextColor(reminder.getTextColor());
+
+        if (!reminder.getImage().equals("")){
+            setBackground();
+        }
 
         findViewById(R.id.snooze_button).setOnLongClickListener(this);
 	}

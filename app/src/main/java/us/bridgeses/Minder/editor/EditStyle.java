@@ -10,6 +10,7 @@ import android.widget.Toast;
 import com.orhanobut.logger.Logger;
 
 import us.bridgeses.Minder.Reminder;
+import us.bridgeses.Minder.util.ImagePreference;
 
 public class EditStyle extends EditorActivity {
 
@@ -39,6 +40,9 @@ public class EditStyle extends EditorActivity {
 		editor.putBoolean("temp_vibrate", saved.getBoolean("temp_vibrate", Reminder.VIBRATEDEFAULT));
 		editor.putBoolean("vibrate_repeat", saved.getBoolean("vibrate_repeat", Reminder.VIBRATEREPEATDEFAULT));
 		editor.putBoolean("led", saved.getBoolean("led", Reminder.LEDDEFAULT));
+        editor.putInt("led_color", saved.getInt("led_color", Reminder.LEDCOLORDEFAULT));
+        editor.putString("image", saved.getString("image", Reminder.IMAGEDEFAULT));
+        editor.putInt("font_color", saved.getInt("font_color", Reminder.TEXTCOLORDEFAULT));
         editor.apply();
         Intent intent = new Intent();
         setResult(RESULT_CANCELED, intent);
@@ -56,6 +60,12 @@ public class EditStyle extends EditorActivity {
 					sharedPreferences.getBoolean("vibrate_repeat", Reminder.VIBRATEREPEATDEFAULT));
 			saved.putBoolean("led",
 					sharedPreferences.getBoolean("led", Reminder.LEDDEFAULT));
+            saved.putInt("led_color",
+                    sharedPreferences.getInt("led_color", Reminder.LEDCOLORDEFAULT));
+            saved.putString("image",
+                    sharedPreferences.getString("image", Reminder.IMAGEDEFAULT));
+            saved.putInt("font_color",
+                    sharedPreferences.getInt("font_color", Reminder.TEXTCOLORDEFAULT));
 		}
 	}
 
