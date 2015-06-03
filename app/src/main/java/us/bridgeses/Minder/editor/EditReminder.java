@@ -98,7 +98,10 @@ public class EditReminder extends Activity implements DeleteDialogFragment.Notic
         }
         else {
 
-            reminder.setActive(reminder.getDate().after(Calendar.getInstance()));
+            reminder.setActive(true);
+            if (reminder.getDate().getTimeInMillis() <= Calendar.getInstance().getTimeInMillis()){
+                reminder = Reminder.nextRepeat(reminder);
+            }
 			Logger.d("Old ID: "+reminder.getId());
             reminder = reminder.save(this);
             int id = reminder.getId();
