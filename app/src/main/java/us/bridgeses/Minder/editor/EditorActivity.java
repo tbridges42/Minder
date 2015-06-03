@@ -11,7 +11,7 @@ import android.view.View;
 import us.bridgeses.Minder.R;
 
 /**
- * Created by Tony on 4/18/2015.
+ * Abstract class from which all editor classes are derived
  */
 public abstract class EditorActivity extends Activity{
 
@@ -59,10 +59,14 @@ public abstract class EditorActivity extends Activity{
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
 
-		//noinspection SimplifiableIfStatement
-		/*if (id == R.id.action_settings) {
-			return true;
-		}*/
+		switch (id)
+		{
+			case android.R.id.home:
+			{
+				cancel(null);
+				return true;
+			}
+		}
 
 		return super.onOptionsItemSelected(item);
 	}
