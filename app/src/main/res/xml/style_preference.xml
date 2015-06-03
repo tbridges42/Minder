@@ -29,25 +29,25 @@
             android:title="Flash LED"
             android:summaryOn="LED will flash"
             android:summaryOff="LED will not flash"/>
+        <us.bridgeses.Minder.util.ColorPreference
+            android:title="LED Color"
+            android:key="led_color"
+            android:summary="Select an LED color for this reminder"/>
         <PreferenceScreen
             android:title="LED Pattern"
             android:summary="Coming soon!"
             android:enabled="false"/>
-        <us.bridgeses.Minder.util.ColorPreference
-            android:title="LED Color"
-            android:key="led_color"
-            android:summary="Coming soon!"/>
     </PreferenceCategory>
     <PreferenceCategory
         android:title="Alarm Screen Settings">
         <us.bridgeses.Minder.util.ImagePreference
             android:title="Background Image"
             android:key="image"
-            android:summary="Coming soon!"/>
+            android:summary="Select a background image for this reminder"/>
         <us.bridgeses.Minder.util.ColorPreference
             android:title="Font Color"
             android:key="font_color"
-            android:summary="Coming soon!"/>
+            android:summary="Select a font color for this reminder"/>
     </PreferenceCategory>
     <PreferenceCategory
         android:title="Sound Settings"
