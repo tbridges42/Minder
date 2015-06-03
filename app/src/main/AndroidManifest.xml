@@ -125,7 +125,11 @@
         </activity>
         <activity
             android:name=".editor.EditStyle"
-            android:label="@string/title_activity_edit_style" >
+            android:label="@string/title_activity_edit_style"
+            android:parentActivityName=".editor.EditReminder" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".editor.EditReminder" />
         </activity>
 
         <service android:name=".util.AlertService"/>

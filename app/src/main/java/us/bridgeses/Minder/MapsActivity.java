@@ -173,6 +173,7 @@ public class MapsActivity extends Activity implements GoogleMap.OnMapLongClickLi
         }
     }
 
+    @SuppressWarnings("deprecation")
 	private boolean checkLocationServices(Context context){
 		int locationMode = 0;
 		String locationProviders;
@@ -226,10 +227,20 @@ public class MapsActivity extends Activity implements GoogleMap.OnMapLongClickLi
 	    radiusBar.setProgress(radius);
 	    radiusText.addTextChangedListener(new TextWatcher() {
 		    public void afterTextChanged(Editable s) {
-			    int i = Integer.parseInt(s.toString());
-			    if (i >= 1 && i <= 1000) {
-				    radiusBar.setProgress(i); // This ensures 0-120 value for seekbar
-			    }
+                int i;
+                if ((s == null)||(s.toString().equals(""))){
+                    i = 1;
+                }
+			    else {
+                    i = Integer.parseInt(s.toString());
+                    if (i < 1) {
+                        i = 1;
+                    }
+                    if (i > 1000) {
+                        i = 1000;
+                    }
+                }
+				radiusBar.setProgress(i); // This ensures 0-120 value for seekbar
 		    }
 
 		    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
