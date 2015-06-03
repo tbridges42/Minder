@@ -114,24 +114,36 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
         }
     }
 
+    @SuppressWarnings("deprecation")
     private void setBackground(){
+        int orientation = getOrientation(reminder.getImage());
+        Logger.d("Found orientation: " + orientation);
+
+        Point size = new Point();
+        getWindowManager().getDefaultDisplay().getSize(size);
+        Bitmap thumbBM;
         try{
-            int orientation = getOrientation(reminder.getImage());
-            Logger.d("Found orientation: " + orientation);
-
-            Point size = new Point();
-            getWindowManager().getDefaultDisplay().getSize(size);
-
-            Bitmap thumbBM = shrinkBitmap(reminder.getImage(),size.x,size.y);
-            if (thumbBM == null){
-                return;
-            }
+            thumbBM = shrinkBitmap(reminder.getImage(),size.x,size.y);
             Logger.d("Created raw image");
-
-            Matrix matrix = new Matrix();
-            if (orientation != 0f) {
-                matrix.preRotate(orientation);
-                thumbBM = Bitmap.createBitmap(thumbBM, 0, 0, thumbBM.getWidth(), thumbBM.getHeight(), matrix, true);
+        }
+        catch (OutOfMemoryError e){
+            Toast.makeText(context, "Background Image Too Large", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (thumbBM == null){
+            return;
+        }
+        Matrix matrix = new Matrix();
+            if (orientation != 0) {
+                try {
+                    matrix.preRotate(orientation);
+                    thumbBM = Bitmap.createBitmap(thumbBM, 0, 0, thumbBM.getWidth(), thumbBM.getHeight(), matrix, true);
+                }
+                catch (OutOfMemoryError e) {
+                    Toast.makeText(context, "Background Image Too Large", Toast.LENGTH_SHORT).show();
+                    thumbBM.recycle();
+                    return;
+                }
             }
             Logger.d("Rotated image");
             Logger.d("Set thumbnail");
@@ -139,15 +151,12 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
             BitmapDrawable background = new BitmapDrawable(getResources(),thumbBM);
 
             int sdk = android.os.Build.VERSION.SDK_INT;
-            if(sdk < android.os.Build.VERSION_CODES.JELLY_BEAN) {
+            if (sdk < android.os.Build.VERSION_CODES.JELLY_BEAN) {
                 layout.setBackgroundDrawable( background );
             } else {
                 layout.setBackground( background );
             }
-        }
-        catch (OutOfMemoryError e){
-            Toast.makeText(context, "Background Image Too Large", Toast.LENGTH_SHORT).show();
-        }
+
     }
 
 	private void createScreen() {
@@ -359,7 +368,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
         builder.setTitle("Set Snooze Duration");
         final NumberPicker picker = (NumberPicker) dLayout.findViewById(R.id.snooze_length);
         picker.setMinValue(1);
-        picker.setMaxValue(480);
+        picker.setMaxValue(1440);
         picker.setValue(reminder.getSnoozeDuration()/Reminder.MINUTE);
         builder.setPositiveButton("Snooze", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
