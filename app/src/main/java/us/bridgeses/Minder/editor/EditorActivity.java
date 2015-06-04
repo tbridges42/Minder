@@ -20,12 +20,26 @@ public abstract class EditorActivity extends Activity{
 	protected String type;
 	protected int frameID = R.layout.edit_frame;
 
+	/**
+	 * Verifies that any required settings have been selected, and if so returns RESULT_OK to the
+	 * calling activity. Called when the save button is pressed.
+	 * @param view is passed by the system when the save button is pressed.
+	 */
 	public abstract void save(View view);
 
+	/**
+	 * Restores settings to their original configuration, as saved in saved, and then returns
+	 * RESULT_CANCELED to the calling activity.
+	 * @param view is passed by the Android system when the cancel button is pressed
+	 */
 	public abstract void cancel(View view);
 
 	protected abstract void initialize();
 
+	/**
+	 * This saves existing settings to saved, in order to be restored in the event the user cancels
+	 * the edit
+	 */
 	protected abstract void saveState();
 
 	@Override
