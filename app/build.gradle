@@ -16,8 +16,8 @@ android {
         applicationId 'us.bridgeses.Minder'
         minSdkVersion 16
         targetSdkVersion 21
-        versionCode 16
-        versionName '0.9.1'
+        versionCode 19
+        versionName '1.0.2'
     }
     buildTypes {
         release {
