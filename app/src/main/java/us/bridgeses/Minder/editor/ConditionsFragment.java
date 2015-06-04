@@ -1,5 +1,6 @@
 package us.bridgeses.Minder.editor;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
@@ -28,11 +29,19 @@ import java.util.List;
 import us.bridgeses.Minder.MapsActivity;
 import us.bridgeses.Minder.R;
 import us.bridgeses.Minder.Reminder;
+import us.bridgeses.Minder.util.ActivityLoader;
 
-
+/**
+ * Displays options to the user that effect under what conditions the reminder will fire
+ * Uses the contents of the default preference file and the layout defined in conditions_preference.xml
+ * Creating without setting the values of the default preference file may have unexpected results
+ */
+//TODO: Is there any way to make these editor classes agnostic of the preferences referenced in xml?
+//TODO: Move all editor activities into one with multiple fragments?
 public class ConditionsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener, Preference.OnPreferenceClickListener{
 
-	//Reminder reminder;
+    final static int MAP_ACTIVITY_CODE = 1;
+
 	PreferenceScreen locationButton;
 	ListPreference locationType;
     CheckBoxPreference wifiRequired;
@@ -43,85 +52,82 @@ public class ConditionsFragment extends PreferenceFragment implements SharedPref
     AlertDialog.Builder wifiBuilder;
     AlertDialog wifiDialog;
     WifiReceiver wifiReceiver;
+    Activity activity;
 
-	public static ConditionsFragment newInstance(){
-		ConditionsFragment fragment = new ConditionsFragment();
-		return fragment;
+    /**
+     * Factory method to return a new ConditionsFragment.
+     * The factory pattern is used here to allow flexibility in overriding for unit tests or
+     * future modifications
+     * @return a new ConditionsFragment
+     */
+	protected static ConditionsFragment newInstance(){
+		return new ConditionsFragment();
 	}
 
-    public void createProgressDialog(String message){
-        progressDialog = new ProgressDialog(getActivity());
-        progressDialog.setTitle("");
-        progressDialog.setMessage(message);
-        progressDialog.setIndeterminate(true);
-        progressDialog.show();
+    private void createProgressDialog(String message){
+        Logger.d("Creating conditions progress dialog");
+        progressDialog = ProgressDialog.show(activity, "", message, true, true);
     }
 
-    public void cancelProgressDialog(){
-        if (progressDialog != null){
-            if (progressDialog.isShowing()) {
-                progressDialog.dismiss();
-            }
+    private void cancelProgressDialog(){
+        if ((progressDialog != null)&&(progressDialog.isShowing())){
+            progressDialog.dismiss();
         }
+    }
+
+    private String[] resultsToStrings(List<ScanResult> results){
+        String[] ssidArray = new String[results.size()];
+        for(int i=0; i<results.size(); i++){
+            ssidArray[i] = results.get(i).SSID;
+        }
+        return ssidArray;
+    }
+
+    /**
+     * Given a list of scan results, display a picker dialog for the user to choose from
+     * @param results is the list of scan results
+     */
+    private void createSsidPicker(List<ScanResult> results){
+        wifiBuilder = new AlertDialog.Builder(activity);
+        wifiBuilder.setTitle("Select WiFi Network");
+
+        final String[] finalSSID = resultsToStrings(results);
+
+        wifiBuilder.setItems(finalSSID, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                setSSID(finalSSID[which]);
+                activity.unregisterReceiver(wifiReceiver);
+                Logger.e(finalSSID[which]);
+            }
+        });
+        wifiBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                activity.unregisterReceiver(wifiReceiver);
+            }
+        });
+        wifiDialog = wifiBuilder.create();
+        cancelProgressDialog();
+        wifiBuilder.show();
     }
 
     private void ssidDialog(){
-        boolean valid = true;
         List<ScanResult> results = wifiManager.getScanResults();
-        if ((results.isEmpty())||(results.size()==0)){
-            valid = false;
-        }
-        else {
-
-        }
+        boolean valid = !results.isEmpty() && !(results.size() == 0);
         if (valid) {
-            wifiBuilder = new AlertDialog.Builder(getActivity());
-            wifiBuilder.setTitle("Select SSID");
-
-            String[] ssidArray = new String[results.size()];
-
-            for(int i=0; i<results.size(); i++){
-                ssidArray[i] = results.get(i).SSID;
-            }
-
-            final String[] finalSSID = ssidArray;
-
-            wifiBuilder.setItems(ssidArray, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    setSSID(finalSSID[which]);
-	                try{
-		                getActivity().unregisterReceiver(wifiReceiver);
-	                }
-	                catch(Exception e){
-
-	                }
-                    Logger.e(finalSSID[which]);
-                }
-            });
-            wifiBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    try{
-	                    getActivity().unregisterReceiver(wifiReceiver);
-                    }
-                    catch(Exception e){
-
-	                }
-                }
-            });
-            wifiDialog = wifiBuilder.create();
-            cancelProgressDialog();
-            wifiBuilder.show();
+            // If the wifiManager already has scan results, go ahead and display the picker
+            createSsidPicker(results);
         }
         else {
+            // If the wifiManager does not have scan results, start scanning
             wifiManager.startScan();
             createProgressDialog("Scanning SSIDs...");
         }
     }
 
-    public void setSSID(String ssid){
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+    private void setSSID(String ssid){
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("ssid",ssid);
         ssidButton.setSummary(ssid);
@@ -129,13 +135,15 @@ public class ConditionsFragment extends PreferenceFragment implements SharedPref
     }
 
     private void checkWifi(){
-        getActivity().registerReceiver(wifiReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
-        wifiManager = (WifiManager) getActivity().getSystemService(Context.WIFI_SERVICE);
+        activity.registerReceiver(wifiReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+        wifiManager = (WifiManager) activity.getSystemService(Context.WIFI_SERVICE);
         if (wifiManager.isWifiEnabled()){
+            // If wifi is enabled, display ssid picker
             ssidDialog();
         }
         else {
-            wifiBuilder = new AlertDialog.Builder(getActivity());
+            // If wifi is disabled, prompt for wifi
+            wifiBuilder = new AlertDialog.Builder(activity);
             wifiBuilder.setTitle("WiFi Unavailable");
             wifiBuilder.setMessage("WiFi is disabled. Enable WiFi to use this function.");
             wifiBuilder.setPositiveButton("Enable", new DialogInterface.OnClickListener() {
@@ -158,64 +166,96 @@ public class ConditionsFragment extends PreferenceFragment implements SharedPref
 	public boolean onPreferenceClick(Preference preference) {
 		String key = preference.getKey();
 		if (key.equals("button_location_key")) {
+            //User wants to choose a location
 			if (super.findPreference(key).isEnabled()) {
-				mapTask = new MapTask();
-				mapTask.execute();
+                Intent intent = new Intent(activity, MapsActivity.class);
+                ActivityLoader.ActivityListener listener = new ActivityLoader.ActivityListener() {
+                    @Override
+                    public void onStart() {
+                        createProgressDialog(getResources().getString(R.string.loading));
+                    }
+
+                    @Override
+                    public void onCancel() {
+                        cancelProgressDialog();
+                    }
+
+                    @Override
+                    public void onFinish() {
+                        cancelProgressDialog();
+                    }
+                };
+                ActivityLoader activityLoader = new ActivityLoader(listener, intent, this, MAP_ACTIVITY_CODE);
+                activityLoader.execute();
+				//mapTask = new MapTask();
+				//mapTask.execute();
 			}
 		}
 		if (key.equals("button_wifi")){
+            //User wants to choose an ssid
+            wifiReceiver = new WifiReceiver();
 			checkWifi();
 		}
 		return false;
 	}
 
+    // Called when user finishes selecting a location
+    @Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		super.onActivityResult(requestCode,resultCode,data);
-		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-		Boolean isLocation = sharedPreferences.getFloat("Latitude",0)==0;
-		isLocation = isLocation || sharedPreferences.getFloat("Longitude",0)==0;
-		if (isLocation){
-			super.findPreference("button_location_key").setSummary("");
-		}
-		else
-			super.findPreference("button_location_key").setSummary("Location set");
+        Logger.d("Conditions activity result");
+		super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == Activity.RESULT_CANCELED){
+            return;
+        }
+        if (requestCode == MAP_ACTIVITY_CODE) {
+            super.findPreference("button_location_key").setSummary("Location set");
+        }
 	}
 
-	private void initValues(){
-
-	}
-
+    /**
+     * Ensure that all display values match stored values when fragment is created
+     */
 	private void initSummaries(){
+        locationType = (ListPreference) super.findPreference("location_type");
+        locationType.setSummary(locationType.getEntry());
+
 		locationButton = (PreferenceScreen) super.findPreference("button_location_key");
 		locationButton.setOnPreferenceClickListener(this);
-		locationType = (ListPreference) super.findPreference("location_type");
-		locationType.setSummary(locationType.getEntry());
-		locationButton.setEnabled(!locationType.getValue().equals("0"));
-        ssidButton = (PreferenceScreen) super.findPreference("button_wifi");
+        locationButton.setEnabled(!locationType.getValue().equals("0"));
+
         wifiRequired = (CheckBoxPreference) super.findPreference("wifi");
+
+        ssidButton = (PreferenceScreen) super.findPreference("button_wifi");
         ssidButton.setEnabled(wifiRequired.isChecked());
         ssidButton.setOnPreferenceClickListener(this);
-		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+
+		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity);
+
         wifiRequired.setChecked(sharedPreferences.getBoolean("wifi", Reminder.WIFIDEFAULT));
         ssidButton.setSummary(sharedPreferences.getString("ssid",Reminder.SSIDDEFAULT));
-		Boolean isLocation = sharedPreferences.
-                getFloat("Latitude",(float)Reminder.LOCATIONDEFAULT.latitude)==0;
-		isLocation = isLocation || sharedPreferences.
-                getFloat("Longitude",(float)Reminder.LOCATIONDEFAULT.longitude)==0;
-		if (isLocation){
+
+        Boolean isInvalidLocation = sharedPreferences.getFloat("Latitude",
+                (float)Reminder.LOCATIONDEFAULT.latitude)==(float)Reminder.LOCATIONDEFAULT.latitude;
+        isInvalidLocation = isInvalidLocation || sharedPreferences.getFloat("Longitude",
+                (float)Reminder.LOCATIONDEFAULT.longitude)==(float)Reminder.LOCATIONDEFAULT.longitude;
+		if (isInvalidLocation){
 			super.findPreference("button_location_key").setSummary("");
 		}
-		else
-			super.findPreference("button_location_key").setSummary("Location set");
+		else {
+            super.findPreference("button_location_key").setSummary("Location set");
+        }
 	}
+
+    @Override
+    public void onAttach(Activity activity){
+        super.onAttach(activity);
+        this.activity = activity;
+    }
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-        wifiReceiver = new WifiReceiver();
 		addPreferencesFromResource(R.xml.conditions_preference);
-
-		initValues();
 
 		initSummaries();
 	}
@@ -231,47 +271,42 @@ public class ConditionsFragment extends PreferenceFragment implements SharedPref
 
 	@Override
 	public void onPause() {
+        getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
 		super.onPause();
 	}
 
-	public static ConditionsFragment newInstance(Reminder reminder){
-		ConditionsFragment fragment = new ConditionsFragment();
-		Bundle args = new Bundle();
-		args.putParcelable("Reminder",reminder);
-		fragment.setArguments(args);
-		return fragment;
-	}
-
+    @Override
 	public void onSharedPreferenceChanged(SharedPreferences preference, String key){
 		if (key.equals("location_type")){
+            // If the location type is set to anything other than none, we should enable the
+            // map picker preference
 			ListPreference mPreference = (ListPreference) findPreference(key);
 			mPreference.setSummary(mPreference.getEntry());
 			int value = Integer.valueOf(mPreference.getValue());
 			super.findPreference("button_location_key").setEnabled(value != 0);
 		}
         if (key.equals("wifi")){
+            // If wifi is required, we should enable the wifi picker preference
             ssidButton.setEnabled(wifiRequired.isChecked());
         }
 		((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
 	}
 
+    /**
+     * This AsyncTask displays a progress dialog while the map activity is loading
+     */
 	private class MapTask extends AsyncTask<Void, Integer, Void> {
 
-		Intent intent = new Intent(getActivity(), MapsActivity.class);
+		Intent intent = new Intent(activity, MapsActivity.class);
 
 		@Override
 		protected void onPreExecute() {
 			createProgressDialog(getResources().getString(R.string.loading));
 		}
 
-		/**
-		 * Note that we do NOT call the callback object's methods
-		 * directly from the background thread, as this could result
-		 * in a race condition.
-		 */
 		@Override
 		protected Void doInBackground(Void... ignore) {
-			startActivityForResult(intent, 2);
+			startActivityForResult(intent, MAP_ACTIVITY_CODE);
 			return null;
 		}
 
