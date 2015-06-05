@@ -23,6 +23,9 @@ public class EditorFragmentFactory {
 		if (type.equals("conditions")){
 			return ConditionsFragment.newInstance();
 		}
+        if (type.equals("repeat")){
+            return RepeatFragment.newInstance();
+        }
 		return new Fragment();
 	}
 }
