@@ -37,7 +37,6 @@ public class EditReminderFragment extends PreferenceFragment implements SharedPr
 
     private SharedPreferences sharedPreferences;
 
-    private PreferenceScreen preferenceScreen;
     private EditTextPreference namePreference;
     private EditTextPreference descriptionPreference;
     private TimePreference timePreference;
@@ -45,26 +44,22 @@ public class EditReminderFragment extends PreferenceFragment implements SharedPr
     private PreferenceScreen repeatScreenPreference;
     private CheckBoxPreference vibratePreference;
     private RingtonePreference ringtonePreference;
-    private PreferenceScreen conditionsPreference;
-	private PreferenceScreen stylePreference;
-	private PreferenceScreen persistencePreference;
-	private ProgressDialog progressDialog;
 
+    /**
+     * Some preferences require additional handling. When they are clicked, this method is called
+     * It determines what preference was called and handles it appropriately
+     * @param preference The preference that was called
+     * @return false if the click was not handled by this method
+     */
     @Override
     public boolean onPreferenceClick(Preference preference) {
         String key = preference.getKey();
         if (key.equals("button_repeat_menu_key")) {
             Intent intent = new Intent(getActivity(), EditRepeat.class);
-            //Bundle bundle = new Bundle();
-            //bundle.putParcelable("Reminder", reminder);
-            //intent.putExtras(bundle);
             startActivityForResult(intent, 1);
         }
         if (key.equals("button_conditions")) {
             Intent intent = new Intent(getActivity(), EditConditions.class);
-            /*Bundle bundle = new Bundle();
-            bundle.putParcelable("Reminder", reminder);
-            intent.putExtras(bundle);*/
             startActivityForResult(intent, 2);
         }
 	    if (key.equals("button_style")) {
@@ -78,23 +73,38 @@ public class EditReminderFragment extends PreferenceFragment implements SharedPr
         return false;
     }
 
+    /**
+     * This method handles any special cases that need to be handled when exiting child activities
+     * @param requestCode a code designating which child activity finished
+     * @param resultCode whether or not the activity finished successfully
+     * @param data any data returned by the activity
+     */
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode,resultCode,data);
-	    if (resultCode == Activity.RESULT_OK){
-		    switch (requestCode) {
-			    case 1: {
-				    setRepeatSummary();
-				    break;
-			    }
-			    case 4: {
-				    vibratePreference.setChecked(sharedPreferences.getBoolean("temp_vibrate",reminder.getVibrate()));
-				    break;
-			    }
-		    }
-	    }
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == Activity.RESULT_CANCELED){
+            // If the child activity was cancelled, do nothing
+            return;
+        }
+        switch (requestCode) {
+            case 1: {
+                // If the repeat setting has been changed, the summary should be updated
+                setRepeatSummary();
+                break;
+            }
+            case 4: {
+                // Ensure that the vibrate setting on this page matches the one in the child activity
+                vibratePreference.setChecked(sharedPreferences.getBoolean("temp_vibrate",reminder.getVibrate()));
+                break;
+            }
+        }
     }
 
+    /**
+     * The factory pattern is the preferred way to instantiate a fragment with parameters
+     * @param reminder The reminder to be edited
+     * @return the fragment with the arguments attached
+     */
     public static EditReminderFragment newInstance(Reminder reminder){
         EditReminderFragment fragment = new EditReminderFragment();
         Bundle args = new Bundle();
@@ -103,36 +113,10 @@ public class EditReminderFragment extends PreferenceFragment implements SharedPr
         return fragment;
     }
 
-    private void initWeekly() {
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        byte daysOfWeek = reminder.getDaysOfWeek();
-        if (Reminder.checkDayOfWeek(daysOfWeek, 1)) {
-            editor.putBoolean("temp_sunday",true);
-        }
-        if (Reminder.checkDayOfWeek(daysOfWeek, 2)) {
-            editor.putBoolean("temp_monday",true);
-        }
-        if (Reminder.checkDayOfWeek(daysOfWeek, 3)) {
-            editor.putBoolean("temp_tuesday",true);
-        }
-        if (Reminder.checkDayOfWeek(daysOfWeek, 4)) {
-            editor.putBoolean("temp_wednesday",true);
-        }
-        if (Reminder.checkDayOfWeek(daysOfWeek, 5)) {
-            editor.putBoolean("temp_thursday",true);
-        }
-        if (Reminder.checkDayOfWeek(daysOfWeek, 6)) {
-            editor.putBoolean("temp_friday",true);
-        }
-        if (Reminder.checkDayOfWeek(daysOfWeek, 7)) {
-            editor.putBoolean("temp_saturday",true);
-        }
-        editor.apply();
-    }
-
+    /**
+     * Set preference click listener where needed, initialize values if needed
+     */
 	private void initPreferences(){
-		preferenceScreen = (PreferenceScreen) super.findPreference("preference_screen");
 		namePreference = (EditTextPreference) super.findPreference("temp_name");
 		descriptionPreference = (EditTextPreference) super.findPreference("temp_description");
 		timePreference = (TimePreference) super.findPreference("temp_time");
@@ -141,14 +125,17 @@ public class EditReminderFragment extends PreferenceFragment implements SharedPr
 		repeatScreenPreference.setOnPreferenceClickListener(this);
 		vibratePreference = (CheckBoxPreference) super.findPreference("temp_vibrate");
 		ringtonePreference = (RingtonePreference) super.findPreference("temp_ringtone");
-		conditionsPreference = (PreferenceScreen) super.findPreference("button_conditions");
+		PreferenceScreen conditionsPreference = (PreferenceScreen) super.findPreference("button_conditions");
 		conditionsPreference.setOnPreferenceClickListener(this);
-		stylePreference = (PreferenceScreen) super.findPreference("button_style");
+        PreferenceScreen stylePreference = (PreferenceScreen) super.findPreference("button_style");
 		stylePreference.setOnPreferenceClickListener(this);
-		persistencePreference = (PreferenceScreen) super.findPreference("button_persistence");
+        PreferenceScreen persistencePreference = (PreferenceScreen) super.findPreference("button_persistence");
 		persistencePreference.setOnPreferenceClickListener(this);
 	}
 
+    /**
+     * Ensure that summaries match values
+     */
     private void initSummaries(){
 	    initPreferences();
         namePreference.setSummary(reminder.getName());
@@ -176,39 +163,25 @@ public class EditReminderFragment extends PreferenceFragment implements SharedPr
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-	    Bundle args = getArguments();
-	    //reminder = args.getParcelable("Reminder");
-	    progressDialog = new ProgressDialog(getActivity());
-	    progressDialog.setIndeterminate(true);
-	    progressDialog.setTitle("");
-	    progressDialog.setMessage(getResources().getString(R.string.loading));
-	    progressDialog.show();
-
-
 	    addPreferencesFromResource(R.xml.reminder_preference);
+
+        getPreferenceScreen().getSharedPreferences()
+                .registerOnSharedPreferenceChangeListener(this);
 
         LoadReminderTask mTask = new LoadReminderTask();
 	    mTask.execute();
-
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        getPreferenceScreen().getSharedPreferences()
-                .registerOnSharedPreferenceChangeListener(this);
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-    }
-
+    /**
+     * Sets the summary for the repeat preference to an appropriate English language summary of the
+     * current repeat setting
+     */
     private void setRepeatSummary(){
 	    if (sharedPreferences == null){
 		    sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
 	    }
-        int repeatType = Integer.parseInt(sharedPreferences.getString("temp_repeat_type", Integer.toString(Reminder.REPEATTYPEDEFAULT)));
+        int repeatType = Integer.parseInt(sharedPreferences.getString("temp_repeat_type",
+                Integer.toString(Reminder.REPEATTYPEDEFAULT)));
         switch (repeatType) {
             case 0: {
                 repeatScreenPreference.setSummary("Do not repeat");
@@ -216,48 +189,63 @@ public class EditReminderFragment extends PreferenceFragment implements SharedPr
                 break;
             }
             case 1: {
-                if (sharedPreferences.getString("temp_days",Integer.toString(Reminder.REPEATLENGTHDEFAULT)).equals("1")) {
+                if (sharedPreferences.getString("temp_days",
+                        Integer.toString(Reminder.REPEATLENGTHDEFAULT)).equals("1")) {
                     repeatScreenPreference.setSummary("Repeat every day");
                 }
-                else
+                else {
                     repeatScreenPreference.setSummary("Repeat every " +
                             sharedPreferences.getString("temp_days", Integer.toString(Reminder.REPEATLENGTHDEFAULT)) + " days");
+                }
                 ((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
                 break;
             }
             case 2: {
-                if (sharedPreferences.getString("temp_weeks",Integer.toString(Reminder.REPEATLENGTHDEFAULT)).equals("1")) {
+                if (sharedPreferences.getString("temp_weeks",
+                        Integer.toString(Reminder.REPEATLENGTHDEFAULT)).equals("1")) {
                     repeatScreenPreference.setSummary("Repeat every week");
                 }
-                else
+                else {
                     repeatScreenPreference.setSummary("Repeat every " +
                             sharedPreferences.getString("temp_weeks", Integer.toString(Reminder.REPEATLENGTHDEFAULT)) + " weeks");
+                }
                 ((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
                 break;
             }
             case 3: {
-                if (sharedPreferences.getString("temp_months",Integer.toString(Reminder.REPEATLENGTHDEFAULT)).equals("1")) {
+                if (sharedPreferences.getString("temp_months",
+                        Integer.toString(Reminder.REPEATLENGTHDEFAULT)).equals("1")) {
                     repeatScreenPreference.setSummary("Repeat every month");
                 }
-                else
+                else {
                     repeatScreenPreference.setSummary("Repeat every " +
                             sharedPreferences.getString("temp_months", Integer.toString(Reminder.REPEATLENGTHDEFAULT)) + " months");
+                }
                 ((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
                 break;
             }
             case 4: {
-                if (sharedPreferences.getString("temp_years",Integer.toString(Reminder.REPEATLENGTHDEFAULT)).equals("1")) {
+                if (sharedPreferences.getString("temp_years",
+                        Integer.toString(Reminder.REPEATLENGTHDEFAULT)).equals("1")) {
                     repeatScreenPreference.setSummary("Repeat every year");
                 }
-                else
+                else {
                     repeatScreenPreference.setSummary("Repeat every " +
-                            sharedPreferences.getString("temp_years", Integer.toString(Reminder.REPEATLENGTHDEFAULT)) + " years");
+                            sharedPreferences.getString("temp_years",
+                                    Integer.toString(Reminder.REPEATLENGTHDEFAULT)) + " years");
+                }
                 ((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
                 break;
             }
         }
     }
 
+    /**
+     * Some preferences require additional handling when their values change
+     * That is handled here
+     * @param preference The preference that changed
+     * @param key The key of the preference that changed
+     */
     @Override
     public void onSharedPreferenceChanged(SharedPreferences preference, String key) {
         Preference mPreference = findPreference(key);
@@ -266,46 +254,34 @@ public class EditReminderFragment extends PreferenceFragment implements SharedPr
             textPreference.setSummary(textPreference.getText());
 
         }
-	    if (mPreference instanceof DatePreference){
-
-	    }
         if (mPreference instanceof RingtonePreference) {
-
             String strRingtonePreference = preference.getString(key,"");
-
-
             if (strRingtonePreference.equals("")){
                 mPreference.setSummary("Silent");
             }
             else {
                 Uri ringtoneUri = Uri.parse(strRingtonePreference);
                 Ringtone ringtone = RingtoneManager.getRingtone(getActivity(), ringtoneUri);
-                try {
-                    String title = ringtone.getTitle(getActivity());
-
-                    mPreference.setSummary(title);
-                }
-                catch(NullPointerException e){
-
-                }
+                String title = ringtone.getTitle(getActivity());
+                mPreference.setSummary(title);
             }
-
         }
         ((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
     }
 
+    /**
+     * This class displays a progressdialog while unpacking the reminder on a background thread
+     */
 	private class LoadReminderTask extends AsyncTask<Integer, Integer, Void> {
+
+        private ProgressDialog progressDialog;
 
 		@Override
 		protected void onPreExecute() {
-
+            progressDialog = ProgressDialog.show(getActivity(), "",
+                    getResources().getString(R.string.loading), true, true);
 		}
 
-		/**
-		 * Note that we do NOT call the callback object's methods
-		 * directly from the background thread, as this could result
-		 * in a race condition.
-		 */
 		@Override
 		protected Void doInBackground(Integer... id) {
 			reminder = getArguments().getParcelable("Reminder");
