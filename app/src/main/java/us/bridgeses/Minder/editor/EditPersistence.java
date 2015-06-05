@@ -7,16 +7,26 @@ import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.Toast;
 
+import us.bridgeses.Minder.R;
 import us.bridgeses.Minder.Reminder;
 
+/**
+ *  The activity for displaying, editing and saving options related to how persistent the reminder
+ *  will be in getting the user's attention
+ */
 public class EditPersistence extends EditorActivity {
 
+	/**
+	 * Verifies that any required settings have been selected, and if so returns RESULT_OK to the
+	 * calling activity. Called when the save button is pressed.
+	 * @param view is passed by the system when the save button is pressed.
+	 */
 	@Override
 	public void save(View view) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         if ((sharedPreferences.getBoolean("code_type",false)) &&
                 (sharedPreferences.getString("temp_code","").equals(""))){
-            String toastText = "A code must be set to use Code Restriction";
+            String toastText = getResources().getString(R.string.invalid_code);
             int duration = Toast.LENGTH_SHORT;
             Toast toast = Toast.makeText(this, toastText, duration);
             toast.show();
@@ -28,6 +38,11 @@ public class EditPersistence extends EditorActivity {
         }
 	}
 
+	/**
+	 * Restores settings to their original configuration, as saved in saved, and then returns
+	 * RESULT_CANCELED to the calling activity.
+	 * @param view is passed by the Android system when the cancel button is pressed
+	 */
 	@Override
 	public void cancel(View view) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -38,13 +53,17 @@ public class EditPersistence extends EditorActivity {
         editor.putBoolean("display_screen", saved.getBoolean("display_screen", Reminder.DISPLAYSCREENDEFAULT));
         editor.putBoolean("wake_up", saved.getBoolean("wake_up", Reminder.WAKEUPDEFAULT));
         editor.putBoolean("fade", saved.getBoolean("fade", Reminder.FADEDEFAULT));
-		editor.putInt("volume", saved.getInt("volume", 80));
+		editor.putInt("volume", saved.getInt("volume", Reminder.VOLUMEDEFAULT));
         editor.apply();
 		Intent intent = new Intent();
 		setResult(RESULT_CANCELED, intent);
 		finish();
 	}
 
+	/**
+	 * This saves existing settings to saved, in order to be restored in the event the user cancels
+	 * the edit
+	 */
 	@Override
 	protected void saveState(){
 		if (saved == null) {
