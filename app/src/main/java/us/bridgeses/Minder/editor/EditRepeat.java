@@ -12,7 +12,8 @@ import us.bridgeses.Minder.R;
 import us.bridgeses.Minder.Reminder;
 
 /**
- * Created by Tony on 9/13/2014.
+ * The activity for displaying, editing and saving options related to the pattern by which
+ *  a reminder will repeat
  */
 public class EditRepeat extends EditorActivity{
 
