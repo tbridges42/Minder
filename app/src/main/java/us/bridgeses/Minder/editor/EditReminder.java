@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NavUtils;
@@ -27,105 +28,144 @@ import us.bridgeses.Minder.R;
 import us.bridgeses.Minder.Reminder;
 import us.bridgeses.Minder.receivers.ReminderReceiver;
 
-
-public class EditReminder extends Activity implements DeleteDialogFragment.NoticeDialogListener {
+/**
+ * This is the primary editor class. All essential reminder settings should be changed here.
+ * Supplemental settings should be changed in sub-activities
+ */
+public class EditReminder extends Activity implements ConfirmDialogFragment.NoticeDialogListener {
 
     Reminder reminder;
     EditReminderFragment mFragment;
     private static final String TAG_TASK_FRAGMENT = "task_fragment";
     private Boolean defaults = false;
-    DeleteDialogFragment df;
+    ConfirmDialogFragment df;
 
+    /**
+     * Called when a ConfirmDialogFragment's negative button is clicked
+     * All we want to happen is for the dialog to be dismissed
+     * @param dialog the dialog whose button was clicked
+     */
     @Override
     public void onDialogNegativeClick(DialogFragment dialog) {
-
+        // The only thing we want to happen on a negative click is to close the dialog
     }
 
+    /**
+     * Called when a ConfirmDialogFragment's negative button is clicked
+     * We will remove any alarms associated with the reminder, and delete the reminder
+     * @param dialog
+     */
     @Override
     public void onDialogPositiveClick(DialogFragment dialog) {
-        Intent intentAlarm = new Intent(this, ReminderReceiver.class);      //Create alarm intent
+
+        // Cancel any alarms associated with this reminder
+        Intent intentAlarm = new Intent(this, ReminderReceiver.class);
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         alarmManager.cancel(PendingIntent.getBroadcast(getApplicationContext(), reminder.getId(), intentAlarm,
                 PendingIntent.FLAG_UPDATE_CURRENT));
+
+        // Cancel any notification associated with this reminder
+        NotificationManager mNotifyMgr =
+                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        mNotifyMgr.cancel(reminder.getId());
+
+        //Delete the reminder
         reminder.delete(this);
-	    // Gets an instance of the NotificationManager service
-	    NotificationManager mNotifyMgr =
-			    (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-	    // Builds the notification and issues it.
-	    mNotifyMgr.cancel(reminder.getId());
+
+        //Let the user know the reminder has been deleted
         String toastText = getResources().getString(R.string.reminder_deleted);
         int duration = Toast.LENGTH_SHORT;
         Toast toast = Toast.makeText(getApplicationContext(), toastText, duration);
         toast.show();
+
+        //This reminder no longer exists; Navigate back to the parent activity
         NavUtils.navigateUpFromSameTask(this);
     }
 
+    /**
+     * The user has pressed the delete button
+     * Get confirmation from the user that they really want to delete the reminder
+     * @param view a reference to the button that was pressed
+     */
     public void delete(View view) {
-        df = new DeleteDialogFragment();
-        df.show(getFragmentManager(),"DeleteDialogFragment");
+        Resources resources = getResources();
+        df = ConfirmDialogFragment.newInstance(resources.getString(R.string.delete_title),
+                resources.getString(R.string.delete_message),
+                resources.getString(R.string.edit_delete),
+                resources.getString(R.string.edit_cancel));
+        df.show(getFragmentManager(),"ConfirmDialogFragment");
     }
 
 	private void setAlarm(int id, Reminder reminder){
-		Intent intentAlarm = new Intent(this, ReminderReceiver.class);      //Create alarm intent
-		intentAlarm.putExtra("Id", reminder.getId());                    //Associate intent with specific reminder
+        // Create an intent and associate it with this reminder
+		Intent intentAlarm = new Intent(this, ReminderReceiver.class);
+		intentAlarm.putExtra("Id", reminder.getId());
+
+        // Create the alarm
 		AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         int alarmType;
         if (reminder.getWakeUp()){
+            // This alarm type will wake the phone at the alarm type
             alarmType = AlarmManager.RTC_WAKEUP;
         }
         else {
+            // This alarm type should wait until the phone wakes to fire the alarm
             alarmType = AlarmManager.RTC;
         }
 		alarmManager.set(alarmType, reminder.getDate().getTimeInMillis(),
 				PendingIntent.getBroadcast(getApplicationContext(), id, intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
+
+        // Let the user know the alarm was created
 		SimpleDateFormat timeFormat = new SimpleDateFormat(getResources().getString(R.string.time_code));
 		String time = timeFormat.format(reminder.getDate().getTime());
 		String toastText = "Reminder saved for "+time;
 		int duration = Toast.LENGTH_SHORT;
 		Toast toast = Toast.makeText(this, toastText, duration);
-		toast.show();                                               //Let the user know everything went fine
+		toast.show();
 	}
 
+    /**
+     * The user has requested to save the reminder
+     * @param view the button that was pressed to get here
+     */
     public void save(View view){
-
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         reminder = Reminder.reminderFactory(sharedPreferences, this);
 
         if (defaults) {
-	        Logger.d("Saving defaults with name: "+reminder.getName());
+            // If the user is trying to change defaults, persist to a special preference file
             SharedPreferences defaultPreferences = getSharedPreferences("Minder.Defaults", Context.MODE_PRIVATE);
             Reminder.reminderToPreference(defaultPreferences, reminder);
         }
         else {
-
             reminder.setActive(true);
+
+            // If the time of the reminder is before the current time, attempt to repeat until it's not
             if (reminder.getDate().getTimeInMillis() <= Calendar.getInstance().getTimeInMillis()){
                 reminder = Reminder.nextRepeat(reminder);
             }
-			Logger.d("Old ID: "+reminder.getId());
+
+            // Save the reminder
             reminder = reminder.save(this);
             int id = reminder.getId();
-			Logger.d("New ID: "+id);
 
+            // Create an alarm associated with the reminder
             if ((id != -1) && (reminder.getActive())) {
                 setAlarm(id, reminder);
             }
         }
+
+        //We're done here, navigate up to the parent activity
         NavUtils.navigateUpFromSameTask(this);
     }
 
+    /**
+     * The user has requested to cancel editing the reminder
+     * @param view
+     */
     public void cancel(View view){
-	    FragmentManager fragmentManager = getFragmentManager();
-	    mFragment = (EditReminderFragment) fragmentManager.findFragmentByTag(TAG_TASK_FRAGMENT);
-	    if (mFragment != null){
-		    fragmentManager.beginTransaction().remove(mFragment).commit();
-	    }
+        // We're done here, navigate up to the parent activity
         NavUtils.navigateUpFromSameTask(this);
-    }
-
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        Logger.v("Activity Configuration Changed");
     }
 
     @Override
@@ -142,47 +182,43 @@ public class EditReminder extends Activity implements DeleteDialogFragment.Notic
         setContentView(R.layout.activity_preference_test);
 
         Intent incoming = getIntent();
-	    SharedPreferences defaultPreferences = getSharedPreferences("Minder.Defaults", Context.MODE_PRIVATE);
 	    Boolean isNew;
         if (incoming != null) {
+            // If there is incoming data, get the data
             isNew = incoming.getBooleanExtra("New",false);
             defaults = incoming.getBooleanExtra("default",false);
         }
-        else
+        else {
+            // If there is no incoming data, this is a new reminder
             isNew = true;
+        }
 
-	    Logger.d("isNew: " + isNew);
-	    Logger.d("defaults: " + defaults);
 	    if (isNew||defaults){
+            // Load the defaults into the reminder
+            SharedPreferences defaultPreferences = getSharedPreferences("Minder.Defaults", Context.MODE_PRIVATE);
 		    reminder = Reminder.reminderFactory(defaultPreferences,getApplicationContext());
 		    reminder.setDate(Calendar.getInstance());
-		    Logger.d("Loading Defaults with name: "+reminder.getName());
+
+            // The user should not be able to delete a reminder that is not saved
 		    Button deleteButton = (Button)findViewById(R.id.delete_button);
 		    deleteButton.setEnabled(false);
 	    }
 	    else{
+            // if there is an incoming reminder, store it in our reminder
 		    reminder = incoming.getParcelableExtra("Reminder");
 	    }
+
+        // Store the reminder in the preference file for easy manipulation
 	    Reminder.reminderToPreference(PreferenceManager.getDefaultSharedPreferences(this),reminder);
 
-        EditReminderFragment fragment = EditReminderFragment.newInstance(reminder);
+        // Check if there is already a fragment attached
         FragmentManager fragmentManager = getFragmentManager();
         mFragment = (EditReminderFragment) fragmentManager.findFragmentByTag(TAG_TASK_FRAGMENT);
 
         if (mFragment == null) {
+            // If there is not a fragment, create one
+            EditReminderFragment fragment = EditReminderFragment.newInstance(reminder);
             fragmentManager.beginTransaction().replace(R.id.reminder_frame, fragment,TAG_TASK_FRAGMENT).commit();
         }
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        /*if (id == R.id.action_settings) {
-            return true;
-        }*/
-        return super.onOptionsItemSelected(item);
     }
 }

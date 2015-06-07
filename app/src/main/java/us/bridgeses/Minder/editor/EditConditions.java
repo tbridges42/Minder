@@ -10,9 +10,17 @@ import android.widget.Toast;
 import us.bridgeses.Minder.R;
 import us.bridgeses.Minder.Reminder;
 
-
+/**
+ *  The activity for displaying, editing and saving options related to the conditions under which
+ *  a reminder will fire
+ */
 public class EditConditions extends EditorActivity {
 
+    /**
+     * Verifies that any required settings have been selected, and if so returns RESULT_OK to the
+     * calling activity. Called when the save button is pressed.
+     * @param view is passed by the system when the save button is pressed.
+     */
 	@Override
 	public void save(View view) {
 		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -23,14 +31,26 @@ public class EditConditions extends EditorActivity {
 			int duration = Toast.LENGTH_SHORT;
 			Toast toast = Toast.makeText(this, toastText, duration);
 			toast.show();
+            return;
 		}
-		else {
-			Intent intent = new Intent();
-			setResult(RESULT_OK, intent);
-			finish();
-		}
+		if ((sharedPreferences.getBoolean("wifi",false)) &&
+                sharedPreferences.getString("ssid","").equals("")){
+            String toastText = getResources().getString(R.string.invalid_ssid);
+            int duration = Toast.LENGTH_SHORT;
+            Toast toast = Toast.makeText(this, toastText, duration);
+            toast.show();
+            return;
+        }
+        Intent intent = new Intent();
+        setResult(RESULT_OK, intent);
+        finish();
 	}
 
+    /**
+     * Restores settings to their original configuration, as saved in saved, and then returns
+     * RESULT_CANCELED to the calling activity.
+     * @param view is passed by the Android system when the cancel button is pressed
+     */
 	@Override
 	public void cancel(View view) {
 		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -43,12 +63,21 @@ public class EditConditions extends EditorActivity {
                 saved.getFloat("Latitude",(float) Reminder.LOCATIONDEFAULT.latitude));
 		editor.putFloat("Longitude",
                 saved.getFloat("Longitude", (float) Reminder.LOCATIONDEFAULT.longitude));
+
+        editor.putBoolean("wifi",
+                saved.getBoolean("wifi", Reminder.WIFIDEFAULT));
+        editor.putString("ssid",
+                saved.getString("ssid", Reminder.SSIDDEFAULT));
 		editor.apply();
 		Intent intent = new Intent();
 		setResult(RESULT_CANCELED, intent);
 		finish();
 	}
 
+    /**
+     * This saves existing settings to saved, in order to be restored in the event the user cancels
+     * the edit
+     */
 	@Override
 	protected void saveState(){
 		if (saved == null) {
@@ -63,6 +92,11 @@ public class EditConditions extends EditorActivity {
 					sharedPreferences.getFloat("Latitude", (float)Reminder.LOCATIONDEFAULT.latitude));
 			saved.putFloat("Longitude",
 					sharedPreferences.getFloat("Longitude", (float)Reminder.LOCATIONDEFAULT.longitude));
+
+            saved.putBoolean("wifi",
+                    sharedPreferences.getBoolean("wifi", Reminder.WIFIDEFAULT));
+            saved.putString("ssid",
+                    sharedPreferences.getString("ssid",Reminder.SSIDDEFAULT));
 		}
 	}
 

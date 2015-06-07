@@ -12,68 +12,84 @@ import us.bridgeses.Minder.R;
 import us.bridgeses.Minder.Reminder;
 
 /**
- * Created by Tony on 9/13/2014.
+ * The activity for displaying, editing and saving options related to the pattern by which
+ *  a reminder will repeat
  */
-public class EditRepeat extends Activity{
+public class EditRepeat extends EditorActivity{
 
-    Reminder reminder;
-    RepeatFragment mFragment;
-    private static final String TAG_REPEAT_FRAGMENT = "repeat_fragment";
-	Bundle saved;
-
+    /**
+     * Restores settings to their original configuration, as saved in saved, and then returns
+     * RESULT_CANCELED to the calling activity.
+     * @param view is passed by the Android system when the cancel button is pressed
+     */
+    @Override
     public void cancel(View view){
-        Intent intent = new Intent();
 	    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 	    SharedPreferences.Editor editor = sharedPreferences.edit();
 
 	    //These four are EditTextPreferences and must be handled as strings
-	    editor.putString("temp_days", saved.getString("temp_days", "0"));
-	    editor.putString("temp_weeks", saved.getString("temp_weeks", "0"));
-	    editor.putString("temp_months", saved.getString("temp_months", "0"));
-	    editor.putString("temp_years", saved.getString("temp_years", "0"));
+	    editor.putString("temp_days", saved.getString("temp_days",
+                Integer.toString(Reminder.REPEATLENGTHDEFAULT)));
+	    editor.putString("temp_weeks", saved.getString("temp_weeks",
+                Integer.toString(Reminder.REPEATLENGTHDEFAULT)));
+	    editor.putString("temp_months", saved.getString("temp_months",
+                Integer.toString(Reminder.REPEATLENGTHDEFAULT)));
+	    editor.putString("temp_years", saved.getString("temp_years",
+                Integer.toString(Reminder.REPEATLENGTHDEFAULT)));
 
 	    //These two are ListPreferences and must be handled as strings
-	    editor.putString("temp_repeat_type", saved.getString("temp_repeat_type", "0"));
-	    editor.putString("temp_monthly_type", saved.getString("temp_monthly_type", "0"));
+	    editor.putString("temp_repeat_type", saved.getString("temp_repeat_type",
+                Integer.toString(Reminder.REPEATTYPEDEFAULT)));
+	    editor.putString("temp_monthly_type", saved.getString("temp_monthly_type",
+                Integer.toString(Reminder.MONTHTYPEDEFAULT)));
 	    editor.apply();
+
+        Intent intent = new Intent();
         setResult(RESULT_CANCELED, intent);
         finish();
     }
 
+    /**
+     * Verifies that any required settings have been selected, and if so returns RESULT_OK to the
+     * calling activity. Called when the save button is pressed.
+     * @param view is passed by the system when the save button is pressed.
+     */
+    @Override
     public void save(View view){
         setResult(RESULT_OK);
         finish();
     }
 
+    /**
+     * This saves existing settings to saved, in order to be restored in the event the user cancels
+     * the edit
+     */
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    protected void saveState(){
+        if (saved == null) {
+            saved = new Bundle();
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        setContentView(R.layout.repeat_preference);
+            //These four are EditTextPreferences and must be handled as strings
+            saved.putString("temp_years", sharedPreferences.getString("temp_years",
+                    Integer.toString(Reminder.REPEATLENGTHDEFAULT)));
+            saved.putString("temp_days", sharedPreferences.getString("temp_days",
+                    Integer.toString(Reminder.REPEATLENGTHDEFAULT)));
+            saved.putString("temp_weeks", sharedPreferences.getString("temp_weeks",
+                    Integer.toString(Reminder.REPEATLENGTHDEFAULT)));
+            saved.putString("temp_months", sharedPreferences.getString("temp_months",
+                    Integer.toString(Reminder.REPEATLENGTHDEFAULT)));
 
-	    if (savedInstanceState == null) {
-		    savedInstanceState = new Bundle();
-		    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-		    
-
-		    //These four are EditTextPreferences and must be handled as strings
-		    savedInstanceState.putString("temp_years", sharedPreferences.getString("temp_years", "0"));
-		    savedInstanceState.putString("temp_days", sharedPreferences.getString("temp_days", "0"));
-		    savedInstanceState.putString("temp_weeks", sharedPreferences.getString("temp_weeks", "0"));
-		    savedInstanceState.putString("temp_months", sharedPreferences.getString("temp_months", "0"));
-
-		    //These two are ListPreferences and must be handled as strings
-		    savedInstanceState.putString("temp_repeat_type", sharedPreferences.getString("temp_repeat_type", "0"));
-		    savedInstanceState.putString("temp_monthly_type", sharedPreferences.getString("temp_monthly_type", "0"));
-	    }
-	    saved = savedInstanceState;
-
-        RepeatFragment fragment = RepeatFragment.newInstance();
-        FragmentManager fragmentManager = getFragmentManager();
-        mFragment = (RepeatFragment) fragmentManager.findFragmentByTag(TAG_REPEAT_FRAGMENT);
-
-        if (mFragment == null) {
-            fragmentManager.beginTransaction().replace(R.id.reminder_frame, fragment,TAG_REPEAT_FRAGMENT).commit();
+            //These two are ListPreferences and must be handled as strings
+            saved.putString("temp_repeat_type", sharedPreferences.getString("temp_repeat_type",
+                    Integer.toString(Reminder.REPEATTYPEDEFAULT)));
+            saved.putString("temp_monthly_type", sharedPreferences.getString("temp_monthly_type",
+                    Integer.toString(Reminder.MONTHTYPEDEFAULT)));
         }
+    }
+
+    @Override
+    protected void initialize(){
+        type = "repeat";
     }
 }
