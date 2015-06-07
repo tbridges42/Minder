@@ -109,7 +109,7 @@ public class TimePreference extends DialogPreference implements TimePicker.OnTim
         }
     }
     /**
-     * Called when Android pauses the activity.
+     * Called when Android pauses the fragment.
      */
     @Override
     protected Parcelable onSaveInstanceState() {
@@ -119,7 +119,7 @@ public class TimePreference extends DialogPreference implements TimePicker.OnTim
             return new TimeSavedState(super.onSaveInstanceState());
     }
     /**
-     * Called when Android restores the activity.
+     * Called when Android restores the fragment.
      */
     @Override
     protected void onRestoreInstanceState(Parcelable state) {

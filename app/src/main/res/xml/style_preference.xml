@@ -18,6 +18,7 @@
             android:summaryOff="Alarm will vibrate only once"
             android:dependency="temp_vibrate"/>
         <PreferenceScreen
+            android:key="vibrate_pattern"
             android:title="Vibrate Pattern"
             android:summary="Coming soon!"
             android:enabled="false"/>
@@ -40,10 +41,14 @@
     </PreferenceCategory>
     <PreferenceCategory
         android:title="Alarm Screen Settings">
-        <us.bridgeses.Minder.util.ImagePreference
+        <PreferenceScreen
             android:title="Background Image"
             android:key="image"
             android:summary="Select a background image for this reminder"/>
+        <PreferenceScreen
+            android:title="Clear Image"
+            android:key="clear_image"
+            android:summary="Use the default background for this reminder" />
         <us.bridgeses.Minder.util.ColorPreference
             android:title="Font Color"
             android:key="font_color"

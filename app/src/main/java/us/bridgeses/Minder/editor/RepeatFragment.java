@@ -27,7 +27,6 @@ import us.bridgeses.Minder.Reminder;
  */
 public class RepeatFragment extends PreferenceFragment  implements SharedPreferences.OnSharedPreferenceChangeListener{
 
-    Reminder reminder = new Reminder();
     PreferenceScreen repeatScreenPreference;
     SharedPreferences sharedPreferences;
     PreferenceCategory dailyRepeatMenu;

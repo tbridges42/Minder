@@ -121,7 +121,7 @@ public class DatePreference extends DialogPreference implements
         }
     }
     /**
-     * Called when Android pauses the activity.
+     * Called when Android pauses the fragment.
      */
     @Override
     protected Parcelable onSaveInstanceState() {
@@ -131,7 +131,7 @@ public class DatePreference extends DialogPreference implements
             return new DateSavedState(super.onSaveInstanceState());
     }
     /**
-     * Called when Android restores the activity.
+     * Called when Android restores the fragment.
      */
     @Override
     protected void onRestoreInstanceState(Parcelable state) {
