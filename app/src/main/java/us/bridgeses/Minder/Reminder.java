@@ -885,7 +885,7 @@ public class Reminder implements Parcelable{
 
     //If the reminder is set to repeat, set its Date to the next repeat time
     //Otherwise, deactivate the reminder
-    protected static Reminder nextRepeat(Reminder reminder){
+    public static Reminder nextRepeat(Reminder reminder){
         switch (reminder.getRepeatType()) {
             case 0: {
                 reminder.setActive(false);          //Deactivate
@@ -907,6 +907,9 @@ public class Reminder implements Parcelable{
                 nextYearlyRepeat(reminder);         //Repeat Yearly
                 break;
             }
+        }
+		if (reminder.getDate().getTimeInMillis() < Calendar.getInstance().getTimeInMillis()){
+            reminder = nextRepeat(reminder);
         }
 	    return reminder;
     }
