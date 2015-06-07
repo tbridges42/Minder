@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- TODO: Replace test strings -->
     <string name="app_name">Minder</string>
     <string name="title_activity_maps">Map</string>
     <string name="title_activity_main">Minder</string>
