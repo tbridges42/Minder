@@ -2,6 +2,7 @@ package us.bridgeses.Minder;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
@@ -10,9 +11,18 @@ import android.util.Log;
 import com.google.android.gms.maps.model.LatLng;
 import com.orhanobut.logger.Logger;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+
+import us.bridgeses.Minder.editor.EditStyle;
 
 /**
  * Created by Overseer on 7/13/2014.
@@ -908,7 +918,8 @@ public class Reminder implements Parcelable{
                 break;
             }
         }
-		if (reminder.getDate().getTimeInMillis() < Calendar.getInstance().getTimeInMillis()){
+		if ((reminder.getDate().getTimeInMillis() < Calendar.getInstance().getTimeInMillis()) &&
+                (reminder.getRepeatType() != 0)){
             reminder = nextRepeat(reminder);
         }
 	    return reminder;
@@ -928,7 +939,7 @@ public class Reminder implements Parcelable{
             if(secondToLastDigit == '1')
                 return "th";
         }
-        char lastDigit = value.charAt(value.length()-1);    //Only the last digit affects the appendix
+        char lastDigit = value.charAt(value.length() - 1);    //Only the last digit affects the appendix
         switch(lastDigit) {
             case '1': {                         //1st
                 appendix = "st";
@@ -961,7 +972,36 @@ public class Reminder implements Parcelable{
 		return editor;
 	}
 
-    public static void reminderToPreference(SharedPreferences sharedPreferences, Reminder reminder){
+    public static void loadImage(Context context, int id){
+        File file = new File(context.getExternalFilesDir(null), EditStyle.tempFile);
+        File saveFile = new File(context.getFilesDir(), Integer.toString(id));
+        if (file.exists()){
+            file.delete();
+        }
+        if (saveFile.exists()){
+            Logger.d("Loading image");
+            try {
+                InputStream in = new FileInputStream(saveFile);
+
+                OutputStream out = new FileOutputStream(file);
+
+                // Transfer bytes from in to out
+                byte[] buf = new byte[1024];
+                int len;
+                while ((len = in.read(buf)) > 0) {
+                    out.write(buf, 0, len);
+                }
+                in.close();
+                out.close();
+            }
+            catch(IOException e){
+                Logger.e("Error copying file");
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static void reminderToPreference(Context context, SharedPreferences sharedPreferences, Reminder reminder){
         SharedPreferences.Editor editor = sharedPreferences.edit();
 	    editor.putInt("temp_id",reminder.getId());
         editor.putString("temp_name",reminder.getName());
@@ -1015,17 +1055,17 @@ public class Reminder implements Parcelable{
         
         editor.putString("temp_monthly_type", Integer.toString(reminder.getMonthType()));
         
-        editor.putString("ssid",reminder.getSSID());
-        editor.putBoolean("wifi",reminder.getNeedWifi());
-        editor.putString("snooze_duration",Integer.toString(reminder.getSnoozeDuration()));
-        editor.putBoolean("bluetooth",reminder.getNeedBluetooth());
-        editor.putString("bt_name",reminder.getBluetooth());
-	    editor.putInt("volume",reminder.getVolume());
-	    editor.putBoolean("vibrate_repeat",reminder.getVibrateRepeat());
+        editor.putString("ssid", reminder.getSSID());
+        editor.putBoolean("wifi", reminder.getNeedWifi());
+        editor.putString("snooze_duration", Integer.toString(reminder.getSnoozeDuration()));
+        editor.putBoolean("bluetooth", reminder.getNeedBluetooth());
+        editor.putString("bt_name", reminder.getBluetooth());
+	    editor.putInt("volume", reminder.getVolume());
+	    editor.putBoolean("vibrate_repeat", reminder.getVibrateRepeat());
 	    editor.putBoolean("led",reminder.getLed());
-	    editor.putBoolean("dismiss_check",reminder.getConfirmDismiss());
-	    editor.putBoolean("try_again",reminder.isInsistent());
-        editor.putString("image",reminder.getImage());
+	    editor.putBoolean("dismiss_check", reminder.getConfirmDismiss());
+	    editor.putBoolean("try_again", reminder.isInsistent());
+        loadImage(context,reminder.getId());
         editor.putInt("font_color",reminder.getTextColor());
         editor.putInt("led_color",reminder.getLedColor());
         editor.apply();
@@ -1123,36 +1163,44 @@ public class Reminder implements Parcelable{
 
     public static Reminder preferenceToReminder(SharedPreferences sharedPreferences, Context context){
         Reminder reminder = new Reminder();
-	    reminder.setId(sharedPreferences.getInt("temp_id",IDDEFAULT));
-	    reminder.setName(sharedPreferences.getString("temp_name",NAMEDEFAULT));
+	    reminder.setId(sharedPreferences.getInt("temp_id", IDDEFAULT));
+	    reminder.setName(sharedPreferences.getString("temp_name", NAMEDEFAULT));
         reminder.setDescription(sharedPreferences.getString("temp_description", DESCRIPTIONDEFAULT));
         reminder.setDate(sharedPreferences, context);
         reminder.setRepeat(sharedPreferences);
         reminder.setLocation(sharedPreferences);
-        reminder.setRadius(sharedPreferences.getInt("radius",RADIUSDEFAULT));
+        reminder.setRadius(sharedPreferences.getInt("radius", RADIUSDEFAULT));
         reminder.setVibrate(sharedPreferences.getBoolean("temp_vibrate", VIBRATEDEFAULT));
         reminder.setRingtone(sharedPreferences.getString("temp_ringtone", RINGTONEDEFAULT));
         reminder.setActive(reminder.getDate().after(Calendar.getInstance()));
-        reminder.setQr(sharedPreferences.getString("temp_code",QRDEFAULT));
-        reminder.setNeedQr(sharedPreferences.getBoolean("code_type",NEEDQRDEFAULT));
-        reminder.setVolumeOverride(sharedPreferences.getBoolean("out_loud",VOLUMEOVERRIDEDEFAULT));
-        reminder.setDisplayScreen(sharedPreferences.getBoolean("display_screen",DISPLAYSCREENDEFAULT));
-        reminder.setWakeUp(sharedPreferences.getBoolean("wake_up",WAKEUPDEFAULT));
-        reminder.setSSID(sharedPreferences.getString("ssid",SSIDDEFAULT));
-        reminder.setNeedWifi(sharedPreferences.getBoolean("wifi",WIFIDEFAULT));
-        reminder.setNeedBluetooth(sharedPreferences.getBoolean("bluetooth",BTNEEDEDDEFAULT));
-        reminder.setBluetooth(sharedPreferences.getString("bt_name",BTDEFAULT));
+        reminder.setQr(sharedPreferences.getString("temp_code", QRDEFAULT));
+        reminder.setNeedQr(sharedPreferences.getBoolean("code_type", NEEDQRDEFAULT));
+        reminder.setVolumeOverride(sharedPreferences.getBoolean("out_loud", VOLUMEOVERRIDEDEFAULT));
+        reminder.setDisplayScreen(sharedPreferences.getBoolean("display_screen", DISPLAYSCREENDEFAULT));
+        reminder.setWakeUp(sharedPreferences.getBoolean("wake_up", WAKEUPDEFAULT));
+        reminder.setSSID(sharedPreferences.getString("ssid", SSIDDEFAULT));
+        reminder.setNeedWifi(sharedPreferences.getBoolean("wifi", WIFIDEFAULT));
+        reminder.setNeedBluetooth(sharedPreferences.getBoolean("bluetooth", BTNEEDEDDEFAULT));
+        reminder.setBluetooth(sharedPreferences.getString("bt_name", BTDEFAULT));
         reminder.setSnoozeDuration(Integer.parseInt(sharedPreferences
-                .getString("snooze_duration",Integer.toString(SNOOZEDURATIONDEFAULT))));
+                .getString("snooze_duration", Integer.toString(SNOOZEDURATIONDEFAULT))));
 	    reminder.setSnoozeNumber(Integer.parseInt(sharedPreferences
-	            .getString("snooze_number",Integer.toString(SNOOZENUMDEFAULT))));
-	    reminder.setFadeVolume(sharedPreferences.getBoolean("fade",FADEDEFAULT));
-	    reminder.setConfirmDismiss(sharedPreferences.getBoolean("dismiss_check",DISMISSDIALOGDEFAULT));
-	    reminder.setVibrateRepeat(sharedPreferences.getBoolean("vibrate_repeat",VIBRATEREPEATDEFAULT));
-	    reminder.setLed(sharedPreferences.getBoolean("led",LEDDEFAULT));
-	    reminder.setVolume(sharedPreferences.getInt("volume",VOLUMEDEFAULT));
-	    reminder.setInsistent(sharedPreferences.getBoolean("try_again",INSISTENTDEFAULT));
-        reminder.setImage(sharedPreferences.getString("image",IMAGEDEFAULT));
+                .getString("snooze_number", Integer.toString(SNOOZENUMDEFAULT))));
+	    reminder.setFadeVolume(sharedPreferences.getBoolean("fade", FADEDEFAULT));
+	    reminder.setConfirmDismiss(sharedPreferences.getBoolean("dismiss_check", DISMISSDIALOGDEFAULT));
+	    reminder.setVibrateRepeat(sharedPreferences.getBoolean("vibrate_repeat", VIBRATEREPEATDEFAULT));
+	    reminder.setLed(sharedPreferences.getBoolean("led", LEDDEFAULT));
+	    reminder.setVolume(sharedPreferences.getInt("volume", VOLUMEDEFAULT));
+	    reminder.setInsistent(sharedPreferences.getBoolean("try_again", INSISTENTDEFAULT));
+        File file = new File(context.getExternalFilesDir(null), EditStyle.tempFile);
+        File saveFile = new File(context.getFilesDir(), Integer.toString(reminder.getId()));
+        if (saveFile.exists()){
+            saveFile.delete();
+        }
+        if (file.exists()){
+            Logger.d("Saveing image");
+            file.renameTo(saveFile);
+        }
         reminder.setTextColor(sharedPreferences.getInt("font_color",TEXTCOLORDEFAULT));
         reminder.setLedColor(sharedPreferences.getInt("led_color",LEDCOLORDEFAULT));
         return reminder;

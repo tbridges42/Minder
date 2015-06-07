@@ -134,7 +134,7 @@ public class MainListActivity extends Activity implements ReminderListFragment.T
         if (firstRun){
             SharedPreferences.Editor editor = defaultPreferences.edit();
             Reminder reminder = new Reminder();
-            Reminder.reminderToPreference(defaultPreferences, reminder);
+            Reminder.reminderToPreference(this,defaultPreferences, reminder);
 
             editor.putBoolean("first_run-0.7.1", false);
             editor.apply();

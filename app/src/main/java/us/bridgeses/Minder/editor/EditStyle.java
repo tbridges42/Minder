@@ -7,31 +7,29 @@ import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.Toast;
 
-import com.orhanobut.logger.Logger;
+import java.io.File;
 
 import us.bridgeses.Minder.Reminder;
-import us.bridgeses.Minder.util.ImagePreference;
 
 public class EditStyle extends EditorActivity {
 
+    public static final String tempFile = "temp";
+    private boolean userEnded = false;
+
+    /**
+     * Verifies that any required settings have been selected, and if so returns RESULT_OK to the
+     * calling activity. Called when the save button is pressed.
+     * @param view is passed by the system when the save button is pressed.
+     */
 	@Override
     public void save(View view) {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        userEnded = true;
         Intent intent = new Intent();
         setResult(RESULT_OK, intent);
         finish();
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data){
-        if (requestCode == 1 && resultCode == RESULT_OK){
-            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putString("image", data.getDataString());
-            editor.apply();
-            Toast.makeText(this,data.getDataString(),Toast.LENGTH_SHORT).show();
-        }
-    }
+
 
 	@Override
     public void cancel(View view) {
@@ -44,6 +42,8 @@ public class EditStyle extends EditorActivity {
         editor.putString("image", saved.getString("image", Reminder.IMAGEDEFAULT));
         editor.putInt("font_color", saved.getInt("font_color", Reminder.TEXTCOLORDEFAULT));
         editor.apply();
+        Reminder.loadImage(this,sharedPreferences.getInt("temp_id",-1));
+        userEnded = true;
         Intent intent = new Intent();
         setResult(RESULT_CANCELED, intent);
         finish();

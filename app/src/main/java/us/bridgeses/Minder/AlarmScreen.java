@@ -34,6 +34,7 @@ import android.widget.Toast;
 
 import com.orhanobut.logger.Logger;
 
+import java.io.File;
 import java.io.IOException;
 
 import us.bridgeses.Minder.receivers.ReminderReceiver;
@@ -50,8 +51,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
 
 
     @Override
-    public void onConfigurationChanged(Configuration newConfig)
-    {
+    public void onConfigurationChanged(Configuration newConfig){
         super.onConfigurationChanged(newConfig);
     }
 
@@ -65,98 +65,6 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
     public boolean onLongClick(View view){
         customSnooze(view);
         return true;
-    }
-
-    private int getOrientation(String path){
-        Cursor cursor = context.getContentResolver().query(Uri.parse(path),
-                new String[] { MediaStore.Images.ImageColumns.ORIENTATION },
-                null, null, null);
-
-        try {
-            if (cursor.moveToFirst()) {
-                return cursor.getInt(0);
-            } else {
-                return -1;
-            }
-        } finally {
-            cursor.close();
-        }
-    }
-
-    private Bitmap shrinkBitmap(String path, int width, int height) {
-        // TODO Auto-generated method stub
-        try{
-            BitmapFactory.Options bmpFactoryOptions = new BitmapFactory.Options();
-            bmpFactoryOptions.inJustDecodeBounds = true;
-
-            BitmapFactory.decodeStream(getContentResolver().openInputStream(Uri.parse(path)),null, bmpFactoryOptions);
-
-
-            int heightRatio = (int)Math.ceil(bmpFactoryOptions.outHeight/(float)height);
-            int widthRatio = (int)Math.ceil(bmpFactoryOptions.outWidth/(float)width);
-
-            if (heightRatio > 1 || widthRatio > 1)
-            {
-                if (heightRatio > widthRatio)
-                {
-                    bmpFactoryOptions.inSampleSize = heightRatio;
-                } else {
-                    bmpFactoryOptions.inSampleSize = widthRatio;
-                }
-            }
-
-            bmpFactoryOptions.inJustDecodeBounds = false;
-            return BitmapFactory.decodeStream(getContentResolver().openInputStream(Uri.parse(path)), null, bmpFactoryOptions);
-        }
-        catch (IOException e){
-            Toast.makeText(context, "Background Image Missing", Toast.LENGTH_SHORT).show();
-            return null;
-        }
-    }
-
-    @SuppressWarnings("deprecation")
-    private void setBackground(){
-        int orientation = getOrientation(reminder.getImage());
-        Logger.d("Found orientation: " + orientation);
-
-        Point size = new Point();
-        getWindowManager().getDefaultDisplay().getSize(size);
-        Bitmap thumbBM;
-        try{
-            thumbBM = shrinkBitmap(reminder.getImage(),size.x,size.y);
-            Logger.d("Created raw image");
-        }
-        catch (OutOfMemoryError e){
-            Toast.makeText(context, "Background Image Too Large", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if (thumbBM == null){
-            return;
-        }
-        Matrix matrix = new Matrix();
-            if (orientation != 0) {
-                try {
-                    matrix.preRotate(orientation);
-                    thumbBM = Bitmap.createBitmap(thumbBM, 0, 0, thumbBM.getWidth(), thumbBM.getHeight(), matrix, true);
-                }
-                catch (OutOfMemoryError e) {
-                    Toast.makeText(context, "Background Image Too Large", Toast.LENGTH_SHORT).show();
-                    thumbBM.recycle();
-                    return;
-                }
-            }
-            Logger.d("Rotated image");
-            Logger.d("Set thumbnail");
-            LinearLayout layout = (LinearLayout) findViewById(R.id.background);
-            BitmapDrawable background = new BitmapDrawable(getResources(),thumbBM);
-
-            int sdk = android.os.Build.VERSION.SDK_INT;
-            if (sdk < android.os.Build.VERSION_CODES.JELLY_BEAN) {
-                layout.setBackgroundDrawable( background );
-            } else {
-                layout.setBackground( background );
-            }
-
     }
 
 	private void createScreen() {
@@ -177,8 +85,20 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
         snooze.setTextColor(reminder.getTextColor());
         dismiss.setTextColor(reminder.getTextColor());
 
-        if (!reminder.getImage().equals("")){
-            setBackground();
+        File file = new File(getExternalFilesDir(null),Integer.toString(reminder.getId()));
+        if (file.exists()) {
+            Logger.d("Attempting to use image");
+            Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
+            BitmapDrawable background = new BitmapDrawable(getResources(),bitmap);
+            LinearLayout layout = (LinearLayout) findViewById(R.id.background);
+            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.JELLY_BEAN) {
+                layout.setBackgroundDrawable( background );
+            } else {
+                layout.setBackground( background );
+            }
+        }
+        else {
+            Logger.d("Image does not exist");
         }
 
         findViewById(R.id.snooze_button).setOnLongClickListener(this);

@@ -29,6 +29,8 @@
     <string name="delete_title">Delete Reminder</string>
     <string name="delete_message">This Reminder will be deleted</string>
     <string name="invalid_location">A location must be set to use Location Restriction</string>
+    <string name="invalid_ssid">A WiFi network must be set to use WiFi Restriction</string>
+    <string name="invalid_code">"A code must be set to use Code Restriction"</string>
     <string name="reminder_deleted">Reminder deleted</string>
     <string name="ok">OK</string>
     <string name="code_set">Code set</string>

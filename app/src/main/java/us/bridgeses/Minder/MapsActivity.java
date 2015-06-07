@@ -110,9 +110,6 @@ public class MapsActivity extends Activity implements GoogleMap.OnMapLongClickLi
 		editor.apply();
 
         Intent intent = new Intent();
-        Bundle bundle = new Bundle();
-        bundle.putParcelable("Location", location);
-        intent.putExtras(bundle);
         setResult(RESULT_OK, intent);
         finish();
     }
@@ -164,7 +161,7 @@ public class MapsActivity extends Activity implements GoogleMap.OnMapLongClickLi
         if ((location.longitude != 0) || (location.latitude != 0)) {
             CircleOptions circleOptions = new CircleOptions()
                     .center(location)   //set center
-                    .radius(500)   //set radius in meters
+                    .radius(radius)   //set radius in meters
                     .fillColor(0x400000ff)  //default
                     .strokeColor(Color.BLUE)
                     .strokeWidth(5);
