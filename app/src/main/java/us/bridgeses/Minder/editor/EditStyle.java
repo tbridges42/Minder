@@ -29,8 +29,11 @@ public class EditStyle extends EditorActivity {
         finish();
     }
 
-
-
+    /**
+     * Restores settings to their original configuration, as saved in saved, and then returns
+     * RESULT_CANCELED to the calling activity.
+     * @param view is passed by the Android system when the cancel button is pressed
+     */
 	@Override
     public void cancel(View view) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -42,7 +45,7 @@ public class EditStyle extends EditorActivity {
         editor.putString("image", saved.getString("image", Reminder.IMAGEDEFAULT));
         editor.putInt("font_color", saved.getInt("font_color", Reminder.TEXTCOLORDEFAULT));
         editor.apply();
-        Reminder.loadImage(this,sharedPreferences.getInt("temp_id",-1));
+        Reminder.loadImage(this, sharedPreferences.getInt("temp_id", -1));
         userEnded = true;
         Intent intent = new Intent();
         setResult(RESULT_CANCELED, intent);
