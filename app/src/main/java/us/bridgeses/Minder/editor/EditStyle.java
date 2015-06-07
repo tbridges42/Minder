@@ -11,6 +11,10 @@ import java.io.File;
 
 import us.bridgeses.Minder.Reminder;
 
+/**
+ * The activity for displaying, editing and saving options related to the manner
+ * in which the reminder is shown
+ */
 public class EditStyle extends EditorActivity {
 
     public static final String tempFile = "temp";
