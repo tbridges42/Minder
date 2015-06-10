@@ -196,6 +196,7 @@ public class AlertService extends Service {
 		}
 		stopRingtone(id);
 		stopVibrate();
+		stopTimer();
 	}
 
 	@Override
