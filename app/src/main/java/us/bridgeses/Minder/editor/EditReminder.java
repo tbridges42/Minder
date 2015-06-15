@@ -6,15 +6,16 @@ import android.app.DialogFragment;
 import android.app.FragmentManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Debug;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NavUtils;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -24,21 +25,29 @@ import com.orhanobut.logger.Logger;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+import us.bridgeses.Minder.DaoFactory;
 import us.bridgeses.Minder.R;
 import us.bridgeses.Minder.Reminder;
+import us.bridgeses.Minder.ReminderDAO;
+import us.bridgeses.Minder.TaskCallbacks;
 import us.bridgeses.Minder.receivers.ReminderReceiver;
+import us.bridgeses.Minder.util.ConfirmDialogFragment;
 
 /**
  * This is the primary editor class. All essential reminder settings should be changed here.
  * Supplemental settings should be changed in sub-activities
  */
-public class EditReminder extends Activity implements ConfirmDialogFragment.NoticeDialogListener {
+public class EditReminder extends Activity implements ConfirmDialogFragment.NoticeDialogListener,
+                                    TaskCallbacks{
 
+    TaskCallbacks callbacks;
+    ProgressDialog progressDialog;
     Reminder reminder;
     EditReminderFragment mFragment;
     private static final String TAG_TASK_FRAGMENT = "task_fragment";
     private Boolean defaults = false;
     ConfirmDialogFragment df;
+    Context context;
 
     /**
      * Called when a ConfirmDialogFragment's negative button is clicked
@@ -56,7 +65,7 @@ public class EditReminder extends Activity implements ConfirmDialogFragment.Noti
      * @param dialog
      */
     @Override
-    public void onDialogPositiveClick(DialogFragment dialog) {
+    public void onDialogPositiveClick(DialogFragment dialog, int id) {
 
         // Cancel any alarms associated with this reminder
         Intent intentAlarm = new Intent(this, ReminderReceiver.class);
@@ -135,7 +144,7 @@ public class EditReminder extends Activity implements ConfirmDialogFragment.Noti
         if (defaults) {
             // If the user is trying to change defaults, persist to a special preference file
             SharedPreferences defaultPreferences = getSharedPreferences("Minder.Defaults", Context.MODE_PRIVATE);
-            Reminder.reminderToPreference(defaultPreferences, reminder);
+            Reminder.reminderToPreference(this, defaultPreferences, reminder);
         }
         else {
             reminder.setActive(true);
@@ -176,11 +185,32 @@ public class EditReminder extends Activity implements ConfirmDialogFragment.Noti
         }
     }
 
+    private void loadFragment() {
+        // Store the reminder in the preference file for easy manipulation
+
+
+        // Check if there is already a fragment attached
+        FragmentManager fragmentManager = getFragmentManager();
+        mFragment = (EditReminderFragment) fragmentManager.findFragmentByTag(TAG_TASK_FRAGMENT);
+
+        if (mFragment == null) {
+            // If there is not a fragment, create one
+            EditReminderFragment fragment = EditReminderFragment.newInstance(reminder);
+            fragmentManager.beginTransaction().replace(R.id.reminder_frame, fragment,TAG_TASK_FRAGMENT).commit();
+            if (progressDialog != null) {
+                Logger.d("Dismissing progress dialog");
+                progressDialog.dismiss();
+                progressDialog = null;
+            }
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_preference_test);
-
+        context = this;
+        callbacks = this;
         Intent incoming = getIntent();
 	    Boolean isNew;
         if (incoming != null) {
@@ -202,23 +232,89 @@ public class EditReminder extends Activity implements ConfirmDialogFragment.Noti
             // The user should not be able to delete a reminder that is not saved
 		    Button deleteButton = (Button)findViewById(R.id.delete_button);
 		    deleteButton.setEnabled(false);
+            Reminder.reminderToPreference(this, PreferenceManager.getDefaultSharedPreferences(this), reminder);
+            loadFragment();
 	    }
 	    else{
             // if there is an incoming reminder, store it in our reminder
-		    reminder = incoming.getParcelableExtra("Reminder");
+            int id = incoming.getIntExtra("id",-1);
+            if (id != -1) {
+                LoadReminderTask task = new LoadReminderTask();
+                task.execute(id);
+            }
 	    }
+    }
 
-        // Store the reminder in the preference file for easy manipulation
-	    Reminder.reminderToPreference(PreferenceManager.getDefaultSharedPreferences(this),reminder);
+    @Override
+    public void onPreExecute() {
+        progressDialog = ProgressDialog.show(this, "", "Loading. . .", true, true);
+        Logger.d("New ProgressDialog");
+    }
 
-        // Check if there is already a fragment attached
-        FragmentManager fragmentManager = getFragmentManager();
-        mFragment = (EditReminderFragment) fragmentManager.findFragmentByTag(TAG_TASK_FRAGMENT);
+    @Override
+    public void onCancelled() {
+        if (progressDialog != null) {
+            progressDialog.dismiss();
+            progressDialog = null;
+        }
+    }
 
-        if (mFragment == null) {
-            // If there is not a fragment, create one
-            EditReminderFragment fragment = EditReminderFragment.newInstance(reminder);
-            fragmentManager.beginTransaction().replace(R.id.reminder_frame, fragment,TAG_TASK_FRAGMENT).commit();
+    @Override
+    public void onPostExecute() {
+
+    }
+
+    @Override
+    public void onProgressUpdate(int percent) {
+
+    }
+
+    /**
+     * This task pulls a single reminder from the DAO and passes it to the editor
+     */
+    private class LoadReminderTask extends AsyncTask<Integer, Integer, Void> {
+
+        @Override
+        protected void onPreExecute() {
+            if (callbacks != null) {
+                callbacks.onPreExecute();
+            }
+        }
+
+        @Override
+        protected void onProgressUpdate(Integer... percent) {
+            if (callbacks != null) {
+                callbacks.onProgressUpdate(percent[0]);
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+            if (callbacks != null) {
+                callbacks.onCancelled();
+            }
+        }
+
+        /**
+         * Note that we do NOT call the callback object's methods
+         * directly from the background thread, as this could result
+         * in a race condition.
+         */
+        @Override
+        protected Void doInBackground(Integer... id) {
+            Logger.d("Loading reminder:" + id[0]);
+            reminder = Reminder.get(context,id[0]);
+            Reminder.reminderToPreference(context, PreferenceManager.getDefaultSharedPreferences(context),reminder);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void ignore) {
+            Logger.d("Calling loadfragment");
+            if (callbacks != null) {
+                callbacks.onPostExecute();
+            }
+            loadFragment();
         }
     }
 }

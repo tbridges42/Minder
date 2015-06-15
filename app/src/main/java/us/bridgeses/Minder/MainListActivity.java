@@ -23,11 +23,13 @@ import com.orhanobut.logger.Logger;
 
 import us.bridgeses.Minder.editor.EditReminder;
 import us.bridgeses.Minder.receivers.ReminderReceiver;
+import us.bridgeses.Minder.util.ConfirmDialogFragment;
 
 /**
  * Created by Tony on 8/8/2014.
  */
-public class MainListActivity extends Activity implements ReminderListFragment.TaskCallbacks,SkipDialogFragment.NoticeDialogListener,ReminderListAdapter.ListClicksListener{
+public class MainListActivity extends Activity implements TaskCallbacks,
+        ConfirmDialogFragment.NoticeDialogListener,ReminderListAdapter.ListClicksListener{
 
     private static final String TAG_ASYNC_FRAGMENT = "Async_fragment";
     private ReminderListFragment mReminderListFragment;
@@ -38,7 +40,8 @@ public class MainListActivity extends Activity implements ReminderListFragment.T
 
     @Override
     public void SkipClick(int id){
-        SkipDialogFragment df = SkipDialogFragment.newInstance(id);
+        ConfirmDialogFragment df = ConfirmDialogFragment.newInstance("Skip Reminder",
+                "Skip the next instance of this Reminder","Skip",getResources().getString(R.string.edit_cancel),id);
         df.show(fragmentManager, "SkipDialog");
     }
 
@@ -83,7 +86,6 @@ public class MainListActivity extends Activity implements ReminderListFragment.T
 				(NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		// Builds the notification and issues it.
 		mNotifyMgr.cancel(reminder.getId());
-		mReminderListFragment.update();
         mReminderListFragment = new ReminderListFragment();
         fragmentManager = getFragmentManager();
         fragmentManager.beginTransaction().replace(R.id.list, mReminderListFragment,TAG_ASYNC_FRAGMENT).commit();
@@ -91,8 +93,8 @@ public class MainListActivity extends Activity implements ReminderListFragment.T
 
 	private void setTracker(){
 		// Get tracker.
-		Tracker t = ((MyApplication) getApplication()).getTracker(
-				MyApplication.TrackerName.APP_TRACKER);
+		Tracker t = ((Minder) getApplication()).getTracker(
+				Minder.TrackerName.APP_TRACKER);
 
 		// Set screen name.
 		t.setScreenName("Main Activity");

@@ -97,11 +97,12 @@ public class MapsActivity extends Activity implements GoogleMap.OnMapLongClickLi
     @Override
     protected void onResume() {
         super.onResume();
-        setUpMapIfNeeded();
+        if (isGoogleMapsInstalled()) {
+            setUpMapIfNeeded();
+        }
     }
 
     public void save(View view){
-
 	    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 	    SharedPreferences.Editor editor = sharedPreferences.edit();
 	    editor.putFloat("Latitude",(float) location.latitude);
@@ -178,11 +179,9 @@ public class MapsActivity extends Activity implements GoogleMap.OnMapLongClickLi
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT){
 			try {
 				locationMode = Settings.Secure.getInt(context.getContentResolver(), Settings.Secure.LOCATION_MODE);
-
 			} catch (Settings.SettingNotFoundException e) {
 				e.printStackTrace();
 			}
-
 			return locationMode != Settings.Secure.LOCATION_MODE_OFF;
 
 		}
@@ -207,9 +206,8 @@ public class MapsActivity extends Activity implements GoogleMap.OnMapLongClickLi
             location = new LatLng(lastKnown.getLatitude(),lastKnown.getLongitude());
         }
         else {
-            location = new LatLng(0,0);
+            location = new LatLng(0, 0);
         }
-
         return location;
     }
 
@@ -237,7 +235,7 @@ public class MapsActivity extends Activity implements GoogleMap.OnMapLongClickLi
                         i = 1000;
                     }
                 }
-				radiusBar.setProgress(i); // This ensures 0-120 value for seekbar
+				radiusBar.setProgress(i); // This ensures 1-1000 value for seekbar
 		    }
 
 		    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -268,7 +266,7 @@ public class MapsActivity extends Activity implements GoogleMap.OnMapLongClickLi
 		    public void onClick(DialogInterface dialog, int id) {
 			    // User clicked OK button
 			    radius = Integer.valueOf(radiusText.getText().toString());
-			    onMapClick(point);
+			    onMapClick(location);
 		    }
 	    });
 	    builder.setNegativeButton(getResources().getString(R.string.edit_cancel), new DialogInterface.OnClickListener() {

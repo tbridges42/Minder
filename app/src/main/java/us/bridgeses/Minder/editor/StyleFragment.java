@@ -80,11 +80,11 @@ public class StyleFragment extends PreferenceFragment implements
             return;
         }
         if (requestCode == 1){
-            Logger.d("requestCode 1");
-            //TODO: Null checking
             File file = new File(getActivity().getExternalFilesDir(null), EditStyle.tempFile);
             Bitmap bitmap = BitmapFactory.decodeFile((file.getAbsolutePath()));
-            Logger.d("x: " + size.x + " y: " + size.y);
+            if (bitmap == null){
+                return;
+            }
             bitmap = ImageHelper.scaleBitmap(bitmap, size.x, size.y);
             try{
                 FileOutputStream out = new FileOutputStream(file);
@@ -95,10 +95,7 @@ public class StyleFragment extends PreferenceFragment implements
             catch (IOException e){
                 Logger.d("File does not exist");
             }
-
             imagePreference.setIcon(new BitmapDrawable(getResources(), bitmap));
-
-            Logger.d("Bitmap received");
         }
     }
 

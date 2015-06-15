@@ -9,6 +9,7 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Debug;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
@@ -308,7 +309,7 @@ public class EditReminderFragment extends PreferenceFragment implements SharedPr
 				progressDialog.dismiss();
 				progressDialog = null;
 			}
-			initSummaries();
+            initSummaries();
 		}
 	}
 }

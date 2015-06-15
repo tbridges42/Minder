@@ -21,12 +21,6 @@ import us.bridgeses.Minder.editor.EditReminder;
  * Created by Tony on 8/9/2014.
  */
 public class ReminderListFragment extends ListFragment{
-    interface TaskCallbacks {
-        void onPreExecute();
-        void onProgressUpdate(int percent);
-        void onCancelled();
-        void onPostExecute();
-    }
 
     private TaskCallbacks mCallbacks;
     private QueryTask mTask;
@@ -34,10 +28,6 @@ public class ReminderListFragment extends ListFragment{
     private Context context;
 	protected Cursor cursor;
     ReminderDAO dao;
-
-	public void update(){
-
-	}
 
     /**
      * Hold a reference to the parent Activity so we can report the
@@ -49,8 +39,12 @@ public class ReminderListFragment extends ListFragment{
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         mCallbacks = (TaskCallbacks) activity;
+        context = getActivity();
     }
 
+    /**
+     * If the activity has been paused, we need to create a new query
+     */
     @Override
     public void onResume() {
         super.onResume();
@@ -60,11 +54,6 @@ public class ReminderListFragment extends ListFragment{
         }
     }
 
-    @Override
-    public void onDestroy(){
-        super.onDestroy();
-    }
-
     /**
      * This method will only be called once when the retained
      * Fragment is first created.
@@ -72,9 +61,6 @@ public class ReminderListFragment extends ListFragment{
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getActivity() != null) {
-            context = getActivity();
-        }
 
         // Retain this fragment across configuration changes.
         setRetainInstance(true);
@@ -84,8 +70,7 @@ public class ReminderListFragment extends ListFragment{
 
         mAdapter = new ReminderListAdapter(context,
                 R.layout.item_reminder, null,
-                fromColumns, toViews,getFragmentManager());
-
+                fromColumns, toViews);
 
         this.setListAdapter(mAdapter);
 
@@ -96,10 +81,18 @@ public class ReminderListFragment extends ListFragment{
         }
     }
 
+    /**
+     * When a list item is clicked, begin loading editreminder
+     * @param l the listview
+     * @param v the view
+     * @param position the position in the list
+     * @param id the id of the reminder that was clicked
+     */
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
-        LoadReminderTask mTask = new LoadReminderTask();
-        mTask.execute((int) id);
+        Intent intent = new Intent(context, EditReminder.class);
+        intent.putExtra("id",(int)Math.round(id));
+        startActivity(intent);
     }
 
     /**
@@ -114,12 +107,7 @@ public class ReminderListFragment extends ListFragment{
     }
 
     /**
-     * A dummy task that performs some (dumb) background work and
-     * proxies progress updates and results back to the Activity.
-     *
-     * Note that we need to check if the callbacks are null in each
-     * method in case they are invoked after the Activity's and
-     * Fragment's onDestroy() method have been called.
+     * This task queries the DAO for the list of reminders and updates the listadapter
      */
     private class QueryTask extends AsyncTask<Void, Integer, Void> {
 
@@ -132,11 +120,6 @@ public class ReminderListFragment extends ListFragment{
             }
         }
 
-        /**
-         * Note that we do NOT call the callback object's methods
-         * directly from the background thread, as this could result
-         * in a race condition.
-         */
         @Override
         protected Void doInBackground(Void... ignore) {
             dao = DaoFactory.getInstance().getDao(context);
@@ -167,58 +150,6 @@ public class ReminderListFragment extends ListFragment{
 //	        Logger.d("Cursor updated");
             mAdapter.swapCursor(cursor);
 	        mAdapter.notifyDataSetChanged();
-        }
-    }
-
-    private class LoadReminderTask extends AsyncTask<Integer, Integer, Void> {
-
-        Reminder reminder;
-        Intent intent = new Intent(context, EditReminder.class);
-
-        @Override
-        protected void onPreExecute() {
-            if (mCallbacks != null) {
-                mCallbacks.onPreExecute();
-            }
-        }
-
-        /**
-         * Note that we do NOT call the callback object's methods
-         * directly from the background thread, as this could result
-         * in a race condition.
-         */
-        @Override
-        protected Void doInBackground(Integer... id) {
-            reminder = Reminder.get(context,id[0]);
-            intent.putExtra("Reminder", reminder);
-            intent.setExtrasClassLoader(Reminder.class.getClassLoader());
-            return null;
-        }
-
-        @Override
-        protected void onProgressUpdate(Integer... percent) {
-            if (mCallbacks != null) {
-                mCallbacks.onProgressUpdate(percent[0]);
-            }
-
-        }
-
-        @Override
-        protected void onCancelled() {
-            if (mCallbacks != null) {
-                mCallbacks.onCancelled();
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Void ignore) {
-            if (dao.isOpen()){
-                dao.close();
-            }
-            if (mCallbacks != null) {
-                mCallbacks.onPostExecute();
-            }
-            startActivity(intent);
         }
     }
 }

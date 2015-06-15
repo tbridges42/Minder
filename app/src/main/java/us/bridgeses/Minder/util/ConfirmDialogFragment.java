@@ -1,4 +1,4 @@
-package us.bridgeses.Minder.editor;
+package us.bridgeses.Minder.util;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -6,6 +6,9 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+
+import com.orhanobut.logger.Logger;
 
 /**
  * This is a generic confirmation dialog
@@ -17,7 +20,7 @@ public class ConfirmDialogFragment extends DialogFragment {
      * The methods pass the dialog in the event that the host needs to query it
      */
     public interface NoticeDialogListener {
-        void onDialogPositiveClick(DialogFragment dialog);
+        void onDialogPositiveClick(DialogFragment dialog, int id);
         void onDialogNegativeClick(DialogFragment dialog);
     }
 
@@ -26,6 +29,7 @@ public class ConfirmDialogFragment extends DialogFragment {
     String message;
     String positive;
     String negative;
+    int id = -1;
 
     @Override
     public void onAttach(Activity activity) {
@@ -49,17 +53,32 @@ public class ConfirmDialogFragment extends DialogFragment {
      * @param negative will appear on the negative button
      * @return the dialog instance
      */
-    public static ConfirmDialogFragment newInstance(String title, String message, String positive, String negative) {
+
+    public static ConfirmDialogFragment newInstance(
+            String title, String message, String positive, String negative){
+
+        return newInstance(title,message,positive,negative,-1);
+    }
+
+    public static ConfirmDialogFragment newInstance(
+            String title, String message, String positive, String negative, int id) {
         ConfirmDialogFragment dialog = new ConfirmDialogFragment();
+
+        Logger.d("Dialog received id: " + id);
 
         Bundle args = new Bundle();
         args.putString("title",title);
         args.putString("message",message);
         args.putString("positive",positive);
         args.putString("negative", negative);
+        args.putInt("id", id);
         dialog.setArguments(args);
 
         return dialog;
+    }
+
+    public int getID(){
+        return id;
     }
 
     private void parseArgs(Bundle args){
@@ -67,6 +86,8 @@ public class ConfirmDialogFragment extends DialogFragment {
         message = args.getString("message");
         positive = args.getString("positive");
         negative = args.getString("negative");
+        id = args.getInt("id");
+        Logger.d("Parsed int: " + id);
     }
 
     @Override
@@ -78,7 +99,7 @@ public class ConfirmDialogFragment extends DialogFragment {
         builder.setPositiveButton(positive, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 // Send the positive button event back to the host activity
-                mListener.onDialogPositiveClick(ConfirmDialogFragment.this);
+                mListener.onDialogPositiveClick(ConfirmDialogFragment.this, getID());
             }
         });
         builder.setNegativeButton(negative, new DialogInterface.OnClickListener() {

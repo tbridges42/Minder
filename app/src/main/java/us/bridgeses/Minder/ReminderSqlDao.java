@@ -8,7 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import com.google.android.gms.maps.model.LatLng;
 
 /**
- * Created by Tony on 5/5/2015.
+ * This class stores and retrieves {@link Reminder}s from a SQL database
  */
 public class ReminderSqlDao implements ReminderDAO {
 
@@ -16,11 +16,21 @@ public class ReminderSqlDao implements ReminderDAO {
     SQLiteDatabase database;
     ReminderDBHelper dbHelper;
 
+    /**
+     * Using SQLite in Android requires access to an application context
+     * Use this method to set the context from the calling class
+     * @param context an Application context
+     */
     @Override
     public void setContext(Context context){
         this.context = context;
     }
 
+    /**
+     * Convert a cursor into a list of {@link Reminder}s
+     * @param cursor A populated cursor with reminders
+     * @return All of the reminders contained in cursor
+     */
     private static Reminder[] cursorToReminders(Cursor cursor){
         cursor.moveToFirst();
         Reminder[] reminders = new Reminder[cursor.getCount()];
@@ -64,6 +74,11 @@ public class ReminderSqlDao implements ReminderDAO {
         return reminders;
     }
 
+    /**
+     * Retrieve a cursor from the database
+     * @param database The database to retrieve the cursor from
+     * @return The cursor
+     */
     public Cursor getCursor(SQLiteDatabase database){
         String[] projection = {
                 ReminderDBHelper.COLUMN_ID,
@@ -94,7 +109,7 @@ public class ReminderSqlDao implements ReminderDAO {
                 ReminderDBHelper.COLUMN_IMAGE,
         };
         String sortOrder = ReminderDBHelper.COLUMN_ACTIVE + " DESC, " + ReminderDBHelper.COLUMN_DATE + " ASC";
-        Cursor cursor =database.query(
+        Cursor cursor = database.query(
                 ReminderDBHelper.TABLE_NAME,
                 projection,
                 null,
@@ -106,6 +121,10 @@ public class ReminderSqlDao implements ReminderDAO {
         return cursor;
     }
 
+    /**
+     * Retrieve a list of all reminders in the database
+     * @return The reminders in the database
+     */
     @Override
     public Reminder[] getReminders(){
         if (dbHelper == null){
@@ -119,6 +138,10 @@ public class ReminderSqlDao implements ReminderDAO {
         return reminders;
     }
 
+    /**
+     * Returns a Cursor that will not be managed by this class. This cursor must be closed manually
+     * @return A cursor with all the reminders in the database
+     */
     @Override
     public Cursor getAndKeepOpen(){
         if (dbHelper == null){
@@ -129,6 +152,10 @@ public class ReminderSqlDao implements ReminderDAO {
         return cursor;
     }
 
+    /**
+     * Manually closes the database helper associated with this class. This must be called when using
+     * getAndKeepOpen, after you are done with the cursor.
+     */
     @Override
     public void close(){
         if (dbHelper != null){
@@ -136,6 +163,11 @@ public class ReminderSqlDao implements ReminderDAO {
         }
     }
 
+    /**
+     * Get a single reminder from the database
+     * @param id The id of the reminder to be retrieved
+     * @return The reminder
+     */
     @Override
     public Reminder getReminder(int id){
         if (dbHelper == null){
@@ -158,6 +190,12 @@ public class ReminderSqlDao implements ReminderDAO {
         return reminder;
     }
 
+    /**
+     * Persist a reminder to the database. If the reminder does not exist in the database, the
+     * reminder's id is assigned to the next available value
+     * @param reminder The reminder to be persisted
+     * @return The reminder with an updated id, if applicable
+     */
     @Override
     public Reminder saveReminder(Reminder reminder) {
         if (dbHelper == null){
@@ -199,6 +237,11 @@ public class ReminderSqlDao implements ReminderDAO {
         return reminder;
     }
 
+    /**
+     * Delete the reminder from the database, if it exists
+     * @param id The id of the reminder to be deleted
+     * @return the number of rows deleted. Should be 1 if successful, 0 if reminder does not exist
+     */
     @Override
     public int deleteReminder(int id){
         if (dbHelper == null){
@@ -211,8 +254,12 @@ public class ReminderSqlDao implements ReminderDAO {
         return result;
     }
 
+    /**
+     * Whether or not the database is open
+     * @return true if open
+     */
     @Override
     public boolean isOpen(){
-        return database.isOpen();
+        return dbHelper.isOpen();
     }
 }

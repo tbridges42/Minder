@@ -77,6 +77,12 @@ public class ReminderDBHelper extends SQLiteOpenHelper {
     public static final int DATABASE_VERSION = 17;
     public static final String DATABASE_NAME = "Reminders.db";
 
+    /**
+     * We follow a singleton pattern here to avoid simultaneous attempts to open or close the database
+     * and to keep the database in a sane state
+     * @param context The context from which this is being created.
+     * @return Returns a new ReminderDBHelper if none existed, otherwise returns singleton
+     */
     public static synchronized ReminderDBHelper getInstance(Context context){
         if (singleInstance == null) {
             singleInstance = new ReminderDBHelper(context.getApplicationContext());
@@ -88,6 +94,12 @@ public class ReminderDBHelper extends SQLiteOpenHelper {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
+    /**
+     * Here we do incremental upgrades when we need to make changes to the database structure
+     * @param database
+     * @param oldVersion
+     * @param newVersion
+     */
     public void onUpgrade(SQLiteDatabase database, int oldVersion, int newVersion) {
         /********************************************
          * This method will include every incremental
@@ -108,11 +120,9 @@ public class ReminderDBHelper extends SQLiteOpenHelper {
             database.execSQL("ALTER TABLE "+TABLE_NAME+" ADD " + COLUMN_IMAGE + " STRING" );
             database.execSQL("ALTER TABLE "+TABLE_NAME+" ADD " + COLUMN_TEXTCOLOR + " INTEGER");
         }
-        Logger.i("Database Upgraded");
     }
 
     public void onCreate(SQLiteDatabase database) {
-
         database.execSQL(SQL_CREATE_ENTRIES);
     }
 
@@ -120,6 +130,10 @@ public class ReminderDBHelper extends SQLiteOpenHelper {
         return database.isOpen();
     }
 
+    /**
+     * Only open the database if it's not already open
+     * @return an open database
+     */
     public synchronized SQLiteDatabase openDatabase() {
         if(openCounter.incrementAndGet() == 1) {
             // Opening new database
@@ -128,6 +142,9 @@ public class ReminderDBHelper extends SQLiteOpenHelper {
         return database;
     }
 
+    /**
+     * Close the database if no one else is using it
+     */
     public synchronized void closeDatabase() {
         if(openCounter.decrementAndGet() == 0) {
             // Closing database

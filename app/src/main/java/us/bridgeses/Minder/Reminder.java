@@ -35,7 +35,7 @@ public class Reminder implements Parcelable{
 
 
     //Constructors
-    public Reminder() {
+    private Reminder() {
         setActive(ACTIVEDEFAULT);
         location = LOCATIONDEFAULT;
         name = NAMEDEFAULT;
@@ -72,10 +72,21 @@ public class Reminder implements Parcelable{
         setTextColor(TEXTCOLORDEFAULT);
     }
 
+    /**
+     * Return a new reminder from the defaults in the given SharedPreferences
+     * @param sharedPreferences
+     * @param context
+     * @return
+     */
     public static Reminder reminderFactory(SharedPreferences sharedPreferences, Context context){
         return preferenceToReminder(sharedPreferences, context);
     }
 
+    /**
+     * Return a new reminder from the standard defaults
+     * @param context The application context
+     * @return A reminder
+     */
 	public static Reminder reminderFactory(Context context){
 		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
 		return preferenceToReminder(sharedPreferences, context);
@@ -124,8 +135,8 @@ public class Reminder implements Parcelable{
     private String qr;                         //A string representing the encoded value of a barcode or QR code, scanned in by user
 	private int snoozeNumber;                  //A limit on the number of times the reminder can be snoozed
     private int snoozeDuration;                //The default duration before trying the reminder again if not dismissed
-    private int ledColor;                      //An int representing the hexadecimal color of the LED //TODO: Implement ledColor
-    private int ledPattern;                    //An int representing the pattern in which the LED should flash //TODO: Implement led
+    private int ledColor;                      //An int representing the hexadecimal color of the LED
+    private int ledPattern;                    //An int representing the pattern in which the LED should flash
     private String ringtone;                   //A string representing a URI for a ringtone selected by the user, to be played when reminder fires
     private String ssid;                       //A string representing an SSID for a user selected wifi-network
     private String bluetooth;                  //A string representing a user selected bluetooth pairing //TODO: Implement bluetooth
@@ -228,7 +239,6 @@ public class Reminder implements Parcelable{
     }
 
     public void setSSID(String ssid){
-        //TODO: determine ssid input requirements
         this.ssid=ssid;
     }
 
@@ -375,7 +385,6 @@ public class Reminder implements Parcelable{
 	}
 
 	public void setDescription(String description) {
-		//TODO: Does this need sanitizing?
 		this.description = description;
 	}
 
@@ -384,7 +393,6 @@ public class Reminder implements Parcelable{
 	}
 
 	public void setQr(String qr) {
-		//TODO: Does this need sanitizing?
 		this.qr = qr;
 	}
 

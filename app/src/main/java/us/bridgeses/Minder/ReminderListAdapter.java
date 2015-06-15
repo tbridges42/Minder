@@ -19,10 +19,16 @@ import java.util.HashMap;
 import java.util.InputMismatchException;
 
 /**
+ * This ListAdapter displays data from the Reminders in the cursor and has multiple button options
  * Created by Tony on 1/23/2015.
  */
 public class ReminderListAdapter extends SimpleCursorAdapter implements View.OnClickListener{
 
+    /**
+     * An activity must implement these to get special button presses
+     * SkipCklick is called when a button is pressed indicating the reminder has already been completed
+     * IconClick is called when a button with the app's icon on it has been pressed
+     */
 	interface ListClicksListener {
 		void SkipClick(int id);
 		void IconClick(int id);
@@ -33,8 +39,16 @@ public class ReminderListAdapter extends SimpleCursorAdapter implements View.OnC
 	private final LayoutInflater inflater;
 	private ListClicksListener callbacks;
 
-	public ReminderListAdapter(Context context,int layout, Cursor c,String[] from,int[] to,FragmentManager fragmentManager) {
-		super(context,layout,c,from,to);
+    /**
+     * Create new ReminderListAdapter
+     * @param context The calling activity
+     * @param layout The layout to use for each item
+     * @param c The cursor with the data
+     * @param from  The database column names
+     * @param to The views those columns map to
+     */
+	public ReminderListAdapter(Context context,int layout, Cursor c,String[] from,int[] to) {
+		super(context,layout,c,from,to, 0);
 		this.layout=layout;
 		this.mContext = context;
 		this.inflater=LayoutInflater.from(context);
@@ -49,10 +63,15 @@ public class ReminderListAdapter extends SimpleCursorAdapter implements View.OnC
 	}
 
 	@Override
-	public View newView (Context context, Cursor cursor, ViewGroup parent) {
+	public View newView(Context context, Cursor cursor, ViewGroup parent) {
 		return inflater.inflate(layout, null);
 	}
 
+    /**
+     * Called when something is clicked on screen. Determines what was clicked and takes appropriate
+     * action
+     * @param v the view that was clicked
+     */
     @SuppressWarnings("unchecked")
 	public void onClick(View v){
 		HashMap<String, Integer> hashMap;
@@ -72,6 +91,12 @@ public class ReminderListAdapter extends SimpleCursorAdapter implements View.OnC
 		}
 	}
 
+    /**
+     * Returns a short string representation of a date that gets less precise the further away the
+     * date is
+     * @param calendar The date to be represented
+     * @return Returns a short, user-friendly string representing a date or time
+     */
 	private String getNext(Calendar calendar){
 		Calendar now = Calendar.getInstance();
 
@@ -113,24 +138,23 @@ public class ReminderListAdapter extends SimpleCursorAdapter implements View.OnC
 		return "";
 	}
 
+    /**
+     * Create the view and do any custom work that needs to be done on all items
+     * @param view The view being bound
+     * @param context The calling activity
+     * @param cursor The cursor with all the data
+     */
 	@Override
 	public void bindView(View view, Context context, Cursor cursor) {
 		super.bindView(view, context, cursor);
-		TextView title=(TextView)view.findViewById(R.id.list_name);
-		TextView description=(TextView)view.findViewById(R.id.list_description);
 		TextView nextText=(TextView)view.findViewById(R.id.list_next);
 		TextView repeatText=(TextView)view.findViewById(R.id.list_repeat);
 		ImageView repeatIcon=(ImageView)view.findViewById(R.id.list_repeat_icon);
 
-		int titleIndex=cursor.getColumnIndexOrThrow(ReminderDBHelper.COLUMN_NAME);
-		int descriptionIndex=cursor.getColumnIndexOrThrow(ReminderDBHelper.COLUMN_DESCRIPTION);
 		int idIndex=cursor.getColumnIndexOrThrow(ReminderDBHelper.COLUMN_ID);
 		int dateIndex = cursor.getColumnIndexOrThrow(ReminderDBHelper.COLUMN_DATE);
 		int repeatIndex = cursor.getColumnIndexOrThrow(ReminderDBHelper.COLUMN_REPEATTYPE);
 		int activeIndex = cursor.getColumnIndexOrThrow(ReminderDBHelper.COLUMN_ACTIVE);
-
-		title.setText(cursor.getString(titleIndex));
-		description.setText(cursor.getString(descriptionIndex));
 
 		Calendar calendar = Calendar.getInstance();
 		long time = cursor.getLong(dateIndex)*1000;
@@ -146,7 +170,6 @@ public class ReminderListAdapter extends SimpleCursorAdapter implements View.OnC
 		repeatText.setText(getRepeat(repeatType));
 
 		Boolean active = cursor.getInt(activeIndex)==1;
-
 
 		ImageView finish = (ImageView) view.findViewById(R.id.finished_button);
 		HashMap<String,Integer> hashMap = new HashMap<>(2);
@@ -169,6 +192,4 @@ public class ReminderListAdapter extends SimpleCursorAdapter implements View.OnC
 			view.setAlpha((float)1.0);
 		}
 	}
-
-
 }

@@ -21,6 +21,7 @@ import java.util.Locale;
 
 import us.bridgeses.Minder.R;
 import us.bridgeses.Minder.Reminder;
+import us.bridgeses.Minder.util.Repeat;
 
 /**
  * Created by Tony on 9/13/2014.
@@ -39,7 +40,7 @@ public class RepeatFragment extends PreferenceFragment  implements SharedPrefere
     EditTextPreference numMonthsPreference;
     EditTextPreference numYearsPreference;
     ListPreference monthlyTypePreference;
-
+    Repeat repeat;
 
     private void setWeeklyTitle() {
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
@@ -49,47 +50,48 @@ public class RepeatFragment extends PreferenceFragment  implements SharedPrefere
         else
             title = "Every " + sharedPreferences.getString("temp_weeks", "0") + " weeks";
         byte daysOfWeek = setDaysOfWeek();
-        if (daysOfWeek != 0) {
-            if (daysOfWeek == Reminder.ALL_WEEK) {
-                title += " each day";
-            }
-            else {
-                if (daysOfWeek == Reminder.WEEKDAYS) {
-                    title += " on weekdays";
-                } else  {
-                    if (daysOfWeek == Reminder.WEEKENDS) {
-                        title += " on weekends";
-                    } else {
-                        title += " on";
-                        if (sharedPreferences.getBoolean("temp_sunday",false)) {
-                            title += " Su";
-                        }
-                        if (sharedPreferences.getBoolean("temp_monday",false)) {
-                            title += " Mo";
-                        }
-                        if (sharedPreferences.getBoolean("temp_tuesday",false)) {
-                            title += " Tu";
-                        }
-                        if (sharedPreferences.getBoolean("temp_wednesday",false)) {
-                            title += " We";
-                        }
-                        if (sharedPreferences.getBoolean("temp_thursday",false)) {
-                            title += " Th";
-                        }
-                        if (sharedPreferences.getBoolean("temp_friday",false)) {
-                            title += " Fr";
-                        }
-                        if (sharedPreferences.getBoolean("temp_saturday",false)) {
-                            title += " Sa";
-                        }
-                    }
-                }
-            }
-        }
-        else {
+        if (daysOfWeek == 0){
             title = "Please select days for weekly repeat";
+            numWeeksPreference.setTitle(title);
+            return;
         }
-
+        if (daysOfWeek == Reminder.ALL_WEEK) {
+            title += " on each day";
+            numWeeksPreference.setTitle(title);
+            return;
+        }
+        if (daysOfWeek == Reminder.WEEKDAYS) {
+            title += " on weekdays";
+            numWeeksPreference.setTitle(title);
+            return;
+        }
+        if (daysOfWeek == Reminder.WEEKENDS) {
+            title += " on weekends";
+            numWeeksPreference.setTitle(title);
+            return;
+        }
+        title += " on";
+        if (sharedPreferences.getBoolean("temp_sunday", false)) {
+            title += " Su";
+        }
+        if (sharedPreferences.getBoolean("temp_monday", false)) {
+            title += " Mo";
+        }
+        if (sharedPreferences.getBoolean("temp_tuesday", false)) {
+            title += " Tu";
+        }
+        if (sharedPreferences.getBoolean("temp_wednesday", false)) {
+            title += " We";
+        }
+        if (sharedPreferences.getBoolean("temp_thursday", false)) {
+            title += " Th";
+        }
+        if (sharedPreferences.getBoolean("temp_friday", false)) {
+            title += " Fr";
+        }
+        if (sharedPreferences.getBoolean("temp_saturday", false)) {
+            title += " Sa";
+        }
         numWeeksPreference.setTitle(title);
     }
 
@@ -106,152 +108,133 @@ public class RepeatFragment extends PreferenceFragment  implements SharedPrefere
         numYearsPreference = (EditTextPreference) super.findPreference("temp_years");
         monthlyTypePreference = (ListPreference) super.findPreference("temp_monthly_type");
 
-
         setRepeatSummary();
         repeatList.setSummary(repeatList.getEntry());
-	    int repeatType = Integer.parseInt(repeatList.getValue());
+	    String repeatType = repeatList.getValue();
 	    int numDays = Integer.parseInt(numDaysPreference.getText());
-        switch (repeatType) {
-            case 1: {
-                if (numDays == 1)
-                    numDaysPreference.setTitle("Every day");
-                else
-                    numDaysPreference.setTitle("Every " + numDays + " days");
-	            setPeriodTitle("temp_days");
-	            break;
-            }
-            case 2: {
-                setWeeklyTitle();
-	            setPeriodTitle("temp_weeks");
-	            break;
-            }
-            case 3: {
-                if (Integer.parseInt(numMonthsPreference.getText()) == 1)
-                    numMonthsPreference.setTitle("Every month");
-                else
-                    numMonthsPreference.setTitle("Every " + Integer.parseInt(numMonthsPreference.getText()) + " months");
-	            setPeriodTitle("temp_months");
-	            break;
-            }
-            case 4: {
-                if (Integer.parseInt(numYearsPreference.getText()) == 1)
-                    numYearsPreference.setTitle("Every year");
-                else
-                    numYearsPreference.setTitle("Every " + Integer.parseInt(numYearsPreference.getText()) + " years");
-	            setPeriodTitle("temp_years");
-	            break;
-            }
+        if (repeatType.equals(repeat.DAILY)){
+            if (numDays == 1)
+                numDaysPreference.setTitle("Every day");
+            else
+                numDaysPreference.setTitle("Every " + numDays + " days");
+        }
+        if (repeatType.equals(repeat.WEEKLY)){
+            setWeeklyTitle();
+        }
+        if (repeatType.equals(repeat.MONTHLY)){
+            if (Integer.parseInt(numMonthsPreference.getText()) == 1)
+                numMonthsPreference.setTitle("Every month");
+            else
+                numMonthsPreference.setTitle("Every " + Integer.parseInt(numMonthsPreference.getText()) + " months");
+        }
+        if (repeatType.equals(repeat.YEARLY)){
+            if (Integer.parseInt(numYearsPreference.getText()) == 1)
+                numYearsPreference.setTitle("Every year");
+            else
+                numYearsPreference.setTitle("Every " + Integer.parseInt(numYearsPreference.getText()) + " years");
         }
     }
 
+
     private void expandRepeatMenu() {
-        int repeatType = Integer.parseInt(sharedPreferences.getString("temp_repeat_type", "0"));
-        switch (repeatType) {
-            case 0: {
-                repeatScreenPreference.removePreference(dailyRepeatMenu);
-                repeatScreenPreference.removePreference(weeklyRepeatMenu);
-                repeatScreenPreference.removePreference(monthlyRepeatMenu);
-                repeatScreenPreference.removePreference(yearlyRepeatMenu);
-                break;
+        String repeatType = sharedPreferences.getString("temp_repeat_type", "0");
+        if (repeatType.equals(repeat.NONE)){
+            repeatScreenPreference.removePreference(dailyRepeatMenu);
+            repeatScreenPreference.removePreference(weeklyRepeatMenu);
+            repeatScreenPreference.removePreference(monthlyRepeatMenu);
+            repeatScreenPreference.removePreference(yearlyRepeatMenu);
+        }
+        if (repeatType.equals(repeat.DAILY)){
+            repeatScreenPreference.addPreference(dailyRepeatMenu);
+            repeatScreenPreference.removePreference(weeklyRepeatMenu);
+            repeatScreenPreference.removePreference(monthlyRepeatMenu);
+            repeatScreenPreference.removePreference(yearlyRepeatMenu);
+            numDaysPreference = (EditTextPreference) super.findPreference("temp_days");
+            if (numDaysPreference.getText().equals("0")){
+                numDaysPreference.setText("1");
             }
-            case 1: {
-                repeatScreenPreference.addPreference(dailyRepeatMenu);
-                repeatScreenPreference.removePreference(weeklyRepeatMenu);
-                repeatScreenPreference.removePreference(monthlyRepeatMenu);
-                repeatScreenPreference.removePreference(yearlyRepeatMenu);
-	            numDaysPreference = (EditTextPreference) super.findPreference("temp_days");
-	            if (numDaysPreference.getText().equals("0")){
-		            numDaysPreference.setText("1");
-	            }
-	            setPeriodTitle("temp_days");
-                break;
+            setPeriodTitle("temp_days", "day");
+        }
+        if (repeatType.equals(repeat.WEEKLY)){
+            repeatScreenPreference.removePreference(dailyRepeatMenu);
+            repeatScreenPreference.addPreference(weeklyRepeatMenu);
+            repeatScreenPreference.removePreference(monthlyRepeatMenu);
+            repeatScreenPreference.removePreference(yearlyRepeatMenu);
+            if (setDaysOfWeek()==0) {
+                Calendar date = Calendar.getInstance();
+                SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm aa EEEE, MMMM d, yyyy");
+                try {
+                    String newDate = sharedPreferences.getString("temp_time", "") + " " + sharedPreferences.getString("temp_date", "");
+                    date.setTime(timeFormat.parse(newDate));
+                    int dayOfWeek = date.get(Calendar.DAY_OF_WEEK);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    switch (dayOfWeek) {
+                        case 1: {
+                            editor.putBoolean("temp_sunday", true);
+                            CheckBoxPreference dayPreference = (CheckBoxPreference) super.findPreference("temp_sunday");
+                            dayPreference.setChecked(true);
+                            break;
+                        }
+                        case 2: {
+                            editor.putBoolean("temp_monday", true);
+                            CheckBoxPreference dayPreference = (CheckBoxPreference) super.findPreference("temp_monday");
+                            dayPreference.setChecked(true);
+                            break;
+                        }
+                        case 3: {
+                            editor.putBoolean("temp_tuesday", true);
+                            CheckBoxPreference dayPreference = (CheckBoxPreference) super.findPreference("temp_tuesday");
+                            dayPreference.setChecked(true);
+                            break;
+                        }
+                        case 4: {
+                            editor.putBoolean("temp_wednesday", true);
+                            CheckBoxPreference dayPreference = (CheckBoxPreference) super.findPreference("temp_wednesday");
+                            dayPreference.setChecked(true);
+                            break;
+                        }
+                        case 5: {
+                            editor.putBoolean("temp_thursday", true);
+                            CheckBoxPreference dayPreference = (CheckBoxPreference) super.findPreference("temp_thursday");
+                            dayPreference.setChecked(true);
+                            break;
+                        }
+                        case 6: {
+                            editor.putBoolean("temp_friday", true);
+                            CheckBoxPreference dayPreference = (CheckBoxPreference) super.findPreference("temp_friday");
+                            dayPreference.setChecked(true);
+                            break;
+                        }
+                        case 7: {
+                            editor.putBoolean("temp_saturday", true);
+                            CheckBoxPreference dayPreference = (CheckBoxPreference) super.findPreference("temp_saturday");
+                            dayPreference.setChecked(true);
+                            break;
+                        }
+                    }
+                    editor.apply();
+                } catch (ParseException e) {
+                    Logger.e("Parse Error");
+                }
             }
-            case 2: {
-                repeatScreenPreference.removePreference(dailyRepeatMenu);
-                repeatScreenPreference.addPreference(weeklyRepeatMenu);
-                repeatScreenPreference.removePreference(monthlyRepeatMenu);
-                repeatScreenPreference.removePreference(yearlyRepeatMenu);
-	            if (setDaysOfWeek()==0) {
-		            Calendar date = Calendar.getInstance();
-		            SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm aa EEEE, MMMM d, yyyy");
-		            try {
-			            String newDate = sharedPreferences.getString("temp_time", "") + " " + sharedPreferences.getString("temp_date", "");
-			            date.setTime(timeFormat.parse(newDate));
-			            int dayOfWeek = date.get(Calendar.DAY_OF_WEEK);
-			            SharedPreferences.Editor editor = sharedPreferences.edit();
-			            switch (dayOfWeek) {
-				            case 1: {
-					            editor.putBoolean("temp_sunday", true);
-					            CheckBoxPreference dayPreference = (CheckBoxPreference) super.findPreference("temp_sunday");
-					            dayPreference.setChecked(true);
-					            break;
-				            }
-				            case 2: {
-					            editor.putBoolean("temp_monday", true);
-					            CheckBoxPreference dayPreference = (CheckBoxPreference) super.findPreference("temp_monday");
-					            dayPreference.setChecked(true);
-					            break;
-				            }
-				            case 3: {
-					            editor.putBoolean("temp_tuesday", true);
-					            CheckBoxPreference dayPreference = (CheckBoxPreference) super.findPreference("temp_tuesday");
-					            dayPreference.setChecked(true);
-					            break;
-				            }
-				            case 4: {
-					            editor.putBoolean("temp_wednesday", true);
-					            CheckBoxPreference dayPreference = (CheckBoxPreference) super.findPreference("temp_wednesday");
-					            dayPreference.setChecked(true);
-					            break;
-				            }
-				            case 5: {
-					            editor.putBoolean("temp_thursday", true);
-					            CheckBoxPreference dayPreference = (CheckBoxPreference) super.findPreference("temp_thursday");
-					            dayPreference.setChecked(true);
-					            break;
-				            }
-				            case 6: {
-					            editor.putBoolean("temp_friday", true);
-					            CheckBoxPreference dayPreference = (CheckBoxPreference) super.findPreference("temp_friday");
-					            dayPreference.setChecked(true);
-					            break;
-				            }
-				            case 7: {
-					            editor.putBoolean("temp_saturday", true);
-					            CheckBoxPreference dayPreference = (CheckBoxPreference) super.findPreference("temp_saturday");
-					            dayPreference.setChecked(true);
-					            break;
-				            }
-			            }
-
-			            editor.apply();
-
-		            } catch (ParseException e) {
-			            Logger.e("Parse Error");
-		            }
-	            }
-	            setWeeklyTitle();
-	            setPeriodTitle("temp_weeks");
-                break;
-            }
-            case 3: {
-                repeatScreenPreference.removePreference(dailyRepeatMenu);
-                repeatScreenPreference.removePreference(weeklyRepeatMenu);
-                repeatScreenPreference.addPreference(monthlyRepeatMenu);
-                repeatScreenPreference.removePreference(yearlyRepeatMenu);
-	            numMonthsPreference = (EditTextPreference) super.findPreference("temp_months");
-	            setPeriodTitle("temp_months");
-                break;
-            }
-            case 4: {
-                repeatScreenPreference.removePreference(dailyRepeatMenu);
-                repeatScreenPreference.removePreference(weeklyRepeatMenu);
-                repeatScreenPreference.removePreference(monthlyRepeatMenu);
-                repeatScreenPreference.addPreference(yearlyRepeatMenu);
-	            numYearsPreference = (EditTextPreference) super.findPreference("temp_years");
-	            setPeriodTitle("temp_years");
-                break;
-            }
+            setWeeklyTitle();
+            setPeriodTitle("temp_weeks","week");
+        }
+        if (repeatType.equals(repeat.MONTHLY)){
+            repeatScreenPreference.removePreference(dailyRepeatMenu);
+            repeatScreenPreference.removePreference(weeklyRepeatMenu);
+            repeatScreenPreference.addPreference(monthlyRepeatMenu);
+            repeatScreenPreference.removePreference(yearlyRepeatMenu);
+            numMonthsPreference = (EditTextPreference) super.findPreference("temp_months");
+            setPeriodTitle("temp_months","month");
+        }
+        if (repeatType.equals(repeat.YEARLY)){
+            repeatScreenPreference.removePreference(dailyRepeatMenu);
+            repeatScreenPreference.removePreference(weeklyRepeatMenu);
+            repeatScreenPreference.removePreference(monthlyRepeatMenu);
+            repeatScreenPreference.addPreference(yearlyRepeatMenu);
+            numYearsPreference = (EditTextPreference) super.findPreference("temp_years");
+            setPeriodTitle("temp_years","year");
         }
     }
 
@@ -284,36 +267,28 @@ public class RepeatFragment extends PreferenceFragment  implements SharedPrefere
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //reminder = getArguments().getParcelable("Reminder");
 
         addPreferencesFromResource(R.xml.repeat_preference);
+
+        repeat = new Repeat(getActivity());
 
         initSummaries();
 
         expandRepeatMenu();
-    }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        // Set up a listener whenever a key changes
         getPreferenceScreen().getSharedPreferences()
                 .registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
-        // Unregister the listener whenever a key changes
+    public void onDestroy() {
         getPreferenceScreen().getSharedPreferences()
                 .unregisterOnSharedPreferenceChangeListener(this);
+        super.onDestroy();
     }
 
     public static RepeatFragment newInstance(){
         RepeatFragment fragment = new RepeatFragment();
-        Bundle args = new Bundle();
-        //args.putParcelable("Reminder",reminder);
-        fragment.setArguments(args);
         return fragment;
     }
 
@@ -378,9 +353,10 @@ public class RepeatFragment extends PreferenceFragment  implements SharedPrefere
         return set;
     }
 
-    private Boolean setPeriodTitle(String key) {
+    private Boolean setPeriodTitle(String key, String period) {
         EditTextPreference textPreference = (EditTextPreference) findPreference(key);
         if (textPreference == null){
+            // No matching preference
             return false;
         }
         Boolean set = true;
@@ -434,7 +410,7 @@ public class RepeatFragment extends PreferenceFragment  implements SharedPrefere
                     editor.putString("temp_days", "1");
                     editor.apply();
                     numDaysPreference.setText("1");
-                    setPeriodTitle("temp_days");
+                    setPeriodTitle("temp_days","day");
                 }
                 if (sharedPreferences.getString("temp_days","0").equals("1")) {
                     repeatScreenPreference.setSummary("Repeat every day");
@@ -450,7 +426,7 @@ public class RepeatFragment extends PreferenceFragment  implements SharedPrefere
                     editor.putString("temp_weeks", "1");
                     editor.apply();
                     numWeeksPreference.setText("1");
-                    setPeriodTitle("temp_weeks");
+                    setPeriodTitle("temp_weeks","week");
                 }
                 if (sharedPreferences.getString("temp_weeks","0").equals("1")) {
                     repeatScreenPreference.setSummary("Repeat every week");
@@ -467,7 +443,7 @@ public class RepeatFragment extends PreferenceFragment  implements SharedPrefere
                     editor.putString("temp_monthly_type","1");
                     editor.apply();
                     numMonthsPreference.setText("1");
-                    setPeriodTitle("temp_months");
+                    setPeriodTitle("temp_months","month");
                     setMonthlyTitle(0);
                 }
                 if (sharedPreferences.getString("temp_months","0").equals("1")) {
@@ -484,7 +460,7 @@ public class RepeatFragment extends PreferenceFragment  implements SharedPrefere
                     editor.putString("temp_years", "1");
                     editor.apply();
                     numYearsPreference.setText("1");
-                    setPeriodTitle("temp_years");
+                    setPeriodTitle("temp_years","year");
                 }
                 if (sharedPreferences.getString("temp_years","0").equals("1")) {
                     repeatScreenPreference.setSummary("Repeat every year");
@@ -503,7 +479,7 @@ public class RepeatFragment extends PreferenceFragment  implements SharedPrefere
         Preference mPreference = findPreference(key);
         if (mPreference instanceof  EditTextPreference){
             EditTextPreference textPreference = (EditTextPreference) mPreference;
-            if (!setPeriodTitle(key)){
+            if (!setPeriodTitle(key,"key")){
                 textPreference.setSummary(textPreference.getText());
             }
             else
@@ -513,10 +489,8 @@ public class RepeatFragment extends PreferenceFragment  implements SharedPrefere
             setWeeklyTitle();
         }
         if (key.equals("temp_repeat_type")) {
-//            sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
             repeatList.setSummary(repeatList.getEntry());
             expandRepeatMenu();
-            //setRepeatSummary();
 
         }
         if (key.equals("temp_weeks")) {
