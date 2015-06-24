@@ -135,7 +135,7 @@ public class MainListActivity extends Activity implements TaskCallbacks,
 
         if (firstRun){
             SharedPreferences.Editor editor = defaultPreferences.edit();
-            Reminder reminder = new Reminder();
+            Reminder reminder = Reminder.reminderFactory(this);
             Reminder.reminderToPreference(this,defaultPreferences, reminder);
 
             editor.putBoolean("first_run-0.7.1", false);
