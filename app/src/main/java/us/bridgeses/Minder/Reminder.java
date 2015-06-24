@@ -35,7 +35,7 @@ public class Reminder implements Parcelable{
 
 
     //Constructors
-    private Reminder() {
+    public Reminder() {
         setActive(ACTIVEDEFAULT);
         location = LOCATIONDEFAULT;
         name = NAMEDEFAULT;

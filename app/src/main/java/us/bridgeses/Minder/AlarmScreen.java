@@ -107,11 +107,11 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
     private Reminder retrieveReminder(int id){
         if (id == -1){
             Logger.w("Invalid ID");
-            return new Reminder();
+            return Reminder.reminderFactory(context);
         }
         if (context == null){
             Logger.e("Invalid context");
-            return new Reminder();
+            return Reminder.reminderFactory(context);
         }
         reminder = Reminder.get(context,id);
         return reminder;

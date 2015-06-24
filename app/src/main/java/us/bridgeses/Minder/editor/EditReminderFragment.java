@@ -261,10 +261,16 @@ public class EditReminderFragment extends PreferenceFragment implements SharedPr
                 mPreference.setSummary("Silent");
             }
             else {
-                Uri ringtoneUri = Uri.parse(strRingtonePreference);
-                Ringtone ringtone = RingtoneManager.getRingtone(getActivity(), ringtoneUri);
-                String title = ringtone.getTitle(getActivity());
-                mPreference.setSummary(title);
+                try {
+                    Uri ringtoneUri = Uri.parse(strRingtonePreference);
+
+                    Ringtone ringtone = RingtoneManager.getRingtone(getActivity(), ringtoneUri);
+                    String title = ringtone.getTitle(getActivity());
+                    mPreference.setSummary(title);
+                }
+                catch (NullPointerException e){
+                    mPreference.setSummary("ERROR");
+                }
             }
         }
         ((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
