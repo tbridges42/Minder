@@ -94,7 +94,7 @@ public class PersistenceFragment extends PreferenceFragment implements
     @Override
 	public void onSharedPreferenceChanged(SharedPreferences preference, String key){
 		if (key.equals("code_type")){
-			CheckBoxPreference mPreference = (CheckBoxPreference) preference;
+			CheckBoxPreference mPreference = (CheckBoxPreference) findPreference(key);
 			super.findPreference("button_code").setEnabled(mPreference.isChecked());
 		}
 		((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
