@@ -32,8 +32,9 @@ public class MainListActivity extends Activity implements TaskCallbacks,
         ConfirmDialogFragment.NoticeDialogListener,ReminderListAdapter.ListClicksListener{
 
     private static final String TAG_ASYNC_FRAGMENT = "Async_fragment";
-    private ReminderListFragment mReminderListFragment;
-	private AboutFragment mAboutFragment;
+    private static final String TAG_ABOUT_FRAGMENT = "About_fragment";
+    private Fragment mReminderListFragment;
+	private Fragment mAboutFragment;
 	private Boolean firstRun;
     private FragmentManager fragmentManager;
     private ProgressDialog progressDialog;
@@ -86,9 +87,9 @@ public class MainListActivity extends Activity implements TaskCallbacks,
 				(NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		// Builds the notification and issues it.
 		mNotifyMgr.cancel(reminder.getId());
-        mReminderListFragment = new ReminderListFragment();
+        mReminderListFragment = (Fragment) new ReminderListFragment();
         fragmentManager = getFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.list, mReminderListFragment,TAG_ASYNC_FRAGMENT).commit();
+        fragmentManager.beginTransaction().replace(R.id.list, (Fragment)mReminderListFragment,TAG_ASYNC_FRAGMENT).commit();
 	}
 
 	private void setTracker(){
@@ -115,7 +116,7 @@ public class MainListActivity extends Activity implements TaskCallbacks,
 	public void onBackPressed()
 	{
 		fragmentManager = getFragmentManager();
-        Fragment fragment = fragmentManager.findFragmentByTag(TAG_ASYNC_FRAGMENT);
+        Fragment fragment = fragmentManager.findFragmentByTag(TAG_ABOUT_FRAGMENT);
         if (!(fragment instanceof AboutFragment)){
             finish();
         }
@@ -147,7 +148,7 @@ public class MainListActivity extends Activity implements TaskCallbacks,
         fragmentManager = getFragmentManager();
 	    Fragment fragment = fragmentManager.findFragmentByTag(TAG_ASYNC_FRAGMENT);
 	    if (fragment instanceof ReminderListFragment){
-		    mReminderListFragment = (ReminderListFragment) fragment;
+		    mReminderListFragment = (Fragment) fragment;
 	    }
 	    else{
 		    if (fragment instanceof AboutFragment){
@@ -160,7 +161,9 @@ public class MainListActivity extends Activity implements TaskCallbacks,
 	        // create new fragment
             setTracker();
             mReminderListFragment = new ReminderListFragment();
-	        fragmentManager.beginTransaction().replace(R.id.list, mReminderListFragment,TAG_ASYNC_FRAGMENT).commit();
+	        fragmentManager.beginTransaction()
+                    .replace(R.id.list, (Fragment) mReminderListFragment,TAG_ASYNC_FRAGMENT)
+                    .addToBackStack(null).commit();
         }
     }
 
@@ -172,7 +175,7 @@ public class MainListActivity extends Activity implements TaskCallbacks,
         }
 	    Fragment fragment = fragmentManager.findFragmentByTag(TAG_ASYNC_FRAGMENT);
 	    if (fragment instanceof ReminderListFragment){
-		    mReminderListFragment = (ReminderListFragment) fragment;
+		    mReminderListFragment = (Fragment) fragment;
 	    }
 	    else{
 		    if (fragment instanceof AboutFragment){
@@ -183,7 +186,9 @@ public class MainListActivity extends Activity implements TaskCallbacks,
         // retained across a configuration change.
         if (mReminderListFragment == null) {
             mReminderListFragment = new ReminderListFragment();
-            fragmentManager.beginTransaction().replace(R.id.list, mReminderListFragment,TAG_ASYNC_FRAGMENT).commit();
+            fragmentManager.beginTransaction()
+                    .replace(R.id.list, (Fragment) mReminderListFragment,TAG_ASYNC_FRAGMENT)
+                    .addToBackStack(null).commit();
         }
     }
 
@@ -208,7 +213,7 @@ public class MainListActivity extends Activity implements TaskCallbacks,
 	        case R.id.action_about:
 				FragmentManager fm = getFragmentManager();
 		        mAboutFragment = new AboutFragment();
-		        fm.beginTransaction().replace(R.id.list,mAboutFragment,TAG_ASYNC_FRAGMENT).addToBackStack(null).commit();
+		        fm.beginTransaction().replace(R.id.list,(Fragment)mAboutFragment,TAG_ABOUT_FRAGMENT).addToBackStack(null).commit();
 		        return true;
             case R.id.action_new:
                 editReminder(findViewById(android.R.id.content));

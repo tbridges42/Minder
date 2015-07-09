@@ -16,7 +16,7 @@ import com.orhanobut.logger.Logger;
  * and significant contributors.
  * <p>It extends {@link PreferenceFragment} to utilize its default formatting</p>
  */
-public class AboutFragment extends PreferenceFragment implements Preference.OnPreferenceClickListener {
+public class AboutFragment extends PreferenceFragment implements Preference.OnPreferenceClickListener, IFragment {
 
 	/**
 	 * Static factory method to encapsulate the production of AboutFragment
@@ -41,40 +41,43 @@ public class AboutFragment extends PreferenceFragment implements Preference.OnPr
 	@Override
 	public boolean onPreferenceClick(Preference preference) {
 		String key = preference.getKey();
-		if (key.equals("website")){
-			String url = getResources().getString(R.string.site_url);
-			Intent i = new Intent(Intent.ACTION_VIEW);
-			i.setData(Uri.parse(url));
-			startActivity(i);
-			return true;
-		}
-		if (key.equals("support")){
-			String url = getResources().getString(R.string.support_url);
-			Intent i = new Intent(Intent.ACTION_VIEW);
-			i.setData(Uri.parse(url));
-			startActivity(i);
-			return true;
-		}
-		if (key.equals("icon_attribution")){
-			String url = getResources().getString(R.string.monster_shop);
-			Intent i = new Intent(Intent.ACTION_VIEW);
-			i.setData(Uri.parse(url));
-			startActivity(i);
-			return true;
-		}
-		if (key.equals("feedback")){
-			Intent send = new Intent(Intent.ACTION_SENDTO);
-			String uriText = getResources().getString(R.string.mailto)
-					+ Uri.encode(getResources().getString(R.string.email))
-					+ getResources().getString(R.string.subject_code)
-					+ Uri.encode(getResources().getString(R.string.feedback_subject));
-			Uri uri = Uri.parse(uriText);
+		switch (key){
+			case "website":{
+				String url = getResources().getString(R.string.site_url);
+				Intent i = new Intent(Intent.ACTION_VIEW);
+				i.setData(Uri.parse(url));
+				startActivity(i);
+				return true;
+			}
+			case "support":{
+				String url = getResources().getString(R.string.support_url);
+				Intent i = new Intent(Intent.ACTION_VIEW);
+				i.setData(Uri.parse(url));
+				startActivity(i);
+				return true;
+			}
+			case "icon_attribution": {
+				String url = getResources().getString(R.string.monster_shop);
+				Intent i = new Intent(Intent.ACTION_VIEW);
+				i.setData(Uri.parse(url));
+				startActivity(i);
+				return true;
+			}
+			case "feedback": {
+				Intent send = new Intent(Intent.ACTION_SENDTO);
+				String uriText = getResources().getString(R.string.mailto)
+						+ Uri.encode(getResources().getString(R.string.email))
+						+ getResources().getString(R.string.subject_code)
+						+ Uri.encode(getResources().getString(R.string.feedback_subject));
+				Uri uri = Uri.parse(uriText);
 
-			send.setData(uri);
-			startActivity(send);
-			return true;
+				send.setData(uri);
+				startActivity(send);
+				return true;
+			}
+			default:
+				return false;
 		}
-		return false;
 	}
 
 	/**

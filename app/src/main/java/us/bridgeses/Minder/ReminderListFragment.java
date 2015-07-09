@@ -20,7 +20,7 @@ import us.bridgeses.Minder.editor.EditReminder;
  * This fragment retrieves all reminders from a ReminderDAO and displays them in a list
  * Created by Tony on 8/9/2014.
  */
-public class ReminderListFragment extends ListFragment{
+public class ReminderListFragment extends ListFragment implements IFragment{
 
     private TaskCallbacks mCallbacks;
     private QueryTask mTask;

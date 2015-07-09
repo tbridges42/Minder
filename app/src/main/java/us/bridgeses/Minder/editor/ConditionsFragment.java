@@ -47,7 +47,6 @@ public class ConditionsFragment extends PreferenceFragment implements SharedPref
     CheckBoxPreference wifiRequired;
     PreferenceScreen ssidButton;
 	private ProgressDialog progressDialog;
-	private MapTask mapTask;
     private WifiManager wifiManager;
     AlertDialog.Builder wifiBuilder;
     AlertDialog wifiDialog;
@@ -187,8 +186,6 @@ public class ConditionsFragment extends PreferenceFragment implements SharedPref
                 };
                 ActivityLoader activityLoader = new ActivityLoader(listener, intent, this, MAP_ACTIVITY_CODE);
                 activityLoader.execute();
-				//mapTask = new MapTask();
-				//mapTask.execute();
 			}
 		}
 		if (key.equals("button_wifi")){
@@ -290,40 +287,6 @@ public class ConditionsFragment extends PreferenceFragment implements SharedPref
             ssidButton.setEnabled(wifiRequired.isChecked());
         }
 		((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
-	}
-
-    /**
-     * This AsyncTask displays a progress dialog while the map activity is loading
-     */
-	private class MapTask extends AsyncTask<Void, Integer, Void> {
-
-		Intent intent = new Intent(activity, MapsActivity.class);
-
-		@Override
-		protected void onPreExecute() {
-			createProgressDialog(getResources().getString(R.string.loading));
-		}
-
-		@Override
-		protected Void doInBackground(Void... ignore) {
-			startActivityForResult(intent, MAP_ACTIVITY_CODE);
-			return null;
-		}
-
-		@Override
-		protected void onProgressUpdate(Integer... percent) {
-
-		}
-
-		@Override
-		protected void onCancelled() {
-
-		}
-
-		@Override
-		protected void onPostExecute(Void ignore) {
-			cancelProgressDialog();
-		}
 	}
 
     class WifiReceiver extends BroadcastReceiver {
