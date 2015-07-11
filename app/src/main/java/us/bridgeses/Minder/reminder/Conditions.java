@@ -44,6 +44,14 @@ public final class Conditions implements Parcelable, Serializable {
     private BluetoothPreference bluetoothPreference;
     private String btMacAddress;
 
+    public static final LocationPreference LOCATION_PREFERENCE_DEFAULT = LocationPreference.NONE;
+    public static final double LATITUDE_DEFAULT = 0.0;
+    public static final double LONGITUDE_DEFAULT = 0.0;
+    public static final WifiPreference WIFI_PREFERENCE_DEFAULT = WifiPreference.NONE;
+    public static final String SSID_DEFAULT = "";
+    public static final BluetoothPreference BLUETOOTH_PREFERENCE_DEFAULT = BluetoothPreference.NONE;
+    public static final String BT_MAC_ADDRESS_DEFAULT = "";
+
     public LocationPreference getLocationPreference() {
         return locationPreference;
     }
@@ -112,13 +120,13 @@ public final class Conditions implements Parcelable, Serializable {
     }
 
     public static final class Builder{
-        private LocationPreference locationPreference = LocationPreference.NONE;
-        private double latitude = 0.0;
-        private double longitude = 0.0;
-        private WifiPreference wifiPreference = WifiPreference.NONE;
-        private String ssid = "";
-        private BluetoothPreference bluetoothPreference = BluetoothPreference.NONE;
-        private String btMacAddress = "";
+        private LocationPreference locationPreference = LOCATION_PREFERENCE_DEFAULT;
+        private double latitude = LATITUDE_DEFAULT;
+        private double longitude = LONGITUDE_DEFAULT;
+        private WifiPreference wifiPreference = WIFI_PREFERENCE_DEFAULT;
+        private String ssid = SSID_DEFAULT;
+        private BluetoothPreference bluetoothPreference = BLUETOOTH_PREFERENCE_DEFAULT;
+        private String btMacAddress = BT_MAC_ADDRESS_DEFAULT;
 
         public Builder(){ }
 
