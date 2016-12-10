@@ -5,18 +5,23 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
+import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.widget.BaseAdapter;
+
+import com.orhanobut.logger.Logger;
 
 import us.bridgeses.Minder.R;
 import us.bridgeses.Minder.Reminder;
-import us.bridgeses.Minder.util.SeekbarPreference;
 import us.bridgeses.Minder.util.Scanner.ScannerActivity;
+import us.bridgeses.Minder.util.SeekbarPreference;
 
 
 public class PersistenceFragment extends PreferenceFragment implements
@@ -29,7 +34,6 @@ public class PersistenceFragment extends PreferenceFragment implements
 
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		super.onActivityResult(requestCode, resultCode, data);
 		if (requestCode == 0) {
 
 			if (resultCode == Activity.RESULT_OK) {
@@ -48,23 +52,98 @@ public class PersistenceFragment extends PreferenceFragment implements
 
 	private boolean checkCamera(){
 		PackageManager pm = getActivity().getPackageManager();
-		return pm.hasSystemFeature(PackageManager.FEATURE_CAMERA)
-				&& (pm.checkPermission(Manifest.permission.CAMERA,getActivity().getPackageName())
-					== PackageManager.PERMISSION_GRANTED);
+		return pm.hasSystemFeature(PackageManager.FEATURE_CAMERA);
 	}
 
 	@Override
 	public boolean onPreferenceClick(Preference preference) {
 		String key = preference.getKey();
+		Logger.d(key);
 		if (key.equals("button_code")) {
-			Intent intent = new Intent(getActivity(),ScannerActivity.class);
-			startActivityForResult(intent, 0);
+			Logger.d("Checking for camera permissions");
+			int permissionCheck = ContextCompat.checkSelfPermission(getActivity(),
+					Manifest.permission.CAMERA);
+			if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
+				// If permission is already granted, indicate that we are not handling this click
+				// here and return control to preference fragment
+				Logger.d("Permission granted");
+
+				Intent intent = new Intent(getActivity(),ScannerActivity.class);
+				startActivityForResult(intent, 0);
+				return true;
+			}
+			else {
+				Logger.d("Requesting permissions");
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+					requestPermissions(new String[]{Manifest.permission.CAMERA},
+                            1);
+				}
+				CheckBoxPreference mPreference = (CheckBoxPreference) findPreference(key);
+				mPreference.setChecked(false);
+			}
 		}
 		return false;
 	}
 
+	@Override
+	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+										   @NonNull int[] grantResults) {
+		Logger.d("received permission");
+		switch (requestCode) {
+			case 0: {
+				// If request is cancelled, the result arrays are empty.
+				if (grantResults.length > 0
+						&& grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+					CheckBoxPreference codeType = (CheckBoxPreference) super.findPreference("code_type");
+					codeType.setChecked(true);
+
+				} else {
+					CheckBoxPreference codeType = (CheckBoxPreference) super.findPreference("code_type");
+					codeType.setSummary(R.string.no_camera);
+					codeType.setEnabled(false);
+				}
+				return;
+			}
+			case 1: {
+				// If request is cancelled, the result arrays are empty.
+				if (grantResults.length > 0
+						&& grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+					CheckBoxPreference codeType = (CheckBoxPreference) super.findPreference("code_type");
+					codeType.setChecked(true);
+
+				} else {
+
+					CheckBoxPreference codeType = (CheckBoxPreference) super.findPreference("code_type");
+					codeType.setSummary(R.string.no_camera);
+					codeType.setChecked(false);
+					codeType.setEnabled(false);
+				}
+				return;
+			}
+		}
+	}
+
 	public void onSharedPreferenceChanged(SharedPreferences preference, String key){
-		if (key.equals("code_type")){
+		if (key.equals("code_type") && ((CheckBoxPreference)findPreference(key)).isChecked()){
+			Logger.d("Checking for camera permissions");
+			int permissionCheck = ContextCompat.checkSelfPermission(getActivity(),
+					Manifest.permission.CAMERA);
+			if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
+				// If permission is already granted, indicate that we are not handling this click
+				// here and return control to preference fragment
+				Logger.d("Permission granted");
+			}
+			else {
+				Logger.d("Requesting permissions");
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+					requestPermissions(new String[]{Manifest.permission.CAMERA},
+                            0);
+				}
+				CheckBoxPreference mPreference = (CheckBoxPreference) findPreference(key);
+				mPreference.setChecked(false);
+			}
+		}
+		if (key.equals("code_type")) {
 			CheckBoxPreference mPreference = (CheckBoxPreference) findPreference(key);
 			super.findPreference("button_code").setEnabled(mPreference.isChecked());
 		}

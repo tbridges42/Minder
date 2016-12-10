@@ -135,7 +135,7 @@ public class EditReminder extends Activity implements ConfirmDialogFragment.Noti
         if (defaults) {
             // If the user is trying to change defaults, persist to a special preference file
             SharedPreferences defaultPreferences = getSharedPreferences("Minder.Defaults", Context.MODE_PRIVATE);
-            Reminder.reminderToPreference(defaultPreferences, reminder);
+            Reminder.reminderToPreference(this, defaultPreferences, reminder);
         }
         else {
             reminder.setActive(true);
@@ -209,7 +209,7 @@ public class EditReminder extends Activity implements ConfirmDialogFragment.Noti
 	    }
 
         // Store the reminder in the preference file for easy manipulation
-	    Reminder.reminderToPreference(PreferenceManager.getDefaultSharedPreferences(this),reminder);
+	    Reminder.reminderToPreference(this, PreferenceManager.getDefaultSharedPreferences(this),reminder);
 
         // Check if there is already a fragment attached
         FragmentManager fragmentManager = getFragmentManager();
