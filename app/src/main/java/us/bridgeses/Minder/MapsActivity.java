@@ -1,5 +1,6 @@
 package us.bridgeses.Minder;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -17,6 +18,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
+import android.support.v4.app.ActivityCompat;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -26,6 +28,11 @@ import android.widget.SeekBar;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.FusedLocationProviderApi;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -33,32 +40,32 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.orhanobut.logger.Logger;
 
 import static com.google.android.gms.common.GooglePlayServicesUtil.isGooglePlayServicesAvailable;
 
-public class MapsActivity extends Activity implements GoogleMap.OnMapLongClickListener,GoogleMap.OnMapClickListener{
+public class MapsActivity extends Activity implements GoogleMap.OnMapLongClickListener,
+        GoogleMap.OnMapClickListener, GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     LatLng location;
     LatLng cameraLocation;
     Circle myCircle;
-	int radius=0;
+    int radius = 0;
+    private GoogleApiClient mGoogleApiClient;
 
-    public boolean isGoogleMapsInstalled()
-    {
+    public boolean isGoogleMapsInstalled() {
         int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
-        if(resultCode != ConnectionResult.SUCCESS) {
-            GooglePlayServicesUtil.showErrorDialogFragment(resultCode,this,0);
+        if (resultCode != ConnectionResult.SUCCESS) {
+            GooglePlayServicesUtil.showErrorDialogFragment(resultCode, this, 0);
             return false;
         }
-        try
-        {
-            ApplicationInfo info = getPackageManager().getApplicationInfo("com.google.android.apps.maps", 0 );
+        try {
+            ApplicationInfo info = getPackageManager().getApplicationInfo("com.google.android.apps.maps", 0);
             return true;
-        }
-        catch(PackageManager.NameNotFoundException e)
-        {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this );
+        } catch (PackageManager.NameNotFoundException e) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("Google Maps Not Installed");
             builder.setMessage("This function requires Google Maps");
             builder.setPositiveButton("Play Store", new DialogInterface.OnClickListener() {
@@ -68,7 +75,7 @@ public class MapsActivity extends Activity implements GoogleMap.OnMapLongClickLi
                     startActivity(marketIntent);
                 }
             });
-            builder.setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
+            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
                     finish();
                 }
@@ -84,13 +91,23 @@ public class MapsActivity extends Activity implements GoogleMap.OnMapLongClickLi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
-	    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-	    location = new LatLng(sharedPreferences.getFloat("Latitude",(float)Reminder.LOCATIONDEFAULT.latitude),
-                sharedPreferences.getFloat("Longitude",(float)Reminder.LOCATIONDEFAULT.longitude));
-	    radius = sharedPreferences.getInt("radius",Reminder.RADIUSDEFAULT);
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        location = new LatLng(sharedPreferences.getFloat("Latitude", (float) Reminder.LOCATIONDEFAULT.latitude),
+                sharedPreferences.getFloat("Longitude", (float) Reminder.LOCATIONDEFAULT.longitude));
+        radius = sharedPreferences.getInt("radius", Reminder.RADIUSDEFAULT);
 
         if (isGoogleMapsInstalled()) {
-            setUpMapIfNeeded();
+            setUpLocationServices();
+        }
+    }
+
+    private void setUpLocationServices() {
+        if (mGoogleApiClient == null) {
+            mGoogleApiClient = new GoogleApiClient.Builder(this)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(LocationServices.API)
+                    .build();
         }
     }
 
@@ -100,21 +117,32 @@ public class MapsActivity extends Activity implements GoogleMap.OnMapLongClickLi
         setUpMapIfNeeded();
     }
 
-    public void save(View view){
+    protected void onStart() {
+        mGoogleApiClient.connect();
+        super.onStart();
+    }
 
-	    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-	    SharedPreferences.Editor editor = sharedPreferences.edit();
-	    editor.putFloat("Latitude",(float) location.latitude);
-	    editor.putFloat("Longitude",(float) location.longitude);
-	    editor.putInt("radius",radius);
-		editor.apply();
+    protected void onStop() {
+        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+        mGoogleApiClient.disconnect();
+        super.onStop();
+    }
+
+    public void save(View view) {
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putFloat("Latitude", (float) location.latitude);
+        editor.putFloat("Longitude", (float) location.longitude);
+        editor.putInt("radius", radius);
+        editor.apply();
 
         Intent intent = new Intent();
         setResult(RESULT_OK, intent);
         finish();
     }
 
-    public void cancel(View view){
+    public void cancel(View view) {
         setResult(RESULT_CANCELED);
         finish();
     }
@@ -135,24 +163,25 @@ public class MapsActivity extends Activity implements GoogleMap.OnMapLongClickLi
      */
     private void setUpMapIfNeeded() {
         // Do a null check to confirm that we have not already instantiated the map.
-	    int result = isGooglePlayServicesAvailable(this);
-	    if (result != ConnectionResult.SUCCESS) {
-		    GooglePlayServicesUtil.getErrorDialog(result,this,1);
-	    }
-        if ((mMap == null)&&(result == ConnectionResult.SUCCESS)) {
+        int result = isGooglePlayServicesAvailable(this);
+        if (result != ConnectionResult.SUCCESS) {
+            GooglePlayServicesUtil.getErrorDialog(result, this, 1);
+        }
+        if ((mMap == null) && (result == ConnectionResult.SUCCESS)) {
             // Try to obtain the map from the MapFragment.
             mMap = ((MapFragment) getFragmentManager().findFragmentById(R.id.map))
                     .getMap();
             cameraLocation = getLocation();
-            CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(cameraLocation,14);
+            CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(cameraLocation, 14);
             mMap.setMyLocationEnabled(true);
             mMap.animateCamera(cameraUpdate);
             mMap.setOnMapLongClickListener(this);
-	        mMap.setOnMapClickListener(this);
+            mMap.setOnMapClickListener(this);
             // Check if we were successful in obtaining the map.
             if (mMap != null) {
                 setUpMap();
             }
+            Logger.d("Map setup");
         }
     }
 
@@ -170,46 +199,26 @@ public class MapsActivity extends Activity implements GoogleMap.OnMapLongClickLi
         }
     }
 
-    @SuppressWarnings("deprecation")
-	private boolean checkLocationServices(Context context){
-		int locationMode = 0;
-		String locationProviders;
-
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT){
-			try {
-				locationMode = Settings.Secure.getInt(context.getContentResolver(), Settings.Secure.LOCATION_MODE);
-
-			} catch (Settings.SettingNotFoundException e) {
-				e.printStackTrace();
-			}
-
-			return locationMode != Settings.Secure.LOCATION_MODE_OFF;
-
-		}
-		else{
-			locationProviders = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
-			return !TextUtils.isEmpty(locationProviders);
-		}
-	}
+    private boolean checkLocationServices() {
+        return ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED;
+    }
 
     private LatLng getLocation() {
         LatLng location;
-	    Location lastKnown = null;
-		boolean gpsEnabled = checkLocationServices(this);
-	    if (gpsEnabled) {
-		    LocationManager lm = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-		    Criteria criteria = new Criteria();
-		    criteria.setAccuracy(Criteria.ACCURACY_FINE);
-		    criteria.setPowerRequirement(Criteria.POWER_LOW);
-		    lastKnown = lm.getLastKnownLocation(lm.getBestProvider(criteria, true));
-	    }
+        Location lastKnown = null;
+        if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
+            Logger.d("Getting location");
+            lastKnown = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        }
         if (lastKnown != null) {
             location = new LatLng(lastKnown.getLatitude(),lastKnown.getLongitude());
         }
         else {
-            location = new LatLng(0,0);
+            location = new LatLng(37.3861,-122.0839); // Mountain View, CA
         }
-
         return location;
     }
 
@@ -295,5 +304,45 @@ public class MapsActivity extends Activity implements GoogleMap.OnMapLongClickLi
                 .strokeWidth(5);
 
         myCircle = mMap.addCircle(circleOptions);
+    }
+
+    @Override
+    public void onConnected(Bundle bundle) {
+        Logger.d("Connected");
+        if (mMap != null) {
+            Logger.d("Map not null");
+            cameraLocation = getLocation();
+            Logger.d("Location = " + cameraLocation.latitude + ", " + cameraLocation.longitude);
+            CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(cameraLocation, 14);
+            mMap.animateCamera(cameraUpdate);
+        }
+        LocationRequest locationRequest = LocationRequest.create();
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        locationRequest.setInterval(1000);
+        locationRequest.setFastestInterval(100);
+        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, locationRequest,
+                this);
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        if (mMap != null) {
+            Logger.d("Map not null");
+            cameraLocation = getLocation();
+            Logger.d("Location = " + cameraLocation.latitude + ", " + cameraLocation.longitude);
+            CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(cameraLocation, 14);
+            mMap.animateCamera(cameraUpdate);
+        }
+        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
     }
 }
