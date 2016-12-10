@@ -1,5 +1,6 @@
 package us.bridgeses.Minder.editor;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -9,9 +10,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
@@ -20,6 +23,8 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.widget.BaseAdapter;
 
 import com.orhanobut.logger.Logger;
@@ -280,13 +285,87 @@ public class ConditionsFragment extends PreferenceFragment implements SharedPref
 			ListPreference mPreference = (ListPreference) findPreference(key);
 			mPreference.setSummary(mPreference.getEntry());
 			int value = Integer.valueOf(mPreference.getValue());
-			super.findPreference("button_location_key").setEnabled(value != 0);
+            if (value != 0) {
+                int permissionCheck = ContextCompat.checkSelfPermission(getActivity(),
+                        Manifest.permission.ACCESS_FINE_LOCATION);
+                if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
+                    super.findPreference("button_location_key").setEnabled(true);
+                }
+                else {
+                    Logger.d("Requesting permissions");
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
+                                Manifest.permission.ACCESS_COARSE_LOCATION},
+                                0);
+                    }
+
+                }
+            }
+            else {
+                super.findPreference("button_location_key").setEnabled(false);
+            }
 		}
         if (key.equals("wifi")){
             // If wifi is required, we should enable the wifi picker preference
             ssidButton.setEnabled(wifiRequired.isChecked());
         }
 		((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
+	}
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        Logger.d("received permission");
+        switch (requestCode) {
+            case 0: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    super.findPreference("button_location_key").setEnabled(true);
+
+                } else {
+                    super.findPreference("button_location_key").setEnabled(true);
+                    ListPreference mPreference = (ListPreference) findPreference("location_type");
+                    mPreference.setValue("0");
+                    mPreference.setSummary(mPreference.getEntry());
+                }
+                return;
+            }
+        }
+    }
+
+    /**
+     * This AsyncTask displays a progress dialog while the map activity is loading
+     */
+	private class MapTask extends AsyncTask<Void, Integer, Void> {
+
+		Intent intent = new Intent(activity, MapsActivity.class);
+
+		@Override
+		protected void onPreExecute() {
+			createProgressDialog(getResources().getString(R.string.loading));
+		}
+
+		@Override
+		protected Void doInBackground(Void... ignore) {
+			startActivityForResult(intent, MAP_ACTIVITY_CODE);
+			return null;
+		}
+
+		@Override
+		protected void onProgressUpdate(Integer... percent) {
+
+		}
+
+		@Override
+		protected void onCancelled() {
+
+		}
+
+		@Override
+		protected void onPostExecute(Void ignore) {
+			cancelProgressDialog();
+		}
 	}
 
     class WifiReceiver extends BroadcastReceiver {
