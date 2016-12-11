@@ -30,6 +30,7 @@ import us.bridgeses.Minder.util.ConfirmDialogFragment;
  */
 public class MainListActivity extends Activity implements TaskCallbacks,
         ConfirmDialogFragment.NoticeDialogListener,ReminderListAdapter.ListClicksListener{
+// TODO: Investigate crash when rotating
 
     private static final String TAG_ASYNC_FRAGMENT = "Async_fragment";
     private static final String TAG_ABOUT_FRAGMENT = "About_fragment";

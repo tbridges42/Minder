@@ -118,7 +118,7 @@ public class AlertService extends Service {
 		for (Integer key : keys){
 			stopRingtone(key);
 		}
-		ringtoneHash = new Hashtable<Integer, Ringtone>();
+		ringtoneHash = new Hashtable<>();
 	}
 
 	private void stopVibrate(){
