@@ -27,6 +27,7 @@ import us.bridgeses.Minder.receivers.ReminderReceiver;
 /**
  * Created by Tony on 8/8/2014.
  */
+// TODO: Investigate crash when rotating
 public class MainListActivity extends Activity implements ReminderListFragment.TaskCallbacks,SkipDialogFragment.NoticeDialogListener,ReminderListAdapter.ListClicksListener{
 
     private static final String TAG_ASYNC_FRAGMENT = "Async_fragment";

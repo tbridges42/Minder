@@ -32,7 +32,7 @@ import us.bridgeses.Minder.editor.EditStyle;
  */
 
 public class Reminder implements Parcelable{
-
+// TODO: 12/10/2016 Export/import reminders
 
     //Constructors
     public Reminder() {

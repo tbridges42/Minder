@@ -26,6 +26,7 @@ public class ReminderReceiver extends BroadcastReceiver {
 	    boolean snooze = alarmIntent.getBooleanExtra("Snooze",false);
 	    int snoozeNum = alarmIntent.getIntExtra("SnoozeNum",0);
 	    Logger.d(Boolean.toString(dismiss));
+        // TODO: This should be handled by a service
         AlarmClass alarmClass = new AlarmClass(context,id,dismiss,snooze,snoozeNum);
         alarmClass.run();
         result.finish();

@@ -5,6 +5,7 @@
     android:background="#0099cc"
     tools:context="us.bridgeses.Minder.AlarmScreen">
     <!-- TODO: Make pretty -->
+    <!-- TODO: Add slider for dismiss -->
     <!-- The primary full-screen view. This can be replaced with whatever view
          is needed to present your content, e.g. VideoView, SurfaceView,
          TextureView, etc. -->
