@@ -8,7 +8,7 @@ import android.content.Context;
 public class DaoFactory {
 
     private static DaoFactory instance;
-    ReminderDAO customDao = null;
+    private ReminderDAO customDao = null;
 
     private DaoFactory(){
 
@@ -18,6 +18,8 @@ public class DaoFactory {
         this.customDao = customDao;
     }
 
+    // TODO: This is a bad pattern for a factory; it should be passed into the using class
+    // by a controlling class, rather than getting a singleton instance when used
     public static synchronized DaoFactory getInstance(){
         if (instance == null){
             instance = new DaoFactory();
@@ -28,7 +30,7 @@ public class DaoFactory {
     public ReminderDAO getDao(Context context){
         ReminderDAO newDao;
         if (customDao != null){
-            return customDao;
+            newDao = customDao;
         }
         else {
             newDao = new ReminderSqlDao();
