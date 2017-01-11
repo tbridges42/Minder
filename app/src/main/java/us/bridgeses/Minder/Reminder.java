@@ -33,8 +33,8 @@ import us.bridgeses.Minder.editor.EditStyle;
 
 public class Reminder implements Parcelable{
 // TODO: 12/10/2016 Export/import reminders
-
-    //Constructors
+// TODO: 1/3/2017  break this up!!!
+//Constructors
     public Reminder() {
         setActive(ACTIVEDEFAULT);
         location = LOCATIONDEFAULT;
@@ -648,7 +648,7 @@ public class Reminder implements Parcelable{
 	}
 
 	/***************************** Storage methods ********************************/
-
+	//// TODO: 1/3/2017 Invert these dependencies
 	public Reminder save(Context context){
 		DaoFactory daoFactory = DaoFactory.getInstance();
 		ReminderDAO dao = daoFactory.getDao(context);
