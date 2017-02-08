@@ -140,7 +140,7 @@ public class DatePreference extends DialogPreference implements
             try {
                 setTheDate(((DateSavedState) state).dateValue);
             }
-            catch (ClassCastException e) {
+            catch (ClassCastException|NullPointerException e) {
                 Logger.e("Reset Date");
                 setTheDate(defaultValue());
             }
