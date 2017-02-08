@@ -11,17 +11,35 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.support.v4.content.ContextCompat;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
+import com.google.gson.Gson;
 import com.orhanobut.logger.Logger;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Locale;
+import java.util.jar.Manifest;
+
 import us.bridgeses.Minder.editor.EditReminder;
+import us.bridgeses.Minder.exporter.ExportActivity;
+import us.bridgeses.Minder.exporter.Exporter;
+import us.bridgeses.Minder.exporter.Gsonifier;
+import us.bridgeses.Minder.exporter.ImportActivity;
 import us.bridgeses.Minder.receivers.ReminderReceiver;
 import us.bridgeses.Minder.util.ConfirmDialogFragment;
 
@@ -200,6 +218,10 @@ public class MainListActivity extends Activity implements TaskCallbacks,
         return true;
     }
 
+
+
+
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -210,6 +232,13 @@ public class MainListActivity extends Activity implements TaskCallbacks,
                 Intent intent = new Intent(this, EditReminder.class);
                 intent.putExtra("default",true);
                 startActivity(intent);
+                return true;
+            case R.id.action_export:
+                new ExportActivity(this).export();
+                return true;
+            case R.id.action_import:
+                new ImportActivity(this).importBackup();
+                // TODO: Figure out how to refresh the list after
                 return true;
 	        case R.id.action_about:
 				FragmentManager fm = getFragmentManager();

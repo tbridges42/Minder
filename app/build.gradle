@@ -42,11 +42,6 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    // You must install or update the Google Repository through the SDK manager to use this dependency.
-    // You must install or update the Support Repository through the SDK manager to use this dependency.
-    // You must install or update the Support Repository through the SDK manager to use this dependency.
-    // You must install or update the Support Repository through the SDK manager to use this dependency.
-    // You must install or update the Support Repository through the SDK manager to use this dependency.
     compile 'com.orhanobut:logger:1.4'
     //Better Logging
     compile 'com.orhanobut:dialogplus:1.4@aar'
@@ -56,8 +51,10 @@ dependencies {
     compile 'com.github.yukuku:ambilwarna:2.0'
     androidTestCompile 'org.robolectric:robolectric:3.0-rc3'
     compile files('libs/zbar.jar')
-    compile 'com.android.support:support-v4:25.0.1'
+    compile 'com.android.support:support-v4:24.2.1'
+    compile 'com.android.support:appcompat-v7:24.2.1'
     compile 'com.google.code.gson:gson:2.8.0'
+    compile 'com.github.angads25:filepicker:1.0.8'
     androidTestCompile 'com.jayway.android.robotium:robotium-solo:5.4.1'
     testCompile 'org.robolectric:robolectric:3.0-rc3'
     testCompile 'com.jayway.android.robotium:robotium-solo:5.4.1'
