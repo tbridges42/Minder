@@ -19,4 +19,8 @@
         android:key="icon_attribution"
         android:title="Icons by:"
         android:summary="The Traveling Monster Shop"/>
+    <PreferenceScreen
+        android:key="privacy_policy"
+        android:title="Privacy Policy"
+        android:summary="http://apps.bridgeses.us/minder/privacy.html"/>
 </PreferenceScreen>

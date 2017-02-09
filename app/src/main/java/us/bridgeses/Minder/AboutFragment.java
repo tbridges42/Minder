@@ -75,6 +75,13 @@ public class AboutFragment extends PreferenceFragment implements Preference.OnPr
 				startActivity(send);
 				return true;
 			}
+			case "privacy_policy": {
+				String url = "http://apps.bridgeses.us/minder/privacy.html";
+				Intent i = new Intent(Intent.ACTION_VIEW);
+				i.setData(Uri.parse(url));
+				startActivity(i);
+				return true;
+			}
 			default:
 				return false;
 		}
@@ -94,6 +101,7 @@ public class AboutFragment extends PreferenceFragment implements Preference.OnPr
 		super.findPreference("support").setOnPreferenceClickListener(this);
 		super.findPreference("feedback").setOnPreferenceClickListener(this);
 		super.findPreference("icon_attribution").setOnPreferenceClickListener(this);
+		super.findPreference("privacy_policy").setOnPreferenceClickListener(this);
 		try {
 			PackageInfo pInfo = getActivity().getPackageManager()
 					.getPackageInfo(getActivity().getPackageName(), 0);
