@@ -76,6 +76,7 @@ public class AboutFragment extends PreferenceFragment implements Preference.OnPr
 				return true;
 			}
 			case "privacy_policy": {
+                // TODO: Extract and update javadoc
 				String url = "http://apps.bridgeses.us/minder/privacy.html";
 				Intent i = new Intent(Intent.ACTION_VIEW);
 				i.setData(Uri.parse(url));
