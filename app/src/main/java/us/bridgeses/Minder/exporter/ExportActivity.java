@@ -62,7 +62,7 @@ public class ExportActivity{
         Exporter exporter = new Exporter(writer, new Gsonifier(new Gson()));
         exporter.writeAll(getReminders());
         writer.close();
-        Toast.makeText(activity, file.getAbsolutePath(), Toast.LENGTH_LONG).show();
+        Toast.makeText(activity, "Created backup at " + file.getAbsolutePath(), Toast.LENGTH_LONG).show();
     }
 
     public void export() {
