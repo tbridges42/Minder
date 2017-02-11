@@ -124,6 +124,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".editor.EditReminder" />
         </activity>
+        <activity android:name=".util.Scanner.BarcodeScanner" />
 
         <service android:name=".util.AlertService"/>
 

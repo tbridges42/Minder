@@ -19,12 +19,12 @@ android {
         applicationId 'us.bridgeses.Minder'
         minSdkVersion 17
         targetSdkVersion 24
-        versionCode 20
-        versionName '1.1.1'
+        versionCode 24
+        versionName '1.2.1'
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
         debug {
@@ -55,6 +55,7 @@ dependencies {
     compile 'com.android.support:appcompat-v7:24.2.1'
     compile 'com.google.code.gson:gson:2.8.0'
     compile 'com.github.angads25:filepicker:1.0.8'
+    compile 'me.dm7.barcodescanner:zxing:1.9'
     androidTestCompile 'com.jayway.android.robotium:robotium-solo:5.4.1'
     testCompile 'org.robolectric:robolectric:3.0-rc3'
     testCompile 'com.jayway.android.robotium:robotium-solo:5.4.1'

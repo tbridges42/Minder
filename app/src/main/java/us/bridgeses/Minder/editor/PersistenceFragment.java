@@ -14,13 +14,14 @@ import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.widget.BaseAdapter;
 
 import com.orhanobut.logger.Logger;
 
 import us.bridgeses.Minder.R;
 import us.bridgeses.Minder.Reminder;
-import us.bridgeses.Minder.util.Scanner.ScannerActivity;
+import us.bridgeses.Minder.util.Scanner.BarcodeScanner;
 import us.bridgeses.Minder.util.SeekbarPreference;
 
 /**
@@ -30,6 +31,8 @@ import us.bridgeses.Minder.util.SeekbarPreference;
  */
 public class PersistenceFragment extends PreferenceFragment implements
         SharedPreferences.OnSharedPreferenceChangeListener, Preference.OnPreferenceClickListener{
+
+	private static final String TAG = "PersistenceFragment";
 
     private static final int CODE_REQUEST_CODE = 1;
 
@@ -59,7 +62,8 @@ public class PersistenceFragment extends PreferenceFragment implements
             SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
             SharedPreferences.Editor editor = sharedPreferences.edit();
             String code = data.getStringExtra("SCAN_RESULT");
-            editor.putString("temp_code",code);
+			Log.d(TAG, "onActivityResult: " + code);
+			editor.putString("temp_code",code);
             editor.apply();
             super.findPreference("button_code").setSummary(getResources().getString(R.string.code_set));
 		}
@@ -91,8 +95,8 @@ public class PersistenceFragment extends PreferenceFragment implements
 				// here and return control to preference fragment
 				Logger.d("Permission granted");
 
-				Intent intent = new Intent(getActivity(),ScannerActivity.class);
-				startActivityForResult(intent, 0);
+				Intent intent = new Intent(getActivity(),BarcodeScanner.class);
+				startActivityForResult(intent, CODE_REQUEST_CODE);
 				return true;
 			}
 			else {

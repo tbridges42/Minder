@@ -39,6 +39,7 @@ import java.io.IOException;
 
 import us.bridgeses.Minder.receivers.ReminderReceiver;
 import us.bridgeses.Minder.util.AlertService;
+import us.bridgeses.Minder.util.Scanner.BarcodeScanner;
 import us.bridgeses.Minder.util.Scanner.ScannerActivity;
 
 
@@ -178,7 +179,7 @@ public class AlarmScreen extends Activity implements View.OnLongClickListener{
 	}
 
 	private void checkQr(){
-		Intent intent = new Intent(context,ScannerActivity.class);
+		Intent intent = new Intent(context,BarcodeScanner.class);
 		startActivityForResult(intent, 0);
 	}
 
