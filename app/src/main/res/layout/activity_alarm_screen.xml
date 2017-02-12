@@ -37,6 +37,7 @@
             android:textSize="50sp"
             android:gravity="center"
             android:text="@string/title_activity_alarm_screen" />
+        <include layout="@layout/banner" />
         <TextView android:id="@+id/fullscreen_description"
             android:layout_width="match_parent"
             android:layout_height="0dp"

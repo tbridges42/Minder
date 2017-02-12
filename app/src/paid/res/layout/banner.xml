@@ -1,0 +1,6 @@
+<LinearLayout
+    android:id="@+id/adView"
+    android:layout_width="0dp"
+    android:layout_height="0dp"
+    android:visibility="gone"
+    xmlns:android="http://schemas.android.com/apk/res/android" />

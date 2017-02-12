@@ -16,6 +16,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.google.android.gms.ads.AdView;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.orhanobut.logger.Logger;
@@ -41,6 +42,7 @@ public class MainListActivity extends LifecycleLoggingActivity implements TaskCa
 	private Boolean firstRun;
     private FragmentManager fragmentManager;
     private ProgressDialog progressDialog;
+    private AdHandler adHandler;
 
     @Override
     public void SkipClick(int id){
@@ -168,6 +170,9 @@ public class MainListActivity extends LifecycleLoggingActivity implements TaskCa
                     .replace(R.id.list, (Fragment) mReminderListFragment,TAG_ASYNC_FRAGMENT)
                     .addToBackStack(null).commit();
         }
+        adHandler = new AdHandler();
+        adHandler.initialize(getApplicationContext());
+        adHandler.setUp(findViewById(R.id.adView));
     }
 
     @Override

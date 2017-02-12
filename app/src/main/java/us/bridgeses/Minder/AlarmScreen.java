@@ -36,7 +36,7 @@ public class AlarmScreen extends LifecycleLoggingActivity implements View.OnLong
     private Reminder reminder;
 	private Context context;
 	private int snoozeNum;
-    private final Handler handler = new Handler();
+    private AdHandler adHandler;
 
 
     @Override
@@ -91,6 +91,9 @@ public class AlarmScreen extends LifecycleLoggingActivity implements View.OnLong
         }
 
         findViewById(R.id.snooze_button).setOnLongClickListener(this);
+        adHandler = new AdHandler();
+        adHandler.initialize(getApplicationContext());
+        adHandler.setUp(findViewById(R.id.adView));
 	}
 
     private Reminder retrieveReminder(int id){

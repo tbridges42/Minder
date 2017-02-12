@@ -27,9 +27,21 @@ android {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+        beta {
+            applicationIdSuffix '.beta'
+            versionNameSuffix '-beta'
+        }
         debug {
             applicationIdSuffix '.debug'
             versionNameSuffix '-debug'
+        }
+    }
+    productFlavors {
+        free {
+
+        }
+        paid {
+            applicationIdSuffix ".paid"
         }
     }
     packagingOptions {
@@ -48,7 +60,6 @@ dependencies {
     //Google Maps
     compile 'com.github.yukuku:ambilwarna:2.0.1'
     androidTestCompile 'org.robolectric:robolectric:3.0-rc3'
-    compile files('libs/zbar.jar')
     compile 'com.android.support:support-v4:25.1.0'
     compile 'com.android.support:appcompat-v7:25.1.0'
     compile 'com.google.code.gson:gson:2.8.0'
