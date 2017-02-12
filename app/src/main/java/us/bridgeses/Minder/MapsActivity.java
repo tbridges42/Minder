@@ -22,6 +22,7 @@ import android.support.v4.app.ActivityCompat;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.SeekBar;
@@ -37,16 +38,21 @@ import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.orhanobut.logger.Logger;
 
+import us.bridgeses.Minder.util.vandy.LifecycleLoggingActivity;
+
 import static com.google.android.gms.common.GooglePlayServicesUtil.isGooglePlayServicesAvailable;
 
-public class MapsActivity extends Activity implements GoogleMap.OnMapLongClickListener,
+// TODO: 2/12/2017 Clean up deprecated calls
+// TODO: 2/12/2017 Handle poor connections better
+public class MapsActivity extends LifecycleLoggingActivity implements GoogleMap.OnMapLongClickListener,
         GoogleMap.OnMapClickListener, GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener, LocationListener {
+        GoogleApiClient.OnConnectionFailedListener, LocationListener, OnMapReadyCallback {
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     LatLng location;
@@ -115,17 +121,27 @@ public class MapsActivity extends Activity implements GoogleMap.OnMapLongClickLi
     protected void onResume() {
         super.onResume();
         setUpMapIfNeeded();
+        setUpLocationServices();
+        mGoogleApiClient.connect();
     }
 
+    @Override
     protected void onStart() {
-        mGoogleApiClient.connect();
         super.onStart();
     }
 
     protected void onStop() {
-        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
-        mGoogleApiClient.disconnect();
+
         super.onStop();
+    }
+
+    @Override
+    protected void onPause() {
+        if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
+            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+            mGoogleApiClient.disconnect();
+        }
+        super.onPause();
     }
 
     public void save(View view) {
@@ -169,18 +185,10 @@ public class MapsActivity extends Activity implements GoogleMap.OnMapLongClickLi
         }
         if ((mMap == null) && (result == ConnectionResult.SUCCESS)) {
             // Try to obtain the map from the MapFragment.
-            mMap = ((MapFragment) getFragmentManager().findFragmentById(R.id.map))
-                    .getMap();
-            cameraLocation = getLocation();
-            CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(cameraLocation, 14);
-            mMap.setMyLocationEnabled(true);
-            mMap.animateCamera(cameraUpdate);
-            mMap.setOnMapLongClickListener(this);
-            mMap.setOnMapClickListener(this);
-            // Check if we were successful in obtaining the map.
-            if (mMap != null) {
-                setUpMap();
-            }
+            ((MapFragment) getFragmentManager().findFragmentById(R.id.map))
+                    .getMapAsync(this);
+
+
             Logger.d("Map setup");
         }
     }
@@ -211,7 +219,12 @@ public class MapsActivity extends Activity implements GoogleMap.OnMapLongClickLi
         Location lastKnown = null;
         if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
             Logger.d("Getting location");
-            lastKnown = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+            try {
+                lastKnown = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+            }
+            catch (SecurityException e) {
+                Log.d(TAG, "getLocation: Do not have permission to get location");
+            }
         }
         if (lastKnown != null) {
             location = new LatLng(lastKnown.getLatitude(),lastKnown.getLongitude());
@@ -320,8 +333,13 @@ public class MapsActivity extends Activity implements GoogleMap.OnMapLongClickLi
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         locationRequest.setInterval(1000);
         locationRequest.setFastestInterval(100);
-        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, locationRequest,
-                this);
+        try {
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, locationRequest,
+                    this);
+        }
+        catch (SecurityException e) {
+            Log.e(TAG, "onConnected: Do not have permission to get location updates", e);
+        }
     }
 
     @Override
@@ -344,5 +362,25 @@ public class MapsActivity extends Activity implements GoogleMap.OnMapLongClickLi
             mMap.animateCamera(cameraUpdate);
         }
         LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+        cameraLocation = getLocation();
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(cameraLocation, 14);
+        // Check if we were successful in obtaining the map.
+        if (mMap != null) {
+            setUpMap();
+            try {
+                mMap.setMyLocationEnabled(true);
+            } catch (SecurityException e) {
+                Log.e(TAG, "onMapReady: Do not have permission to get location", e);
+            }
+            mMap.animateCamera(cameraUpdate);
+            mMap.setOnMapLongClickListener(this);
+            mMap.setOnMapClickListener(this);
+        }
+
     }
 }
