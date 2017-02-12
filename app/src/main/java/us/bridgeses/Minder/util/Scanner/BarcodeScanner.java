@@ -7,12 +7,13 @@ import android.os.Bundle;
 import com.google.zxing.Result;
 
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
+import us.bridgeses.Minder.util.vandy.LifecycleLoggingActivity;
 
 /**
  * Created by tbrid on 2/10/2017.
  */
 
-public class BarcodeScanner extends Activity implements ZXingScannerView.ResultHandler {
+public class BarcodeScanner extends LifecycleLoggingActivity implements ZXingScannerView.ResultHandler {
 
     private ZXingScannerView mScannerView;
 

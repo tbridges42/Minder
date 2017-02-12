@@ -1,6 +1,5 @@
 package us.bridgeses.Minder;
 
-import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.DialogFragment;
 import android.app.Fragment;
@@ -11,42 +10,27 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.Environment;
 import android.preference.PreferenceManager;
-import android.support.v4.content.ContextCompat;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
-import com.google.gson.Gson;
 import com.orhanobut.logger.Logger;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Locale;
-import java.util.jar.Manifest;
 
 import us.bridgeses.Minder.editor.EditReminder;
 import us.bridgeses.Minder.exporter.ExportActivity;
-import us.bridgeses.Minder.exporter.Exporter;
-import us.bridgeses.Minder.exporter.Gsonifier;
 import us.bridgeses.Minder.exporter.ImportActivity;
 import us.bridgeses.Minder.receivers.ReminderReceiver;
 import us.bridgeses.Minder.util.ConfirmDialogFragment;
+import us.bridgeses.Minder.util.vandy.LifecycleLoggingActivity;
 
 /**
  * Created by Tony on 8/8/2014.
  */
-public class MainListActivity extends Activity implements TaskCallbacks,
+public class MainListActivity extends LifecycleLoggingActivity implements TaskCallbacks,
         ConfirmDialogFragment.NoticeDialogListener,ReminderListAdapter.ListClicksListener{
 // TODO: Investigate crash when rotating
 

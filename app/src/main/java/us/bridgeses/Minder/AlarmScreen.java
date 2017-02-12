@@ -9,41 +9,29 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
-import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.provider.MediaStore;
-import android.util.Log;
-import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.NumberPicker;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.orhanobut.logger.Logger;
 
 import java.io.File;
-import java.io.IOException;
 
 import us.bridgeses.Minder.receivers.ReminderReceiver;
 import us.bridgeses.Minder.util.AlertService;
 import us.bridgeses.Minder.util.Scanner.BarcodeScanner;
-import us.bridgeses.Minder.util.Scanner.ScannerActivity;
+import us.bridgeses.Minder.util.vandy.LifecycleLoggingActivity;
 
 
-public class AlarmScreen extends Activity implements View.OnLongClickListener{
+public class AlarmScreen extends LifecycleLoggingActivity implements View.OnLongClickListener{
 
     private Reminder reminder;
 	private Context context;

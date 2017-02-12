@@ -9,11 +9,12 @@ import android.view.MenuItem;
 import android.view.View;
 
 import us.bridgeses.Minder.R;
+import us.bridgeses.Minder.util.vandy.LifecycleLoggingActivity;
 
 /**
  * Abstract class from which all editor classes are derived
  */
-public abstract class EditorActivity extends Activity{
+public abstract class EditorActivity extends LifecycleLoggingActivity {
 
 	Fragment mFragment;
 	protected Bundle saved;
