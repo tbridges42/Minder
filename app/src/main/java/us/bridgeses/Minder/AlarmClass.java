@@ -110,7 +110,7 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
 
 		Notification.Builder mBuilder =
 				new Notification.Builder(context)
-						.setSmallIcon(R.drawable.ic_launcher)
+						.setSmallIcon(R.mipmap.ic_launcher)
 						.setContentTitle(reminder.getName())
 						.setContentText(reminder.getDescription())
 						.setOngoing(true)
@@ -184,8 +184,14 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
     }
 
     protected void startLocationUpdates(LocationRequest mLocationRequest) {
-        LocationServices.FusedLocationApi.requestLocationUpdates(
-                mGoogleApiClient, mLocationRequest, this);
+        // TODO: 2/12/2017 Figure out how to handle location only reminders when location inactive
+        try {
+            LocationServices.FusedLocationApi.requestLocationUpdates(
+                    mGoogleApiClient, mLocationRequest, this);
+        }
+        catch (SecurityException e) {
+            e.printStackTrace();
+        }
     }
 
     protected void stopLocationUpdates() {

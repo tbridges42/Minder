@@ -21,6 +21,10 @@ import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.romychab.slidetounlock.ISlideListener;
+import com.github.romychab.slidetounlock.SlideLayout;
+import com.github.romychab.slidetounlock.renderers.ScaleRenderer;
+import com.github.romychab.slidetounlock.sliders.HorizontalSlider;
 import com.orhanobut.logger.Logger;
 
 import java.io.File;
@@ -66,13 +70,11 @@ public class AlarmScreen extends LifecycleLoggingActivity implements View.OnLong
         TextView titleText = (TextView) findViewById(R.id.fullscreen_name);
         TextView descriptionText = (TextView) findViewById(R.id.fullscreen_description);
         TextView snooze = (TextView) findViewById(R.id.snooze_button);
-        TextView dismiss = (TextView) findViewById(R.id.dismiss_button);
         titleText.setText(reminder.getName());
         titleText.setTextColor(reminder.getTextColor());
         descriptionText.setText(reminder.getDescription());
         descriptionText.setTextColor(reminder.getTextColor());
         snooze.setTextColor(reminder.getTextColor());
-        dismiss.setTextColor(reminder.getTextColor());
 
         File file = new File(getExternalFilesDir(null),Integer.toString(reminder.getId()));
         if (file.exists()) {
@@ -91,9 +93,19 @@ public class AlarmScreen extends LifecycleLoggingActivity implements View.OnLong
         }
 
         findViewById(R.id.snooze_button).setOnLongClickListener(this);
-        adHandler = new AdHandler();
-        adHandler.initialize(getApplicationContext());
-        adHandler.setUp(findViewById(R.id.adView));
+        SlideLayout slider = (SlideLayout) findViewById(R.id.slider1);
+        slider.setRenderer(new ScaleRenderer());
+        slider.setSlider(new HorizontalSlider());
+        slider.addSlideListener(new ISlideListener() {
+            @Override
+            public void onSlideDone(SlideLayout slider, boolean done) {
+                if (done) {
+                    // restore start state
+                    dismissButton(null);
+                    slider.reset();
+                }
+            }
+        });
 	}
 
     private Reminder retrieveReminder(int id){

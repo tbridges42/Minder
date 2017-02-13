@@ -53,6 +53,7 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile project(":slidetounlock")
     compile 'com.orhanobut:logger:1.4'
     //Google Maps
     compile 'com.google.android.gms:play-services-maps:10.0.1'
