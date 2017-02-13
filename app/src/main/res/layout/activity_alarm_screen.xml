@@ -26,6 +26,10 @@
             android:text="@string/snooze"
             android:background="#00000000"
             android:textSize="25sp"
+            android:shadowColor="@android:color/black"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="1"
             android:textStyle="bold"/>
         <TextView android:id="@+id/fullscreen_name"
             android:layout_width="match_parent"
@@ -35,6 +39,10 @@
             android:textColor="#000"
             android:textStyle="bold"
             android:textSize="50sp"
+            android:shadowColor="@android:color/black"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="1"
             android:gravity="center"
             android:text="@string/title_activity_alarm_screen" />
         <include layout="@layout/banner" />
@@ -46,6 +54,10 @@
             android:textColor="#000"
             android:textStyle="bold"
             android:textSize="40sp"
+            android:shadowColor="@android:color/black"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="1"
             android:gravity="center"
             android:text="@string/title_activity_alarm_screen" />
         <Button
@@ -54,6 +66,10 @@
             android:layout_height="0dp"
             android:layout_weight="3"
             android:text="@string/dismiss"
+            android:shadowColor="@android:color/black"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="1"
             android:onClick="dismissButton"
             android:background="#00000000"
             android:textSize="25sp"
