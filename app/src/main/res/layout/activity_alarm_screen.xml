@@ -45,7 +45,6 @@
             android:shadowRadius="1"
             android:gravity="center"
             android:text="@string/title_activity_alarm_screen" />
-        <include layout="@layout/banner" />
         <TextView android:id="@+id/fullscreen_description"
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -60,20 +59,44 @@
             android:shadowRadius="1"
             android:gravity="center"
             android:text="@string/title_activity_alarm_screen" />
-        <Button
-            android:id="@+id/dismiss_button"
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="3"
-            android:text="@string/dismiss"
-            android:shadowColor="@android:color/black"
-            android:shadowDx="1"
-            android:shadowDy="1"
-            android:shadowRadius="1"
-            android:onClick="dismissButton"
-            android:background="#00000000"
-            android:textSize="25sp"
-            android:textStyle="bold"/>
+            android:layout_margin="20dp"
+            android:background="@drawable/horizontal_back">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:textColor="#ffffff"
+                android:text="Swipe to Dismiss"
+                android:gravity="center"/>
+            <com.github.romychab.slidetounlock.SlideLayout
+                android:id="@+id/slider1"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <FrameLayout
+                    android:layout_width="60dp"
+                    android:layout_height="match_parent">
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_margin="1px"
+                        android:background="@drawable/button_bg" />
+                    <ImageView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginRight="6dp"
+                        android:layout_gravity="center_vertical|right"
+                        android:src="@drawable/ic_slide"/>
+                </FrameLayout>
+
+            </com.github.romychab.slidetounlock.SlideLayout>
+
+        </FrameLayout>
     </LinearLayout>
 
     <!-- This FrameLayout insets its children based on system windows using
