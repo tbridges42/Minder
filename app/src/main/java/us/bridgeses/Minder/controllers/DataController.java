@@ -13,11 +13,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.orhanobut.logger.Logger;
+import java.util.List;
 
-import us.bridgeses.Minder.R;
 import us.bridgeses.Minder.Reminder;
-import us.bridgeses.Minder.ReminderListFragment;
+import us.bridgeses.Minder.controllers.interfaces.ReminderListView;
 import us.bridgeses.Minder.receivers.ReminderReceiver;
 
 import static android.content.Context.NOTIFICATION_SERVICE;
@@ -28,16 +27,26 @@ import static android.content.Context.NOTIFICATION_SERVICE;
 
 public class DataController extends Fragment{
 
-    public interface ViewCallback {
-        void refreshList(/* List?*/);
+    public interface ActivityCallback {
+        ReminderListView getListView();
+
+        TrackingController getTracker();
+
+        void createEditor(long id);
     }
 
-    private Activity activity;
-    private ViewCallback callback;
+    private Context applicationContext;
+    private ActivityCallback callback;
 
     public static DataController getInstance() {
         DataController dataController = new DataController();
         return dataController;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
     }
 
     @Nullable
@@ -50,24 +59,27 @@ public class DataController extends Fragment{
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        activity = getActivity();
         try {
-            callback = (ViewCallback) activity;
+            Activity activity = getActivity();
+            applicationContext = activity.getApplicationContext();
+            callback = (ActivityCallback) activity;
         }
         catch (ClassCastException e) {
             throw new ClassCastException("The caller of DataController must implement ViewCallback");
+        }
+        catch (NullPointerException e) {
+            throw new NullPointerException("Activity was not ready");
         }
     }
 
     public void skipNext(int id) {
         // TODO: Break this godforsaken mess apart
-        Logger.e(Integer.toString(id));
-        Reminder reminder = Reminder.get(activity, id);
-        Intent intentAlarm = new Intent(activity, ReminderReceiver.class);      //Create alarm intent
-        AlarmManager alarmManager = (AlarmManager) activity.getSystemService(Context.ALARM_SERVICE);
-        alarmManager.cancel(PendingIntent.getBroadcast(activity.getApplicationContext(), reminder.getId(), intentAlarm,
+        Reminder reminder = Reminder.get(applicationContext, id);
+        Intent intentAlarm = new Intent(applicationContext, ReminderReceiver.class);      //Create alarm intent
+        AlarmManager alarmManager = (AlarmManager) applicationContext.getSystemService(Context.ALARM_SERVICE);
+        alarmManager.cancel(PendingIntent.getBroadcast(applicationContext, reminder.getId(), intentAlarm,
                 PendingIntent.FLAG_UPDATE_CURRENT));
-        reminder = Reminder.nextRepeat(reminder).save(activity);
+        reminder = Reminder.nextRepeat(reminder).save(applicationContext);
         if ((reminder.getActive()) && (reminder.getId() != -1)) {
             int alarmType;
             if (reminder.getWakeUp()){
@@ -76,14 +88,13 @@ public class DataController extends Fragment{
             else {
                 alarmType = AlarmManager.RTC;
             }
-            intentAlarm = new Intent(activity, ReminderReceiver.class);//Create alarm intent
+            intentAlarm = new Intent(applicationContext, ReminderReceiver.class);//Create alarm intent
             intentAlarm.putExtra("Id", id);           //Associate intent with specific Reminder
             intentAlarm.putExtra("Snooze", 0);                       //This alarm has not been snoozed
-            alarmManager = (AlarmManager) activity.getSystemService(Context.ALARM_SERVICE);
+            alarmManager = (AlarmManager) applicationContext.getSystemService(Context.ALARM_SERVICE);
             alarmManager.set(alarmType, reminder.getDate().getTimeInMillis(),
-                    PendingIntent.getBroadcast(activity, id, intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
+                    PendingIntent.getBroadcast(applicationContext, id, intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
 
-            Logger.v("Alarm " + id + " set");
         }
         // Gets an instance of the NotificationManager service
         NotificationManager mNotifyMgr =
@@ -91,5 +102,22 @@ public class DataController extends Fragment{
         // Builds the notification and issues it.
         mNotifyMgr.cancel(reminder.getId());
         // TODO: refresh the list
+        callback.getListView().refreshItem(id);
+    }
+
+    public Reminder load(long id) {
+        return null;
+    }
+
+    private List<Reminder> loadAll() {
+        return null;
+    }
+
+    public void save(Reminder reminder) {
+        reminder.save(getActivity().getApplicationContext());
+    }
+
+    public void delete(long id) {
+
     }
 }

@@ -20,6 +20,8 @@ import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.orhanobut.logger.Logger;
 
+import us.bridgeses.Minder.controllers.DataController;
+import us.bridgeses.Minder.controllers.TrackingController;
 import us.bridgeses.Minder.editor.EditReminder;
 import us.bridgeses.Minder.exporter.ExportActivity;
 import us.bridgeses.Minder.exporter.ImportActivity;
@@ -38,6 +40,8 @@ public class MainListActivity extends LifecycleLoggingActivity implements TaskCa
     private static final String TAG_ABOUT_FRAGMENT = "About_fragment";
     private Fragment mReminderListFragment;
 	private Fragment mAboutFragment;
+    private DataController dataController;
+    private TrackingController trackingController;
 	private Boolean firstRun;
     private FragmentManager fragmentManager;
     private ProgressDialog progressDialog;
@@ -62,58 +66,23 @@ public class MainListActivity extends LifecycleLoggingActivity implements TaskCa
 
 	@Override
 	public void onDialogPositiveClick(DialogFragment dialog, int id) {
-		Logger.e(Integer.toString(id));
-		Reminder reminder = Reminder.get(this, id);
-        Intent intentAlarm = new Intent(this, ReminderReceiver.class);      //Create alarm intent
-        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        alarmManager.cancel(PendingIntent.getBroadcast(getApplicationContext(), reminder.getId(), intentAlarm,
-                PendingIntent.FLAG_UPDATE_CURRENT));
-		reminder = Reminder.nextRepeat(reminder).save(this);
-        if ((reminder.getActive()) && (reminder.getId() != -1)) {
-            int alarmType;
-            if (reminder.getWakeUp()){
-                alarmType = AlarmManager.RTC_WAKEUP;
-            }
-            else {
-                alarmType = AlarmManager.RTC;
-            }
-            intentAlarm = new Intent(this, ReminderReceiver.class);//Create alarm intent
-            intentAlarm.putExtra("Id", id);           //Associate intent with specific Reminder
-            intentAlarm.putExtra("Snooze", 0);                       //This alarm has not been snoozed
-            alarmManager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
-            alarmManager.set(alarmType, reminder.getDate().getTimeInMillis(),
-                    PendingIntent.getBroadcast(this, id, intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
-
-            Logger.v("Alarm " + id + " set");
-        }
-		// Gets an instance of the NotificationManager service
-		NotificationManager mNotifyMgr =
-				(NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-		// Builds the notification and issues it.
-		mNotifyMgr.cancel(reminder.getId());
-        mReminderListFragment = (Fragment) new ReminderListFragment();
-        fragmentManager = getFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.list, (Fragment)mReminderListFragment,TAG_ASYNC_FRAGMENT).commit();
+		dataController.skipNext(id);
 	}
 
 	private void setTracker(){
-		// Get tracker.
-		Tracker t = ((Minder) getApplication()).getTracker(
-				Minder.TrackerName.APP_TRACKER);
-
-		// Set screen name.
-		t.setScreenName("Main Activity");
-		t.enableExceptionReporting(true);
-
-		// Send a screen view.
-		t.send(new HitBuilders.AppViewBuilder().build());
+		trackingController = TrackingController.getInstance("Reminder list screen");
 	}
 
     //Called if the user creates a new reminder
+    @Deprecated
     public void editReminder(View view) {
         Intent intent = new Intent(this, EditReminder.class);
         intent.putExtra("New",true);
         startActivity(intent);
+    }
+
+    public void onNewClicked(View view) {
+        createEditor(-1L);
     }
 
 	@Override
@@ -138,6 +107,8 @@ public class MainListActivity extends LifecycleLoggingActivity implements TaskCa
                 getSharedPreferences("Defaults", Context.MODE_PRIVATE);
         firstRun = defaultPreferences.getBoolean("first_run-0.7.3",true);
 
+        // TODO: Figure out how to break out tutorial
+        // TODO: Break out preference handling
         if (firstRun){
             SharedPreferences.Editor editor = defaultPreferences.edit();
             Reminder reminder = Reminder.reminderFactory(this);
@@ -196,6 +167,7 @@ public class MainListActivity extends LifecycleLoggingActivity implements TaskCa
             fragmentManager.beginTransaction()
                     .replace(R.id.list, (Fragment) mReminderListFragment,TAG_ASYNC_FRAGMENT)
                     .addToBackStack(null).commit();
+            // TODO: Conditionally add editor fragment based on screen layout
         }
     }
 
@@ -207,9 +179,6 @@ public class MainListActivity extends LifecycleLoggingActivity implements TaskCa
     }
 
 
-
-
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -217,9 +186,7 @@ public class MainListActivity extends LifecycleLoggingActivity implements TaskCa
         // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId()) {
             case R.id.defaults:
-                Intent intent = new Intent(this, EditReminder.class);
-                intent.putExtra("default",true);
-                startActivity(intent);
+                createDefaultEditor();
                 return true;
             case R.id.action_export:
                 new ExportActivity(this).export();
