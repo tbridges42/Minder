@@ -1,6 +1,8 @@
 package us.bridgeses.Minder;
 
-import com.google.android.gms.ads.AdView;
+
+import android.content.Context;
+import android.view.View;
 
 /**
  * Created by tbrid on 2/12/2017.

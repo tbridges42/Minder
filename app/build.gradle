@@ -25,6 +25,7 @@ android {
     buildTypes {
         release {
             minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
         beta {
@@ -48,16 +49,16 @@ android {
         exclude 'LICENSE.txt'
         exclude 'META-INF/LICENSE.txt'
     }
-    productFlavors {
-    }
 }
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.orhanobut:logger:1.4'
-    //Better Logging
-    compile 'com.google.android.gms:play-services:10.0.1'
     //Google Maps
+    compile 'com.google.android.gms:play-services-maps:10.0.1'
+    compile 'com.google.android.gms:play-services-location:10.0.1'
+    compile 'com.google.android.gms:play-services-analytics:10.0.1'
+    freeCompile 'com.google.android.gms:play-services-ads:10.0.1'
     compile 'com.github.yukuku:ambilwarna:2.0.1'
     androidTestCompile 'org.robolectric:robolectric:3.0-rc3'
     compile 'com.android.support:support-v4:25.1.0'
