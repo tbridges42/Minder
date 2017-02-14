@@ -1,11 +1,8 @@
 package us.bridgeses.Minder;
 
-import android.app.AlarmManager;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -16,16 +13,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
-import com.orhanobut.logger.Logger;
-
 import us.bridgeses.Minder.controllers.DataController;
 import us.bridgeses.Minder.controllers.TrackingController;
 import us.bridgeses.Minder.editor.EditReminder;
 import us.bridgeses.Minder.exporter.ExportActivity;
 import us.bridgeses.Minder.exporter.ImportActivity;
-import us.bridgeses.Minder.receivers.ReminderReceiver;
 import us.bridgeses.Minder.util.ConfirmDialogFragment;
 import us.bridgeses.Minder.util.vandy.LifecycleLoggingActivity;
 
@@ -50,13 +42,13 @@ public class MainListActivity extends LifecycleLoggingActivity implements TaskCa
     @Override
     public void SkipClick(int id){
         ConfirmDialogFragment df = ConfirmDialogFragment.newInstance("Skip Reminder",
-                "Skip the next instance of this Reminder","Skip",getResources().getString(R.string.edit_cancel),id);
+                "Skip the next instance of this Reminder","Skip",
+                getResources().getString(R.string.edit_cancel),id);
         df.show(fragmentManager, "SkipDialog");
     }
 
     @Override
     public void IconClick(int id){
-        Logger.d("IconClick");
     }
 
 	@Override
