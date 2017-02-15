@@ -16,8 +16,8 @@ import android.view.ViewGroup;
 import java.util.List;
 
 import us.bridgeses.Minder.Reminder;
-import us.bridgeses.Minder.controllers.interfaces.ReminderListView;
 import us.bridgeses.Minder.receivers.ReminderReceiver;
+import us.bridgeses.Minder.views.interfaces.ReminderListView;
 
 import static android.content.Context.NOTIFICATION_SERVICE;
 
@@ -74,6 +74,7 @@ public class DataController extends Fragment{
 
     public void skipNext(int id) {
         // TODO: Break this godforsaken mess apart
+        trackEvent("Skip Reminder","User Action");
         Reminder reminder = Reminder.get(applicationContext, id);
         Intent intentAlarm = new Intent(applicationContext, ReminderReceiver.class);      //Create alarm intent
         AlarmManager alarmManager = (AlarmManager) applicationContext.getSystemService(Context.ALARM_SERVICE);
@@ -98,7 +99,7 @@ public class DataController extends Fragment{
         }
         // Gets an instance of the NotificationManager service
         NotificationManager mNotifyMgr =
-                (NotificationManager) activity.getSystemService(NOTIFICATION_SERVICE);
+                (NotificationManager) applicationContext.getSystemService(NOTIFICATION_SERVICE);
         // Builds the notification and issues it.
         mNotifyMgr.cancel(reminder.getId());
         // TODO: refresh the list
@@ -110,14 +111,32 @@ public class DataController extends Fragment{
     }
 
     private List<Reminder> loadAll() {
+        // TODO: Get all reminders as an arraylist and store in this class, pass that list
+        // to view when necessary
+        // Use a cursorloader; when there are changes to the cursor, compare against arraylist,
+        // make additions, deletions and updates to view as necessary
+        // !!! Look into SortedList
         return null;
     }
 
     public void save(Reminder reminder) {
-        reminder.save(getActivity().getApplicationContext());
+        trackEvent("Save Reminder", "User Action");
+        // add Reminder to view and to internally tracked arraylist
+        reminder.save(applicationContext);
     }
 
     public void delete(long id) {
+        trackEvent("Delete Reminder", "User Action");
+        // delete
+        // remove reminder from view and internally tracked arraylist
+    }
 
+    private void trackEvent(String event, String category) {
+        if (callback != null) {
+            TrackingController controller = callback.getTracker();
+            if (controller != null) {
+                controller.sendEvent(category, event, null, 1L);
+            }
+        }
     }
 }

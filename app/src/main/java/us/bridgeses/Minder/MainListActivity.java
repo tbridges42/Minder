@@ -77,7 +77,11 @@ public class MainListActivity extends LifecycleLoggingActivity implements TaskCa
         createEditor(-1L);
     }
 
-	@Override
+    private void createEditor(long l) {
+
+    }
+
+    @Override
 	public void onBackPressed()
 	{
 		fragmentManager = getFragmentManager();
@@ -145,11 +149,11 @@ public class MainListActivity extends LifecycleLoggingActivity implements TaskCa
         }
 	    Fragment fragment = fragmentManager.findFragmentByTag(TAG_ASYNC_FRAGMENT);
 	    if (fragment instanceof ReminderListFragment){
-		    mReminderListFragment = (Fragment) fragment;
+		    mReminderListFragment = fragment;
 	    }
 	    else{
 		    if (fragment instanceof AboutFragment){
-			    mAboutFragment = (AboutFragment) fragment;
+			    mAboutFragment = fragment;
 		    }
 	    }
         // If the Fragment is non-null, then it is currently being
