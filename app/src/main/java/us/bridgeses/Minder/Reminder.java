@@ -98,6 +98,19 @@ public class Reminder implements Parcelable{
         readFromParcel(in);
     }
 
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof Reminder)) {
+			return false;
+		}
+		Reminder other = (Reminder) obj;
+		return this.getName().equals(other.getName())
+				&& this.getActive() == other.getActive()
+				&& this.getDescription().equals(other.getDescription())
+				&& this.repeatType == other.repeatType
+				&& this.date == other.date;
+	}
+
     public static final Parcelable.Creator<Reminder> CREATOR = new Parcelable.Creator<Reminder>() {
                 public Reminder createFromParcel(Parcel in) {
                     return new Reminder(in);
