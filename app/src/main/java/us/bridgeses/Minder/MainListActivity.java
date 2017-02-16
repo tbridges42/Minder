@@ -62,7 +62,7 @@ public class MainListActivity extends LifecycleLoggingActivity implements TaskCa
 	}
 
 	private void setTracker(){
-		trackingController = TrackingController.getInstance("Reminder list screen");
+		trackingController = TrackingController.getInstance(this);
 	}
 
     //Called if the user creates a new reminder
@@ -205,10 +205,13 @@ public class MainListActivity extends LifecycleLoggingActivity implements TaskCa
 
     }
 
+    private void createDefaultEditor() {
+
+    }
+
     @Override
     public void onPreExecute() {
         progressDialog = ProgressDialog.show(this, "", "Loading. . .", true, true);
-        Logger.d("New ProgressDialog");
     }
 
     @Override
@@ -222,7 +225,6 @@ public class MainListActivity extends LifecycleLoggingActivity implements TaskCa
     @Override
     public void onPostExecute() {
         if (progressDialog != null) {
-            Logger.d("Dismissing progress dialog");
             progressDialog.dismiss();
             progressDialog = null;
         }

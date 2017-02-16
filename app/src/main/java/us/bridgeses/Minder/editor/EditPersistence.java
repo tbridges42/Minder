@@ -65,7 +65,7 @@ public class EditPersistence extends EditorActivity {
 	 * the edit
 	 */
 	@Override
-	protected void saveState(){
+	public void saveState(){
 		if (saved == null) {
 			saved = new Bundle();
 			SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -86,7 +86,7 @@ public class EditPersistence extends EditorActivity {
 	}
 	
 	@Override
-	protected void initialize(){
+	public void initialize(){
 		type = "persistence";
 	}
 }

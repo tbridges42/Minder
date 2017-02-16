@@ -103,7 +103,7 @@ public class DataController extends Fragment{
         // Builds the notification and issues it.
         mNotifyMgr.cancel(reminder.getId());
         // TODO: refresh the list
-        callback.getListView().refreshItem(id);
+        callback.getListView();
     }
 
     public Reminder load(long id) {

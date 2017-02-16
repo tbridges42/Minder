@@ -24,7 +24,7 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@android:style/Theme.Holo" >
+        android:theme="@style/AppTheme" >
         <activity
             android:name=".MapsActivity"
             android:label="@string/title_activity_maps" >
@@ -110,11 +110,6 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".editor.EditReminder" />
-        </activity>
-        <activity
-            android:name=".util.Scanner.ScannerActivity"
-            android:label="Scan Code">
-
         </activity>
         <activity
             android:name=".editor.EditStyle"

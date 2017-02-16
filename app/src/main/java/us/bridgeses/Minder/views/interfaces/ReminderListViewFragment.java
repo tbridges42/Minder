@@ -16,4 +16,19 @@ public class ReminderListViewFragment implements ReminderListView {
     public void setReminders(List<Reminder> reminders) {
 
     }
+
+    @Override
+    public void addReminder(Reminder reminder) {
+
+    }
+
+    @Override
+    public void updateReminder(Reminder reminder) {
+
+    }
+
+    @Override
+    public void removeReminder(long id) {
+
+    }
 }
