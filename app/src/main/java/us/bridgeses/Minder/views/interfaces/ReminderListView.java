@@ -18,5 +18,5 @@ public interface ReminderListView {
 
     void updateReminder(Reminder reminder);
 
-    void removeReminder(long id);
+    void removeReminder(Reminder reminder);
 }
