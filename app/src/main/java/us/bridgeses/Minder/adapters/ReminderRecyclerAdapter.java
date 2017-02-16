@@ -23,9 +23,23 @@ import us.bridgeses.Minder.Reminder;
 public class ReminderRecyclerAdapter
         extends RecyclerView.Adapter<ReminderRecyclerAdapter.ReminderHolder> {
 
-    private SortedList<Reminder> reminders;
+    public interface OnFinishClickedListener {
+        void onFinishClicked(long id);
+    }
 
-    public ReminderRecyclerAdapter(List<Reminder> reminderList) {
+    public interface OnItemClickedListener {
+        void onItemClicked(long id);
+    }
+
+    private SortedList<Reminder> reminders;
+    private final OnFinishClickedListener finishClickedListener;
+    private final OnItemClickedListener itemClickedListener;
+
+    public ReminderRecyclerAdapter(List<Reminder> reminderList,
+                                   OnFinishClickedListener finishClickedListener,
+                                   OnItemClickedListener itemClickedListener) {
+        this.finishClickedListener = finishClickedListener;
+        this.itemClickedListener = itemClickedListener;
         reminders = new SortedList<>(Reminder.class,
                 new ReminderSorter(this));
         reminders.addAll(reminderList);
@@ -131,7 +145,7 @@ public class ReminderRecyclerAdapter
         return "";
     }
 
-    class ReminderHolder extends RecyclerView.ViewHolder {
+    class ReminderHolder extends RecyclerView.ViewHolder{
 
         ImageView finishedButton;
         ImageView listIcon;
@@ -141,7 +155,7 @@ public class ReminderRecyclerAdapter
         ImageView repeatIcon;
         TextView repeatDescription;
 
-        public ReminderHolder(View itemView) {
+        ReminderHolder(View itemView) {
             super(itemView);
             finishedButton = (ImageView) itemView.findViewById(R.id.finished_button);
             listIcon = (ImageView) itemView.findViewById(R.id.list_icon);
@@ -151,7 +165,22 @@ public class ReminderRecyclerAdapter
             repeatIcon = (ImageView) itemView.findViewById(R.id.list_repeat_icon);
             repeatDescription = (TextView) itemView.findViewById(R.id.list_repeat);
 
-            // TODO: 2/15/2017 Create click listeners
+            finishedButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (finishClickedListener != null) {
+                        finishClickedListener.onFinishClicked(getItemId());
+                    }
+                }
+            });
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (itemClickedListener != null) {
+                        itemClickedListener.onItemClicked(getItemId());
+                    }
+                }
+            });
         }
     }
 }
