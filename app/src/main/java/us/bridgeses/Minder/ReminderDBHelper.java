@@ -4,45 +4,19 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import com.orhanobut.logger.Logger;
-
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static us.bridgeses.Minder.persistence.RemindersContract.*;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.*;
 
 /**
  * Created by Tony on 7/23/2014.
  */
 public class ReminderDBHelper extends SQLiteOpenHelper {
 
-    public AtomicInteger openCounter = new AtomicInteger();
+    private AtomicInteger openCounter = new AtomicInteger();
     private static ReminderDBHelper singleInstance;
     private SQLiteDatabase database;
-
-    public static final String TABLE_NAME = "Reminders";
-    public static final String COLUMN_ID = "_id";
-    public static final String COLUMN_ACTIVE = "Active";
-    public static final String COLUMN_LATITUDE = "Latitude";
-    public static final String COLUMN_LONGITUDE = "Longitude";
-    public static final String COLUMN_NAME = "Name";
-    public static final String COLUMN_REPEATTYPE = "RepeatType";
-    public static final String COLUMN_REPEATLENGTH = "RepeatLength";
-    public static final String COLUMN_DAYSOFWEEK = "DaysOfWeek";
-    public static final String COLUMN_MONTHTYPE = "MonthType";
-    public static final String COLUMN_PERSISTENCE = "Persistence";
-    public static final String COLUMN_DATE = "Date";
-    public static final String COLUMN_DESCRIPTION = "Description";
-    public static final String COLUMN_QR = "Qr";
-    public static final String COLUMN_SNOOZEDURATION = "SnoozeDuration";
-    public static final String COLUMN_LEDCOLOR = "LedColor";
-    public static final String COLUMN_LEDPATTERN = "LedPattern";
-    public static final String COLUMN_RINGTONE = "Ringtone";
-    public static final String COLUMN_RADIUS = "Radius";
-    public static final String COLUMN_SSID = "SSID";
-    public static final String COLUMN_CONDITIONS = "Conditions";
-    public static final String COLUMN_STYLE = "Style";
-	public static final String COLUMN_VOLUME = "Volume";
-	public static final String COLUMN_SNOOZENUM = "SnoozeNum";
-    public static final String COLUMN_IMAGE = "Image";
-    public static final String COLUMN_TEXTCOLOR = "TextColor";
 
     private static final String SQL_CREATE_ENTRIES =
             "CREATE TABLE " + TABLE_NAME + " (" +
