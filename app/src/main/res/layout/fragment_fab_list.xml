@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:android.support.design="http://schemas.android.com/apk/res-auto">
+    <android.support.v7.widget.RecyclerView
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        android:id="@+id/reminder_list"/>
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/reminder_fab"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:clickable="true"
+        android:layout_gravity="bottom|end"
+        android.support.design:useCompatPadding="true"
+        android.support.design:elevation="6dp"
+        android.support.design:fabSize="auto"/>
+</android.support.design.widget.CoordinatorLayout>
