@@ -3,10 +3,14 @@ package us.bridgeses.Minder.controllers;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.Fragment;
+import android.app.LoaderManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.Loader;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
@@ -25,7 +29,7 @@ import static android.content.Context.NOTIFICATION_SERVICE;
  * Created by tbrid on 2/12/2017.
  */
 
-public class DataController extends Fragment{
+public class DataController extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     public interface ActivityCallback {
         ReminderListView getListView();
@@ -70,6 +74,7 @@ public class DataController extends Fragment{
         catch (NullPointerException e) {
             throw new NullPointerException("Activity was not ready");
         }
+        loadAll();
     }
 
     public void skipNext(int id) {
@@ -116,6 +121,11 @@ public class DataController extends Fragment{
         // Use a cursorloader; when there are changes to the cursor, compare against arraylist,
         // make additions, deletions and updates to view as necessary
         // !!! Look into SortedList
+        // With SortedList handing comparisons and updates in the adapter, we don't need
+        // to keep a redundant arraylist here
+        // Without that heavy state, I don't think this needs to be a fragment.
+        // But we can't retain the view across activity destructions, because configurations might
+        // change. The list still needs to be cached here for retention purposes
         return null;
     }
 
@@ -138,5 +148,22 @@ public class DataController extends Fragment{
                 controller.sendEvent(category, event, null, 1L);
             }
         }
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        // TODO: 2/16/2017 Implement contentprovider so we can use cursorloader
+        //CursorLoader loader = new CursorLoader(getActivity(), )
+        return null;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
     }
 }
