@@ -20,9 +20,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
 
-import us.bridgeses.Minder.DaoFactory;
+import us.bridgeses.Minder.persistence.dao.DaoFactory;
 import us.bridgeses.Minder.Reminder;
-import us.bridgeses.Minder.ReminderDAO;
+import us.bridgeses.Minder.persistence.dao.ReminderDAO;
 
 /**
  * Created by tbrid on 2/7/2017.

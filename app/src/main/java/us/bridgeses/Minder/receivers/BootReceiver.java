@@ -5,12 +5,10 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
 
 import com.orhanobut.logger.Logger;
 
 import us.bridgeses.Minder.Reminder;
-import us.bridgeses.Minder.ReminderDBHelper;
 
 /**
  * Created by Tony on 8/25/2014.

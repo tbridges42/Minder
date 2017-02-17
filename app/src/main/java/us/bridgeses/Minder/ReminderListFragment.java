@@ -5,16 +5,15 @@ import android.app.ListFragment;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
-import com.orhanobut.logger.Logger;
-
 import us.bridgeses.Minder.editor.EditReminder;
+import us.bridgeses.Minder.persistence.dao.DaoFactory;
+import us.bridgeses.Minder.persistence.dao.ReminderDAO;
 
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_DESCRIPTION;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_ID;

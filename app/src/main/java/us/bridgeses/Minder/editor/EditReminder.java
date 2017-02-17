@@ -13,7 +13,6 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Debug;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NavUtils;
 import android.view.View;
@@ -25,10 +24,8 @@ import com.orhanobut.logger.Logger;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-import us.bridgeses.Minder.DaoFactory;
 import us.bridgeses.Minder.R;
 import us.bridgeses.Minder.Reminder;
-import us.bridgeses.Minder.ReminderDAO;
 import us.bridgeses.Minder.TaskCallbacks;
 import us.bridgeses.Minder.receivers.ReminderReceiver;
 import us.bridgeses.Minder.util.ConfirmDialogFragment;

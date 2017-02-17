@@ -13,7 +13,6 @@ import com.google.gson.Gson;
 import com.orhanobut.logger.Logger;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
@@ -22,9 +21,9 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
-import us.bridgeses.Minder.DaoFactory;
+import us.bridgeses.Minder.persistence.dao.DaoFactory;
 import us.bridgeses.Minder.Reminder;
-import us.bridgeses.Minder.ReminderDAO;
+import us.bridgeses.Minder.persistence.dao.ReminderDAO;
 
 /**
  * Created by tbrid on 1/9/2017.

@@ -2,32 +2,28 @@ package us.bridgeses.Minder;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
-import android.support.annotation.IntDef;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
-import com.google.gson.JsonObject;
 import com.orhanobut.logger.Logger;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
 import us.bridgeses.Minder.editor.EditStyle;
+import us.bridgeses.Minder.persistence.dao.DaoFactory;
+import us.bridgeses.Minder.persistence.dao.ReminderDAO;
 
 /**
  * Created by Overseer on 7/13/2014.
