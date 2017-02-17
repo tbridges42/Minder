@@ -1,4 +1,4 @@
-package us.bridgeses.Minder.persistence;
+package us.bridgeses.Minder.persistence.provider;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
@@ -12,7 +12,7 @@ import android.support.annotation.Nullable;
 
 import java.lang.annotation.Retention;
 
-import us.bridgeses.Minder.ReminderDBHelper;
+import us.bridgeses.Minder.persistence.sqlite.ReminderDBHelper;
 
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 import static us.bridgeses.Minder.persistence.RemindersContract.CONTENT_AUTHORITY;
@@ -23,7 +23,7 @@ import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.TABLE_N
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.SINGLE_TYPE;
 
 /**
- * Created by tbrid on 2/16/2017.
+ * A content provider for Reminders
  */
 
 public class ReminderProvider extends ContentProvider {

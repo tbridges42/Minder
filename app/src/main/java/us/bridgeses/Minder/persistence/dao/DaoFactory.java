@@ -1,9 +1,11 @@
-package us.bridgeses.Minder;
+package us.bridgeses.Minder.persistence.dao;
 
 import android.content.Context;
 
 /**
- * Created by Tony on 5/5/2015.
+ * A factory for getting a reference to a DAO controller object
+ *
+ * Note: This needs to be severely reworked
  */
 public class DaoFactory {
 
@@ -14,6 +16,7 @@ public class DaoFactory {
 
     }
 
+    @SuppressWarnings("unused")
     public void setTest(ReminderDAO customDao){
         this.customDao = customDao;
     }

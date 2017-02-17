@@ -1,4 +1,4 @@
-package us.bridgeses.Minder;
+package us.bridgeses.Minder.persistence.sqlite;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
@@ -6,11 +6,10 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static us.bridgeses.Minder.persistence.RemindersContract.*;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.*;
 
 /**
- * Created by Tony on 7/23/2014.
+ * Helper for managing SQLite database of Reminders
  */
 public class ReminderDBHelper extends SQLiteOpenHelper {
 
@@ -70,9 +69,9 @@ public class ReminderDBHelper extends SQLiteOpenHelper {
 
     /**
      * Here we do incremental upgrades when we need to make changes to the database structure
-     * @param database
-     * @param oldVersion
-     * @param newVersion
+     * @param database The database being upgraded
+     * @param oldVersion The old version number
+     * @param newVersion The new version number
      */
     public void onUpgrade(SQLiteDatabase database, int oldVersion, int newVersion) {
         /********************************************
@@ -119,6 +118,7 @@ public class ReminderDBHelper extends SQLiteOpenHelper {
     /**
      * Close the database if no one else is using it
      */
+    @SuppressWarnings("unused")
     public synchronized void closeDatabase() {
         if(openCounter.decrementAndGet() == 0) {
             // Closing database

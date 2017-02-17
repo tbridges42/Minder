@@ -1,8 +1,9 @@
-package us.bridgeses.Minder;
+package us.bridgeses.Minder.persistence.dao;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
+
+import us.bridgeses.Minder.Reminder;
 
 /**
  * An interface to be implemented by any data source for Reminders
@@ -26,7 +27,7 @@ public interface ReminderDAO {
     /**
      * Some patterns require a cursor and its source to stay open. This method will not close after
      * the cursor is created until close is called
-     * @return
+     * @return an open cursor to reminders
      */
     Cursor getAndKeepOpen();
 

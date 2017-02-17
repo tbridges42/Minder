@@ -1,4 +1,4 @@
-package us.bridgeses.Minder;
+package us.bridgeses.Minder.persistence.dao;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -7,6 +7,8 @@ import android.database.Cursor;
 import android.net.Uri;
 
 import com.google.android.gms.maps.model.LatLng;
+
+import us.bridgeses.Minder.Reminder;
 
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_ACTIVE;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_CONDITIONS;
@@ -40,7 +42,6 @@ import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.REMINDE
  */
 public class ReminderSqlDao implements ReminderDAO {
 
-    Context context;
     private ContentResolver resolver;
 
     /**
@@ -136,14 +137,13 @@ public class ReminderSqlDao implements ReminderDAO {
                 COLUMN_IMAGE,
         };
         String sortOrder = COLUMN_ACTIVE + " DESC, " + COLUMN_DATE + " ASC";
-        Cursor cursor = resolver.query(
+        return resolver.query(
                 REMINDER_URI,
                 projection,
                 null,
                 null,
                 sortOrder,
                 null);
-        return cursor;
     }
 
     /**
@@ -164,8 +164,7 @@ public class ReminderSqlDao implements ReminderDAO {
      */
     @Override
     public Cursor getAndKeepOpen(){
-        Cursor cursor = getCursor(resolver);
-        return cursor;
+        return getCursor(resolver);
     }
 
     /**
@@ -182,7 +181,9 @@ public class ReminderSqlDao implements ReminderDAO {
             reminder = reminders[0];
         }
         else {
-            reminder = Reminder.reminderFactory(context);
+            // TODO: 2/17/2017 Once we've decoupled preference management from Reminder, remember to
+            // set this back to using user-set defaults
+            reminder = new Reminder();
         }
         if (cursor != null) {
             cursor.close();
@@ -225,9 +226,15 @@ public class ReminderSqlDao implements ReminderDAO {
         values.put(COLUMN_LEDCOLOR, reminder.getLedColor());
         values.put(COLUMN_TEXTCOLOR, reminder.getTextColor());
         values.put(COLUMN_IMAGE, reminder.getImage());
-        reminder.setId(Integer.parseInt( resolver.insert(
+        Uri response = resolver.insert(
                 REMINDER_URI,
-                values).getLastPathSegment()));
+                values);
+        if (response != null) {
+                reminder.setId(Integer.parseInt( response.getLastPathSegment()));
+        }
+        else {
+            throw new IllegalStateException("Unable to save Reminder");
+        }
         return reminder;
     }
 
@@ -238,9 +245,7 @@ public class ReminderSqlDao implements ReminderDAO {
      */
     @Override
     public int deleteReminder(int id){
-        String[] args = { String.valueOf(id) };
         Uri requestUri = Uri.withAppendedPath(REMINDER_URI, Long.toString(id));
-        int result = resolver.delete(requestUri, null, null);
-        return result;
+        return resolver.delete(requestUri, null, null);
     }
 }
