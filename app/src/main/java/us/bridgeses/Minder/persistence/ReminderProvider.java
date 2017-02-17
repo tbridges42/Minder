@@ -15,11 +15,12 @@ import java.lang.annotation.Retention;
 import us.bridgeses.Minder.ReminderDBHelper;
 
 import static java.lang.annotation.RetentionPolicy.SOURCE;
-import static us.bridgeses.Minder.persistence.RemindersContract.BASE_URI;
 import static us.bridgeses.Minder.persistence.RemindersContract.CONTENT_AUTHORITY;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_ID;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.MULTI_TYPE;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.REMINDER_URI;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.TABLE_NAME;
-import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.TYPE;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.SINGLE_TYPE;
 
 /**
  * Created by tbrid on 2/16/2017.
@@ -30,14 +31,16 @@ public class ReminderProvider extends ContentProvider {
     private static final UriMatcher matcher;
 
     @Retention(SOURCE)
-    @IntDef({REMINDER})
+    @IntDef({REMINDER, REMINDERS})
     @SuppressWarnings("unused")
     public @interface ContentTypes {}
-    public static final int  REMINDER = 100;
+    public static final int REMINDER = 100;
+    public static final int REMINDERS = 101;
 
     static {
         matcher = new UriMatcher(UriMatcher.NO_MATCH);
-        matcher.addURI(CONTENT_AUTHORITY, REMINDER_URI.toString(), REMINDER);
+        matcher.addURI(CONTENT_AUTHORITY, TABLE_NAME, REMINDERS);
+        matcher.addURI(CONTENT_AUTHORITY, TABLE_NAME + "/#", REMINDER);
     }
 
     private ReminderDBHelper helper;
@@ -55,12 +58,12 @@ public class ReminderProvider extends ContentProvider {
         @ContentTypes
         int type = matcher.match(uri);
         switch (type) {
-            case REMINDER: {
-                return TYPE;
-            }
-            default: {
+            case REMINDER:
+                return SINGLE_TYPE;
+            case REMINDERS:
+                return MULTI_TYPE;
+            default:
                 throw new IllegalArgumentException("Invalid uri");
-            }
         }
     }
 
@@ -73,10 +76,12 @@ public class ReminderProvider extends ContentProvider {
         int type = matcher.match(uri);
         switch (type) {
             // TODO: 2/16/2017 Properly implement individual querying
-            case REMINDER: {
+            case REMINDER:
+                selection = uri.getLastPathSegment();
+                selectionArgs = new String[]{ COLUMN_ID };
+            case REMINDERS:
                 return db.query(TABLE_NAME, projection, selection,
                         selectionArgs, sortOrder, null, null);
-            }
             default:
                 throw new IllegalArgumentException("Invalid uri");
         }
@@ -85,17 +90,51 @@ public class ReminderProvider extends ContentProvider {
     @Nullable
     @Override
     public Uri insert(@NonNull Uri uri, ContentValues values) {
-        return null;
+        Long newId;
+        openDB();
+        @ContentTypes
+        int type = matcher.match(uri);
+        switch (type) {
+            case REMINDER: case REMINDERS:
+                newId = db.insert(TABLE_NAME, null, values);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid uri");
+        }
+        return Uri.withAppendedPath(REMINDER_URI, Long.toString(newId));
     }
 
     @Override
     public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
-        return 0;
+        openDB();
+        @ContentTypes
+        int type = matcher.match(uri);
+        switch (type) {
+            case REMINDER:
+                selection = uri.getLastPathSegment();
+                selectionArgs = new String[]{ COLUMN_ID };
+            case REMINDERS:
+                return db.delete(TABLE_NAME, selection, selectionArgs);
+            default:
+                throw new IllegalArgumentException("Invalid uri");
+        }
     }
 
     @Override
-    public int update(@NonNull Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        return 0;
+    public int update(@NonNull Uri uri, ContentValues values,
+                      String selection, String[] selectionArgs) {
+        openDB();
+        @ContentTypes
+        int type = matcher.match(uri);
+        switch (type) {
+            case REMINDER:
+                selection = uri.getLastPathSegment();
+                selectionArgs = new String[]{ COLUMN_ID };
+            case REMINDERS:
+                return db.update(TABLE_NAME, values, selection, selectionArgs);
+            default:
+                throw new IllegalArgumentException("Invalid uri");
+        }
     }
 
     private void openDB() {
