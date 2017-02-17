@@ -10,7 +10,8 @@ public class RemindersContract {
 
     public static final int SCHEMA_VERSION = 1;
 
-    public static final Uri BASE_URI = Uri.parse("content://us.bridgeses.Minder");
+    public static final String CONTENT_AUTHORITY = "us.bridgeses.Minder.providers";
+    public static final Uri BASE_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
 
     private RemindersContract() {} // Should not be instantiated
 
@@ -19,6 +20,8 @@ public class RemindersContract {
         public static final String TABLE_NAME = "Reminders";
 
         public static final Uri REMINDER_URI = Uri.withAppendedPath(BASE_URI, TABLE_NAME);
+
+        public static final String TYPE = "vnd.android.cursor.item/vnd.us.bridgeses.Minder.Reminder";
 
         public static final String COLUMN_ID = "_id";
         public static final String COLUMN_ACTIVE = "Active";
