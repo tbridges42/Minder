@@ -19,4 +19,8 @@ public interface ReminderListView {
     void updateReminder(Reminder reminder);
 
     void removeReminder(Reminder reminder);
+
+    void displayProgress();
+
+    void removeProgress();
 }

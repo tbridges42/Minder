@@ -20,6 +20,7 @@ import us.bridgeses.Minder.exporter.ExportActivity;
 import us.bridgeses.Minder.exporter.ImportActivity;
 import us.bridgeses.Minder.util.ConfirmDialogFragment;
 import us.bridgeses.Minder.util.vandy.LifecycleLoggingActivity;
+import us.bridgeses.Minder.views.ReminderListViewFragment;
 
 /**
  * Created by Tony on 8/8/2014.
@@ -119,11 +120,11 @@ public class MainListActivity extends LifecycleLoggingActivity implements TaskCa
         fragmentManager = getFragmentManager();
 	    Fragment fragment = fragmentManager.findFragmentByTag(TAG_ASYNC_FRAGMENT);
 	    if (fragment instanceof ReminderListFragment){
-		    mReminderListFragment = (Fragment) fragment;
+		    mReminderListFragment = fragment;
 	    }
 	    else{
 		    if (fragment instanceof AboutFragment){
-			    mAboutFragment = (AboutFragment) fragment;
+			    mAboutFragment = fragment;
 		    }
 	    }
         // If the Fragment is non-null, then it is currently being
@@ -131,9 +132,9 @@ public class MainListActivity extends LifecycleLoggingActivity implements TaskCa
         if (fragment == null) {
 	        // create new fragment
             setTracker();
-            mReminderListFragment = new ReminderListFragment();
+            mReminderListFragment = new ReminderListViewFragment();
 	        fragmentManager.beginTransaction()
-                    .replace(R.id.list, (Fragment) mReminderListFragment,TAG_ASYNC_FRAGMENT)
+                    .replace(R.id.list, mReminderListFragment,TAG_ASYNC_FRAGMENT)
                     .addToBackStack(null).commit();
         }
         adHandler = new AdHandler();

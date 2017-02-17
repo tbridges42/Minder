@@ -17,19 +17,28 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import us.bridgeses.Minder.Reminder;
+import us.bridgeses.Minder.persistence.dao.DaoFactory;
+import us.bridgeses.Minder.persistence.dao.ReminderDAO;
 import us.bridgeses.Minder.receivers.ReminderReceiver;
 import us.bridgeses.Minder.views.interfaces.ReminderListView;
 
 import static android.content.Context.NOTIFICATION_SERVICE;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.DISPLAY_PROJECTION;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.REMINDER_URI;
 
 /**
  * Created by tbrid on 2/12/2017.
  */
 
 public class DataController extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+
+    private static final int LOADER_ID = 1;
 
     public interface ActivityCallback {
         ReminderListView getListView();
@@ -41,6 +50,7 @@ public class DataController extends Fragment implements LoaderManager.LoaderCall
 
     private Context applicationContext;
     private ActivityCallback callback;
+    private List<Reminder> cachedReminders;
 
     public static DataController getInstance() {
         DataController dataController = new DataController();
@@ -74,6 +84,7 @@ public class DataController extends Fragment implements LoaderManager.LoaderCall
         catch (NullPointerException e) {
             throw new NullPointerException("Activity was not ready");
         }
+        // TODO: 2/17/2017 Handle case where DataController is ready before ListView
         loadAll();
     }
 
@@ -111,22 +122,20 @@ public class DataController extends Fragment implements LoaderManager.LoaderCall
         callback.getListView();
     }
 
-    public Reminder load(long id) {
-        return null;
+    public void load(long id) {
+        callback.createEditor(id);
     }
 
-    private List<Reminder> loadAll() {
-        // TODO: Get all reminders as an arraylist and store in this class, pass that list
-        // to view when necessary
-        // Use a cursorloader; when there are changes to the cursor, compare against arraylist,
-        // make additions, deletions and updates to view as necessary
-        // !!! Look into SortedList
-        // With SortedList handing comparisons and updates in the adapter, we don't need
-        // to keep a redundant arraylist here
-        // Without that heavy state, I don't think this needs to be a fragment.
-        // But we can't retain the view across activity destructions, because configurations might
-        // change. The list still needs to be cached here for retention purposes
-        return null;
+    private void loadAll() {
+        if (cachedReminders != null) {
+            callback.getListView().setReminders(cachedReminders);
+        }
+        LoaderManager manager = getLoaderManager();
+        Loader loader = manager.getLoader(LOADER_ID);
+        if (loader == null) {
+            loader = manager.initLoader(LOADER_ID, null, this);
+            loader.startLoading();
+        }
     }
 
     public void save(Reminder reminder) {
@@ -152,14 +161,23 @@ public class DataController extends Fragment implements LoaderManager.LoaderCall
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        // TODO: 2/16/2017 Implement contentprovider so we can use cursorloader
-        //CursorLoader loader = new CursorLoader(getActivity(), )
-        return null;
+        callback.getListView().displayProgress();
+        return new CursorLoader(getActivity(), REMINDER_URI, DISPLAY_PROJECTION,
+                null, null, null);
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-
+        callback.getListView().removeProgress();
+        if (data != null) {
+            DaoFactory daoFactory = DaoFactory.getInstance();
+            ReminderDAO reminderDAO =daoFactory.getDao(getActivity());
+            cachedReminders = new ArrayList<>();
+            Reminder[] reminders = reminderDAO.getReminders();
+            Collections.addAll(cachedReminders, reminders);
+            callback.getListView().setReminders(cachedReminders);
+            data.close();
+        }
     }
 
     @Override

@@ -59,7 +59,7 @@ public class ReminderSqlDao implements ReminderDAO {
      * @param cursor A populated cursor with reminders
      * @return All of the reminders contained in cursor
      */
-    private static Reminder[] cursorToReminders(Cursor cursor){
+    public static Reminder[] cursorToReminders(Cursor cursor){
         cursor.moveToFirst();
         Reminder[] reminders = new Reminder[cursor.getCount()];
         for (int i=0; i<cursor.getCount(); i++) {

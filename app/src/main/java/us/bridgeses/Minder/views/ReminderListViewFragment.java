@@ -1,23 +1,40 @@
-package us.bridgeses.Minder.views.interfaces;
+package us.bridgeses.Minder.views;
 
+import android.app.Fragment;
+import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 
 import java.util.List;
 
+import us.bridgeses.Minder.R;
 import us.bridgeses.Minder.Reminder;
 import us.bridgeses.Minder.adapters.ReminderRecyclerAdapter;
+import us.bridgeses.Minder.views.interfaces.ReminderListView;
 
 /**
- * Created by bridgtxcdf on 2/15/2017.
+ * A fragment for displaying a RecyclerView full of Reminders and an FAB
  */
 
-public class ReminderListViewFragment implements ReminderListView,
+public class ReminderListViewFragment extends Fragment implements ReminderListView,
         ReminderRecyclerAdapter.OnFinishClickedListener,
-        ReminderRecyclerAdapter.OnItemClickedListener {
+        ReminderRecyclerAdapter.OnItemClickedListener, View.OnClickListener {
 
     private RecyclerView reminderView;
     private ReminderRecyclerAdapter reminderAdapter;
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater,
+                             ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_fab_list, container, false);
+        reminderView = (RecyclerView) view.findViewById(R.id.reminder_list);
+        view.findViewById(R.id.reminder_fab).setOnClickListener(this);
+        return view;
+    }
 
     @Override
     public void setReminders(List<Reminder> reminders) {
@@ -47,6 +64,16 @@ public class ReminderListViewFragment implements ReminderListView,
     }
 
     @Override
+    public void displayProgress() {
+
+    }
+
+    @Override
+    public void removeProgress() {
+
+    }
+
+    @Override
     public void onFinishClicked(long id) {
         // TODO: Display confirmation dialog
     }
@@ -56,8 +83,14 @@ public class ReminderListViewFragment implements ReminderListView,
         // TODO: Open editor
     }
 
-    // Assign to onClick in XML
-    public void onFABClicked(View view) {
+    public void onFABClicked() {
 
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == R.id.reminder_fab) {
+            onFABClicked();
+        }
     }
 }

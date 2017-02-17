@@ -232,7 +232,7 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
             }
             else {
                 Logger.i("Not supposed to be at location");
-                snooze(Reminder.MINUTE);
+                snooze((int) Reminder.MINUTE);
             }
         }
         else{
@@ -244,7 +244,7 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
                 checkConditions();
             }
             else {
-                snooze(Reminder.MINUTE);
+                snooze((int) Reminder.MINUTE);
             }
         }
     }
@@ -283,7 +283,7 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
                 if (reminder.getUntilLocation()) {
                     Logger.i("Not supposed to be at Location");
                     try {
-                        snooze(Reminder.MINUTE);
+                        snooze((int) Reminder.MINUTE);
                     }
                     catch (Exception e){
                         Logger.e("Unable to start location updates");
@@ -354,7 +354,7 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
             }
         }
         else {
-            snooze(Reminder.MINUTE);
+            snooze((int) Reminder.MINUTE);
         }
     }
 

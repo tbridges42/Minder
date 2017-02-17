@@ -293,12 +293,12 @@ public class AlarmScreen extends LifecycleLoggingActivity implements View.OnLong
         final NumberPicker picker = (NumberPicker) dLayout.findViewById(R.id.snooze_length);
         picker.setMinValue(1);
         picker.setMaxValue(1440);
-        picker.setValue(reminder.getSnoozeDuration()/Reminder.MINUTE);
+        picker.setValue((int) (reminder.getSnoozeDuration()/Reminder.MINUTE));
         builder.setPositiveButton("Snooze", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 picker.clearFocus(); //Hopefully makes picker read keyboard entered values
                 Logger.d("Entered " + picker.getValue() + " minutes");
-                snooze(picker.getValue()*Reminder.MINUTE);
+                snooze((int) (picker.getValue()*Reminder.MINUTE));
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {

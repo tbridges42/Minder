@@ -218,7 +218,7 @@ public class AlertService extends Service {
 			boolean wakeUp = intent.getBooleanExtra("WakeUp",false);
 			int snoozeNum = intent.getIntExtra("SnoozeNum",0);
 			Logger.d("Received snoozeNum:" + snoozeNum);
-			int duration = intent.getIntExtra("Duration",5* Reminder.MINUTE);
+			int duration = intent.getIntExtra("Duration", (int) (5* Reminder.MINUTE));
 			Logger.d("Received duration:" + duration);
 			int volume = intent.getIntExtra("Volume",80);
 			Logger.d("Snooze: "+snooze);

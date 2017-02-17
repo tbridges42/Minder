@@ -1,7 +1,9 @@
 package us.bridgeses.Minder.persistence.provider;
 
 import android.content.ContentProvider;
+import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -32,7 +34,6 @@ public class ReminderProvider extends ContentProvider {
 
     @Retention(SOURCE)
     @IntDef({REMINDER, REMINDERS})
-    @SuppressWarnings("unused")
     public @interface ContentTypes {}
     public static final int REMINDER = 100;
     public static final int REMINDERS = 101;
@@ -79,9 +80,20 @@ public class ReminderProvider extends ContentProvider {
             case REMINDER:
                 selection = uri.getLastPathSegment();
                 selectionArgs = new String[]{ COLUMN_ID };
+                notify();
             case REMINDERS:
-                return db.query(TABLE_NAME, projection, selection,
+                Cursor cursor = db.query(TABLE_NAME, projection, selection,
                         selectionArgs, sortOrder, null, null);
+                Context context = getContext();
+                if (context != null) {
+                    ContentResolver resolver = context.getContentResolver();
+                    cursor.setNotificationUri(resolver,
+                            uri);
+                }
+                else {
+                    throw new IllegalStateException("Context not ready");
+                }
+                return cursor;
             default:
                 throw new IllegalArgumentException("Invalid uri");
         }
@@ -101,6 +113,7 @@ public class ReminderProvider extends ContentProvider {
             default:
                 throw new IllegalArgumentException("Invalid uri");
         }
+        notifyChanged(uri);
         return Uri.withAppendedPath(REMINDER_URI, Long.toString(newId));
     }
 
@@ -114,7 +127,9 @@ public class ReminderProvider extends ContentProvider {
                 selection = uri.getLastPathSegment();
                 selectionArgs = new String[]{ COLUMN_ID };
             case REMINDERS:
-                return db.delete(TABLE_NAME, selection, selectionArgs);
+                int rows = db.delete(TABLE_NAME, selection, selectionArgs);
+                notifyChanged(uri);
+                return rows;
             default:
                 throw new IllegalArgumentException("Invalid uri");
         }
@@ -131,7 +146,9 @@ public class ReminderProvider extends ContentProvider {
                 selection = uri.getLastPathSegment();
                 selectionArgs = new String[]{ COLUMN_ID };
             case REMINDERS:
-                return db.update(TABLE_NAME, values, selection, selectionArgs);
+                int rows = db.update(TABLE_NAME, values, selection, selectionArgs);
+                notifyChanged(uri);
+                return rows;
             default:
                 throw new IllegalArgumentException("Invalid uri");
         }
@@ -143,6 +160,17 @@ public class ReminderProvider extends ContentProvider {
         }
         if (db == null || !db.isOpen()) {
             db = helper.openDatabase();
+        }
+    }
+
+    private void notifyChanged(Uri uri) {
+        Context context = getContext();
+        if (context != null) {
+            ContentResolver resolver = context.getContentResolver();
+            resolver.notifyChange(uri, null);
+        }
+        else {
+            throw new IllegalStateException("Context not ready");
         }
     }
 }
