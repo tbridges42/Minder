@@ -12,6 +12,9 @@ import us.bridgeses.Minder.Reminder;
  */
 
 public class Importer {
+
+    // TODO: 2/17/2017 Get database version from import and handle possible data conversions
+
     private BufferedReader reader;
     private Jsonifier jsonifier;
 

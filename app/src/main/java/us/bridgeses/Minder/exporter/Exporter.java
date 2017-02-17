@@ -16,6 +16,10 @@ public class Exporter {
     private PrintWriter writer;
     private Jsonifier jsonifier;
 
+    // TODO: 2/17/2017 Embed database version in export file
+    // TODO: 2/17/2017 Exported information could include locations and private data: add encryption
+    // option. Use AES-128 or better.
+
     public Exporter(PrintWriter writer, Jsonifier jsonifier) {
         this.writer = writer;
         this.jsonifier = jsonifier;
