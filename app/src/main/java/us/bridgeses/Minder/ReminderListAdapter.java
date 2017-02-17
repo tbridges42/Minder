@@ -1,7 +1,5 @@
 package us.bridgeses.Minder;
 
-import android.app.DialogFragment;
-import android.app.FragmentManager;
 import android.content.Context;
 import android.database.Cursor;
 import android.view.LayoutInflater;
@@ -16,7 +14,11 @@ import com.orhanobut.logger.Logger;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.InputMismatchException;
+
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_ACTIVE;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_DATE;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_ID;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_REPEATTYPE;
 
 /**
  * This ListAdapter displays data from the Reminders in the cursor and has multiple button options
@@ -151,10 +153,10 @@ public class ReminderListAdapter extends SimpleCursorAdapter implements View.OnC
 		TextView repeatText=(TextView)view.findViewById(R.id.list_repeat);
 		ImageView repeatIcon=(ImageView)view.findViewById(R.id.list_repeat_icon);
 
-		int idIndex=cursor.getColumnIndexOrThrow(ReminderDBHelper.COLUMN_ID);
-		int dateIndex = cursor.getColumnIndexOrThrow(ReminderDBHelper.COLUMN_DATE);
-		int repeatIndex = cursor.getColumnIndexOrThrow(ReminderDBHelper.COLUMN_REPEATTYPE);
-		int activeIndex = cursor.getColumnIndexOrThrow(ReminderDBHelper.COLUMN_ACTIVE);
+		int idIndex=cursor.getColumnIndexOrThrow(COLUMN_ID);
+		int dateIndex = cursor.getColumnIndexOrThrow(COLUMN_DATE);
+		int repeatIndex = cursor.getColumnIndexOrThrow(COLUMN_REPEATTYPE);
+		int activeIndex = cursor.getColumnIndexOrThrow(COLUMN_ACTIVE);
 
 		Calendar calendar = Calendar.getInstance();
 		long time = cursor.getLong(dateIndex)*1000;
