@@ -31,16 +31,11 @@ public interface ReminderDAO {
     Cursor getAndKeepOpen();
 
     /**
-     * Manually close the data source. This should be called after getAndKeepOpen is used
-     */
-    void close();
-
-    /**
      * Get a single reminder, identified by id
      * @param id the unique id of the reminder
      * @return the reminder with id
      */
-    Reminder getReminder(int id);
+    Reminder getReminder(long id);
 
     /**
      * Persist a reminder to the data source. If the reminder does not already exist in the data source
@@ -56,10 +51,4 @@ public interface ReminderDAO {
      * @return the number of items deleted. Should be 1 if successful or 0 if failed
      */
     int deleteReminder(int id);
-
-    /**
-     * Returns whether or not the data source is open
-     * @return true if data source is open and readable
-     */
-    boolean isOpen();
 }

@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
+import android.support.annotation.IntDef;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -19,9 +20,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.concurrent.TimeUnit;
 
 import us.bridgeses.Minder.editor.EditStyle;
 
@@ -89,6 +93,7 @@ public class Reminder implements Parcelable{
      * @return A reminder
      */
 	public static Reminder reminderFactory(Context context){
+		// TODO: 2/17/2017 Why oh why is our model class in charge of Preference management?
 		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
 		return preferenceToReminder(sharedPreferences, context);
 	}
@@ -196,10 +201,10 @@ public class Reminder implements Parcelable{
     public static final int TEXTCOLORDEFAULT = 0xff000000;
 
     //Time constants
-    public static final int MINUTE = 60000;
-    public static final int HOUR = 3600000;
-    public static final int DAY = 86400000;
-    public static final int WEEK = 604800000;
+    public static final long MINUTE = TimeUnit.MILLISECONDS.convert(1L, TimeUnit.MINUTES);
+    public static final long HOUR = 60*MINUTE;
+    public static final long DAY = 24*HOUR;
+    public static final long WEEK = 7*DAY;
     public static final byte SUNDAY = 64;
     public static final byte MONDAY = 32;
     public static final byte TUESDAY = 16;
@@ -210,8 +215,8 @@ public class Reminder implements Parcelable{
     public static final byte ALL_WEEK = 127;
     public static final byte WEEKDAYS = 62;
     public static final byte WEEKENDS = 65;
-    public static final byte MWF = 42;
-    public static final byte TTH = 20;
+    public static final byte MWF = MONDAY + WEDNESDAY + FRIDAY;
+    public static final byte TTH = TUESDAY + THURSDAY;
 
 	//Persistence constants
 	public static final byte VOLUME_OVERRIDE = 1;

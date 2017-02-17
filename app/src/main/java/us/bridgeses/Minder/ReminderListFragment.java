@@ -16,6 +16,10 @@ import com.orhanobut.logger.Logger;
 
 import us.bridgeses.Minder.editor.EditReminder;
 
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_DESCRIPTION;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_ID;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_NAME;
+
 /**
  * This fragment retrieves all reminders from a ReminderDAO and displays them in a list
  * Created by Tony on 8/9/2014.
@@ -65,7 +69,7 @@ public class ReminderListFragment extends ListFragment implements IFragment{
         // Retain this fragment across configuration changes.
         setRetainInstance(true);
 
-        String[] fromColumns = {ReminderDBHelper.COLUMN_NAME, ReminderDBHelper.COLUMN_DESCRIPTION, ReminderDBHelper.COLUMN_ID};
+        String[] fromColumns = {COLUMN_NAME, COLUMN_DESCRIPTION, COLUMN_ID};
         int[] toViews = {R.id.list_name, R.id.list_description};
 
         mAdapter = new ReminderListAdapter(context,
@@ -91,7 +95,7 @@ public class ReminderListFragment extends ListFragment implements IFragment{
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
         Intent intent = new Intent(context, EditReminder.class);
-        intent.putExtra("id",(int)Math.round(id));
+        intent.putExtra("id",Math.round(id));
         startActivity(intent);
     }
 
@@ -110,8 +114,6 @@ public class ReminderListFragment extends ListFragment implements IFragment{
      * This task queries the DAO for the list of reminders and updates the listadapter
      */
     private class QueryTask extends AsyncTask<Void, Integer, Void> {
-
-        SQLiteDatabase database;
 
         @Override
         protected void onPreExecute() {
@@ -144,10 +146,8 @@ public class ReminderListFragment extends ListFragment implements IFragment{
         @Override
         protected void onPostExecute(Void ignore) {
             if (mCallbacks != null) {
-                Logger.d("Post Execute");
                 mCallbacks.onPostExecute();
             }
-//	        Logger.d("Cursor updated");
             mAdapter.swapCursor(cursor);
 	        mAdapter.notifyDataSetChanged();
         }
