@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -140,6 +141,8 @@ public class MainListActivity extends LifecycleLoggingActivity implements TaskCa
         adHandler = new AdHandler();
         adHandler.initialize(getApplicationContext());
         adHandler.setUp(findViewById(R.id.adView));
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
     }
 
     @Override

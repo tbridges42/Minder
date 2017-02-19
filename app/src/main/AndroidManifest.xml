@@ -39,7 +39,7 @@
 
         <activity
             android:name=".MainListActivity"
-            android:label="@string/title_activity_main" >
+            android:label="@string/title_activity_main">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -122,6 +122,10 @@
         <activity android:name=".util.Scanner.BarcodeScanner" />
 
         <service android:name=".util.AlertService"/>
+
+        <provider
+            android:authorities="us.bridgeses.Minder.providers"
+            android:name=".persistence.provider.ReminderProvider" />
 
     </application>
 

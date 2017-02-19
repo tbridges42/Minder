@@ -8,6 +8,7 @@
     android:dividerHeight="10dip"
     tools:context="us.bridgeses.Minder.MainListActivity"
     android:id="@+id/linearLayout">
+    <include layout="@layout/list_toolbar" />
     <include layout="@layout/banner" />
     <FrameLayout
         android:layout_width="match_parent"
