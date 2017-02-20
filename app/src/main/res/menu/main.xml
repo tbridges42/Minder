@@ -1,28 +1,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="us.bridgeses.Minder.MainListActivity" >
-    <item android:id="@+id/action_new"
-        android:icon="@drawable/ic_action_new"
-        android:title="@string/new_reminder"
-        android:showAsAction="always" />
-    <item android:id="@+id/action_export"
-        android:orderInCategory="80"
-        android:showAsAction="never"
-        android:title="@string/export" />
-    <item android:id="@+id/action_import"
-        android:orderInCategory="80"
-        android:showAsAction="never"
-        android:title="@string/import_string" />
-    <!--<item android:id="@+id/action_settings"
-        android:title="@string/action_settings"
-        android:orderInCategory="100"
-        android:showAsAction="never" />-->
-    <item android:id="@+id/defaults"
-        android:title="@string/set_defaults"
-        android:orderInCategory="90"
-        android:showAsAction="never" />
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context="us.bridgeses.Minder.MainListActivity">
+
     <item android:id="@+id/action_about"
           android:title="@string/about"
           android:orderInCategory="100"
-          android:showAsAction="never" />
+          app:showAsAction="never" />
 </menu>

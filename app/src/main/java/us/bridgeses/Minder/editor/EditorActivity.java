@@ -18,11 +18,13 @@ import us.bridgeses.Minder.controllers.interfaces.Editor;
 public abstract class EditorActivity extends LifecycleLoggingActivity implements Editor {
 
 
+	private static final String TAG_AD_FRAGMENT = "Ad_fragment";
 	Fragment mFragment;
 	protected Bundle saved;
 	protected String type;
 	protected int frameID = R.layout.edit_frame;
 	private AdHandler adHandler;
+	protected FragmentManager fragmentManager;
 
 
 
@@ -39,9 +41,7 @@ public abstract class EditorActivity extends LifecycleLoggingActivity implements
 		mFragment = fragmentManager.findFragmentByTag(type);
 		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
-		adHandler = new AdHandler();
-		adHandler.initialize(getApplicationContext());
-		adHandler.setUp(findViewById(R.id.adView));
+		createAdHandler();
 
 		if (mFragment == null) {
 			fragmentManager.beginTransaction().replace(R.id.reminder_frame, fragment,type).commit();
@@ -72,5 +72,13 @@ public abstract class EditorActivity extends LifecycleLoggingActivity implements
 		}
 
 		return super.onOptionsItemSelected(item);
+	}
+
+	private void createAdHandler() {
+		if (fragmentManager == null) {
+			fragmentManager = getFragmentManager();
+		}
+		adHandler = new AdHandler();
+		fragmentManager.beginTransaction().add(adHandler, TAG_AD_FRAGMENT).commit();
 	}
 }

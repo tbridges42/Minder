@@ -12,8 +12,6 @@ import android.view.View;
 import us.bridgeses.Minder.controllers.DataController;
 import us.bridgeses.Minder.controllers.TrackingController;
 import us.bridgeses.Minder.editor.EditReminder;
-import us.bridgeses.Minder.exporter.ExportActivity;
-import us.bridgeses.Minder.exporter.ImportActivity;
 import us.bridgeses.Minder.util.vandy.LifecycleLoggingActivity;
 import us.bridgeses.Minder.views.ReminderListViewFragment;
 import us.bridgeses.Minder.views.interfaces.ReminderListView;
@@ -27,6 +25,7 @@ public class MainListActivity extends LifecycleLoggingActivity implements
     private static final String TAG_ASYNC_FRAGMENT = "Async_fragment";
     private static final String TAG_ABOUT_FRAGMENT = "About_fragment";
     public static final String TAG_DATA_FRAGMENT = "Data_fragment";
+    private static final String TAG_AD_FRAGMENT = "Ad_fragment";
     private ReminderListViewFragment mReminderListFragment;
 	private Fragment mAboutFragment;
     private DataController dataController;
@@ -84,72 +83,24 @@ public class MainListActivity extends LifecycleLoggingActivity implements
             setTracker();
             createListView();
         }
-
         if (dataController == null) {
-            dataController = new DataController();
             createDataController();
-        }
-
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (fragmentManager == null) {
-            fragmentManager = getFragmentManager();
-        }
-        Fragment fragment = fragmentManager.findFragmentByTag(TAG_ASYNC_FRAGMENT);
-        if (fragment instanceof ReminderListViewFragment){
-            mReminderListFragment = (ReminderListViewFragment) fragment;
-        }
-        else{
-            if (fragment instanceof AboutFragment){
-                mAboutFragment = fragment;
-            }
-        }
-        // If the Fragment is non-null, then it is currently being
-        // retained across a configuration change.
-        if (mReminderListFragment == null) {
-            createListView();
-            // TODO: Conditionally add editor fragment based on screen layout
         }
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
 
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        switch (item.getItemId()) {
-            case R.id.defaults:
-                createDefaultEditor();
-                return true;
-            case R.id.action_export:
-                new ExportActivity(this).export();
-                return true;
-            case R.id.action_import:
-                new ImportActivity(this).importBackup();
-                // TODO: Figure out how to refresh the list after
-                return true;
-            case R.id.action_about:
-                FragmentManager fm = getFragmentManager();
-                mAboutFragment = new AboutFragment();
-                fm.beginTransaction().replace(R.id.list,(Fragment)mAboutFragment,TAG_ABOUT_FRAGMENT).addToBackStack(null).commit();
-                return true;
-            case R.id.action_new:
-                editReminder(findViewById(android.R.id.content));
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        if (item.getItemId() == R.id.action_about) {
+            loadAbout();
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -165,18 +116,35 @@ public class MainListActivity extends LifecycleLoggingActivity implements
     //</editor-fold>
 
     //<editor-fold desc="Private Methods">
+    private void loadAbout() {
+        if (fragmentManager == null) {
+            fragmentManager = getFragmentManager();
+        }
+        mAboutFragment = new AboutFragment();
+        fragmentManager.beginTransaction()
+                .replace(R.id.list,mAboutFragment,TAG_ABOUT_FRAGMENT)
+                .addToBackStack(null).commit();
+        // TODO: 2/20/2017 Test what happens if about is clicked multiple times without returning
+    }
+
     private void createToolbar() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
     }
 
     private void createAdHandler() {
+        if (fragmentManager == null) {
+            fragmentManager = getFragmentManager();
+        }
         adHandler = new AdHandler();
-        adHandler.initialize(getApplicationContext());
-        adHandler.setUp(findViewById(R.id.adView));
+        fragmentManager.beginTransaction().add(adHandler, TAG_AD_FRAGMENT).commit();
     }
 
     private void createDataController() {
+        if (fragmentManager == null) {
+            fragmentManager = getFragmentManager();
+        }
+        dataController = new DataController();
         fragmentManager.beginTransaction()
                 .add(dataController, TAG_DATA_FRAGMENT).commit();
     }
@@ -218,10 +186,6 @@ public class MainListActivity extends LifecycleLoggingActivity implements
         Intent intent = new Intent(this, EditReminder.class);
         intent.putExtra("New",true);
         startActivity(intent);
-    }
-
-    private void createDefaultEditor() {
-
     }
     //</editor-fold>
 }

@@ -3,6 +3,7 @@ package us.bridgeses.Minder.controllers;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.Fragment;
+import android.app.FragmentManager;
 import android.app.LoaderManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -15,6 +16,9 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -23,7 +27,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import us.bridgeses.Minder.AboutFragment;
+import us.bridgeses.Minder.R;
 import us.bridgeses.Minder.Reminder;
+import us.bridgeses.Minder.exporter.ExportActivity;
+import us.bridgeses.Minder.exporter.ImportActivity;
 import us.bridgeses.Minder.persistence.dao.DaoFactory;
 import us.bridgeses.Minder.persistence.dao.ReminderDAO;
 import us.bridgeses.Minder.receivers.ReminderReceiver;
@@ -64,6 +72,7 @@ public class DataController extends Fragment implements LoaderManager.LoaderCall
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
+        setHasOptionsMenu(true);
     }
 
     @Nullable
@@ -90,6 +99,47 @@ public class DataController extends Fragment implements LoaderManager.LoaderCall
         // TODO: 2/17/2017 Handle case where DataController is ready before ListView
         Log.d(TAG, "onActivityCreated:");
         loadAll();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.data_menu, menu);
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            /*case R.id.defaults:
+                // TODO: 2/20/2017 Fix defaults
+                callback.createEditor(-1L);
+                return true;*/
+            case R.id.action_export:
+                exportReminders();
+                return true;
+            case R.id.action_import:
+                importReminders();
+                return true;
+
+            case R.id.action_new:
+                createNew();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+
+
+    private void importReminders() {
+        // Should be handled by dataController
+        new ImportActivity(getActivity()).importBackup();
+        // CursorLoader should handle refreshing. Test this.
+    }
+
+    private void exportReminders() {
+        // Should be handled by dataController
+        new ExportActivity(getActivity()).export();
     }
 
     public void skipNext(int id) {

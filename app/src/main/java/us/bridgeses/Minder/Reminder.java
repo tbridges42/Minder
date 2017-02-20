@@ -26,10 +26,7 @@ import us.bridgeses.Minder.persistence.dao.DaoFactory;
 import us.bridgeses.Minder.persistence.dao.ReminderDAO;
 
 /**
- * Created by Overseer on 7/13/2014.
- * Reminder class contains all settings for individual reminders
- * and methods for getting/setting, also storing in and retrieving from SQL db
- * The class that makes the magic happen
+ * Model class for a Reminder
  */
 
 public class Reminder implements Parcelable{
@@ -100,8 +97,8 @@ public class Reminder implements Parcelable{
         readFromParcel(in);
     }
 
-	@Override
-	public boolean equals(Object obj) {
+    // Return if two Reminders are equal for display purposes
+	public boolean displayEquals(Object obj) {
 		if (!(obj instanceof Reminder)) {
 			return false;
 		}

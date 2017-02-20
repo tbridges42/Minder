@@ -17,6 +17,14 @@ public class ReminderSorter extends SortedList.Callback<Reminder> {
         this.adapter = adapter;
     }
 
+    /**
+     * Compare two Reminders. The standard sort is active reminders should always be sorted before
+     * inactive reminders, and if both are active or both are inactive, the reminder that occurs
+     * first chronologically should come first
+     * @param o1
+     * @param o2
+     * @return -1 if 01 should come before 02, 1 if 02 should come before 01, or 0 if they are equal
+     */
     public int compare(Reminder o1, Reminder o2) {
         if (o1.getActive() && !o2.getActive()) {
             return -1;
@@ -42,7 +50,7 @@ public class ReminderSorter extends SortedList.Callback<Reminder> {
 
     @Override
     public boolean areContentsTheSame(Reminder oldItem, Reminder newItem) {
-        return oldItem.equals(newItem);
+        return oldItem.displayEquals(newItem);
     }
 
     @Override
