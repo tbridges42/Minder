@@ -1,38 +1,28 @@
 package us.bridgeses.Minder;
 
-import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-
-import java.io.PrintWriter;
 
 import us.bridgeses.Minder.controllers.DataController;
 import us.bridgeses.Minder.controllers.TrackingController;
 import us.bridgeses.Minder.editor.EditReminder;
 import us.bridgeses.Minder.exporter.ExportActivity;
 import us.bridgeses.Minder.exporter.ImportActivity;
-import us.bridgeses.Minder.util.ConfirmDialogFragment;
 import us.bridgeses.Minder.util.vandy.LifecycleLoggingActivity;
 import us.bridgeses.Minder.views.ReminderListViewFragment;
 import us.bridgeses.Minder.views.interfaces.ReminderListView;
 
 /**
- * Created by Tony on 8/8/2014.
+ * The main Activity of Minder. Controls and provides Fragments
  */
-public class MainListActivity extends LifecycleLoggingActivity implements TaskCallbacks,
-        ConfirmDialogFragment.NoticeDialogListener,ReminderListAdapter.ListClicksListener,
+public class MainListActivity extends LifecycleLoggingActivity implements
         DataController.ActivityCallback, ReminderListViewFragment.ViewCallback {
-// TODO: Investigate crash when rotating
 
     private static final String TAG_ASYNC_FRAGMENT = "Async_fragment";
     private static final String TAG_ABOUT_FRAGMENT = "About_fragment";
@@ -41,45 +31,10 @@ public class MainListActivity extends LifecycleLoggingActivity implements TaskCa
 	private Fragment mAboutFragment;
     private DataController dataController;
     private TrackingController trackingController;
-	private Boolean firstRun;
     private FragmentManager fragmentManager;
-    private ProgressDialog progressDialog;
     private AdHandler adHandler;
 
-    @Override
-    public void SkipClick(int id){
-        ConfirmDialogFragment df = ConfirmDialogFragment.newInstance("Skip Reminder",
-                "Skip the next instance of this Reminder","Skip",
-                getResources().getString(R.string.edit_cancel),id);
-        df.show(fragmentManager, "SkipDialog");
-    }
-
-    @Override
-    public void IconClick(int id){
-    }
-
-	@Override
-	public void onDialogNegativeClick(DialogFragment dialog) {
-
-	}
-
-	@Override
-	public void onDialogPositiveClick(DialogFragment dialog, int id) {
-		dataController.skipNext(id);
-	}
-
-	private void setTracker(){
-		trackingController = TrackingController.getInstance(this);
-	}
-
-    //Called if the user creates a new reminder
-    @Deprecated
-    public void editReminder(View view) {
-        Intent intent = new Intent(this, EditReminder.class);
-        intent.putExtra("New",true);
-        startActivity(intent);
-    }
-
+    //<editor-fold desc="DataController.ActivityCallback Methods">
     @Override
     public ReminderListView getListView() {
         return mReminderListFragment;
@@ -100,73 +55,41 @@ public class MainListActivity extends LifecycleLoggingActivity implements TaskCa
             startActivity(intent);
         }
     }
+    //</editor-fold>
 
+    //<editor-fold desc="ReminderListViewFragment.ViewCallback Methods">
     @Override
-	public void onBackPressed()
-	{
-		fragmentManager = getFragmentManager();
-        Fragment fragment = fragmentManager.findFragmentByTag(TAG_ABOUT_FRAGMENT);
-        if (!(fragment instanceof AboutFragment)){
-            finish();
-        }
-		fragmentManager.popBackStack();
-	}
+    public DataController getDataController() {
+        return dataController;
+    }
 
+    //</editor-fold>
 
+    //<editor-fold desc="Lifecycle Methods">
 
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mainlist);
 
-        SharedPreferences defaultPreferences = getApplication().
-                getSharedPreferences("Defaults", Context.MODE_PRIVATE);
-        firstRun = defaultPreferences.getBoolean("first_run-0.7.3",true);
+        createAdHandler();
+        createToolbar();
 
         // TODO: Figure out how to break out tutorial
-        // TODO: Break out preference handling
-        if (firstRun){
-            SharedPreferences.Editor editor = defaultPreferences.edit();
-            Reminder reminder = Reminder.reminderFactory(this);
-            Reminder.reminderToPreference(this,defaultPreferences, reminder);
 
-            editor.putBoolean("first_run-0.7.1", false);
-            editor.apply();
-            editor =  PreferenceManager.getDefaultSharedPreferences(this).edit();
-            editor.clear().apply();
-        }
+        findListView();
+        findDataController();
 
-        fragmentManager = getFragmentManager();
-	    Fragment fragment = fragmentManager.findFragmentByTag(TAG_ASYNC_FRAGMENT);
-	    if (fragment instanceof ReminderListViewFragment){
-		    mReminderListFragment = (ReminderListViewFragment) fragment;
-	    }
-
-        fragment = fragmentManager.findFragmentByTag(TAG_DATA_FRAGMENT);
-        if (fragment instanceof  DataController) {
-            dataController = (DataController) fragment;
-        }
-        // If the Fragment is non-null, then it is currently being
-        // retained across a configuration change.
         if (mReminderListFragment == null) {
-	        // create new fragment
             setTracker();
-            mReminderListFragment = new ReminderListViewFragment();
-	        fragmentManager.beginTransaction()
-                    .replace(R.id.list, mReminderListFragment,TAG_ASYNC_FRAGMENT)
-                    .addToBackStack(null).commit();
+            createListView();
         }
 
         if (dataController == null) {
             dataController = new DataController();
-            fragmentManager.beginTransaction()
-                    .add(dataController, TAG_DATA_FRAGMENT).commit();
+            createDataController();
         }
-        adHandler = new AdHandler();
-        adHandler.initialize(getApplicationContext());
-        adHandler.setUp(findViewById(R.id.adView));
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+
     }
 
     @Override
@@ -175,22 +98,19 @@ public class MainListActivity extends LifecycleLoggingActivity implements TaskCa
         if (fragmentManager == null) {
             fragmentManager = getFragmentManager();
         }
-	    Fragment fragment = fragmentManager.findFragmentByTag(TAG_ASYNC_FRAGMENT);
-	    if (fragment instanceof ReminderListViewFragment){
-		    mReminderListFragment = (ReminderListViewFragment) fragment;
-	    }
-	    else{
-		    if (fragment instanceof AboutFragment){
-			    mAboutFragment = fragment;
-		    }
-	    }
+        Fragment fragment = fragmentManager.findFragmentByTag(TAG_ASYNC_FRAGMENT);
+        if (fragment instanceof ReminderListViewFragment){
+            mReminderListFragment = (ReminderListViewFragment) fragment;
+        }
+        else{
+            if (fragment instanceof AboutFragment){
+                mAboutFragment = fragment;
+            }
+        }
         // If the Fragment is non-null, then it is currently being
         // retained across a configuration change.
         if (mReminderListFragment == null) {
-            mReminderListFragment = new ReminderListViewFragment();
-            fragmentManager.beginTransaction()
-                    .replace(R.id.list, mReminderListFragment,TAG_ASYNC_FRAGMENT)
-                    .addToBackStack(null).commit();
+            createListView();
             // TODO: Conditionally add editor fragment based on screen layout
         }
     }
@@ -219,52 +139,89 @@ public class MainListActivity extends LifecycleLoggingActivity implements TaskCa
                 new ImportActivity(this).importBackup();
                 // TODO: Figure out how to refresh the list after
                 return true;
-	        case R.id.action_about:
-				FragmentManager fm = getFragmentManager();
-		        mAboutFragment = new AboutFragment();
-		        fm.beginTransaction().replace(R.id.list,(Fragment)mAboutFragment,TAG_ABOUT_FRAGMENT).addToBackStack(null).commit();
-		        return true;
+            case R.id.action_about:
+                FragmentManager fm = getFragmentManager();
+                mAboutFragment = new AboutFragment();
+                fm.beginTransaction().replace(R.id.list,(Fragment)mAboutFragment,TAG_ABOUT_FRAGMENT).addToBackStack(null).commit();
+                return true;
             case R.id.action_new:
                 editReminder(findViewById(android.R.id.content));
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
 
+    @Override
+    public void onBackPressed()
+    {
+        fragmentManager = getFragmentManager();
+        Fragment fragment = fragmentManager.findFragmentByTag(TAG_ABOUT_FRAGMENT);
+        if (!(fragment instanceof AboutFragment)){
+            finish();
+        }
+        fragmentManager.popBackStack();
+    }
+    //</editor-fold>
+
+    //<editor-fold desc="Private Methods">
+    private void createToolbar() {
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+    }
+
+    private void createAdHandler() {
+        adHandler = new AdHandler();
+        adHandler.initialize(getApplicationContext());
+        adHandler.setUp(findViewById(R.id.adView));
+    }
+
+    private void createDataController() {
+        fragmentManager.beginTransaction()
+                .add(dataController, TAG_DATA_FRAGMENT).commit();
+    }
+
+    private void createListView() {
+        mReminderListFragment = new ReminderListViewFragment();
+        fragmentManager.beginTransaction()
+            .replace(R.id.list, mReminderListFragment,TAG_ASYNC_FRAGMENT)
+            .addToBackStack(null).commit();
+    }
+
+    private void findDataController() {
+        if (fragmentManager == null) {
+            fragmentManager = getFragmentManager();
+        }
+        Fragment fragment = fragmentManager.findFragmentByTag(TAG_DATA_FRAGMENT);
+        if (fragment instanceof DataController) {
+            dataController = (DataController) fragment;
+        }
+    }
+
+    private void findListView() {
+        if (fragmentManager == null) {
+            fragmentManager = getFragmentManager();
+        }
+        Fragment fragment = fragmentManager.findFragmentByTag(TAG_ASYNC_FRAGMENT);
+        if (fragment instanceof ReminderListViewFragment){
+            mReminderListFragment = (ReminderListViewFragment) fragment;
+        }
+    }
+
+    private void setTracker(){
+        trackingController = TrackingController.getInstance(this);
+    }
+
+    //Called if the user creates a new reminder
+    @Deprecated
+    private void editReminder(View view) {
+        Intent intent = new Intent(this, EditReminder.class);
+        intent.putExtra("New",true);
+        startActivity(intent);
     }
 
     private void createDefaultEditor() {
 
     }
-
-    @Override
-    public void onPreExecute() {
-        progressDialog = ProgressDialog.show(this, "", "Loading. . .", true, true);
-    }
-
-    @Override
-    public void onCancelled() {
-        if (progressDialog != null) {
-            progressDialog.dismiss();
-            progressDialog = null;
-        }
-    }
-
-    @Override
-    public void onPostExecute() {
-        if (progressDialog != null) {
-            progressDialog.dismiss();
-            progressDialog = null;
-        }
-    }
-
-    @Override
-    public void onProgressUpdate(int percent) {
-
-    }
-
-    @Override
-    public DataController getDataController() {
-        return dataController;
-    }
+    //</editor-fold>
 }

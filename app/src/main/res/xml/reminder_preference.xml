@@ -36,20 +36,17 @@
         android:ringtoneType="all"/>
 
     <PreferenceCategory android:title="Advanced">
-        <!--TODO: Implement Snooze Options -->
         <PreferenceScreen android:key="button_conditions"
             android:title="Conditions">
         </PreferenceScreen>
         <PreferenceScreen android:key="button_style"
             android:title="Style">
         </PreferenceScreen>
-        <!--TODO: Implement LED Options -->
         <PreferenceScreen android:key="button_persistence"
             android:title="Persistence">
         </PreferenceScreen>
-        <!--TODO: Implement Vibrate Options -->
         <!--TODO: Open arbitrary app?-->
-        <!--TODO: When wifi/BT connected/disconnected-->
+        <!--TODO: When BT connected/disconnected-->
     </PreferenceCategory>
 
 

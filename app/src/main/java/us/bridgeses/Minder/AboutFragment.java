@@ -17,7 +17,7 @@ import com.orhanobut.logger.Logger;
  * <p>It extends {@link PreferenceFragment} to utilize its default formatting</p>
  */
 public class AboutFragment extends PreferenceFragment implements Preference.OnPreferenceClickListener, IFragment {
-
+	// TODO: 2/20/2017 Handle case where the user does not have an app to handle email or url
 	/**
 	 * Static factory method to encapsulate the production of AboutFragment
 	 * @return the new AboutFragment
