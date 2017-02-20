@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import java.lang.annotation.Retention;
 
@@ -29,6 +30,8 @@ import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.SINGLE_
  */
 
 public class ReminderProvider extends ContentProvider {
+
+    private static final String TAG = "ReminderProvider";
 
     private static final UriMatcher matcher;
 
@@ -78,12 +81,17 @@ public class ReminderProvider extends ContentProvider {
         switch (type) {
             // TODO: 2/16/2017 Properly implement individual querying
             case REMINDER:
-                selection = uri.getLastPathSegment();
-                selectionArgs = new String[]{ COLUMN_ID };
-                notify();
+                selection = COLUMN_ID + "=?";
+                selectionArgs = new String[]{ uri.getLastPathSegment() };
             case REMINDERS:
+                Log.d(TAG, "query: " + selection);
+                if (selectionArgs != null) {
+                    for (String arg : selectionArgs) {
+                        Log.d(TAG, "query: " + arg);
+                    }
+                }
                 Cursor cursor = db.query(TABLE_NAME, projection, selection,
-                        selectionArgs, sortOrder, null, null);
+                        selectionArgs, null, null, null);
                 Context context = getContext();
                 if (context != null) {
                     ContentResolver resolver = context.getContentResolver();
@@ -108,13 +116,18 @@ public class ReminderProvider extends ContentProvider {
         int type = matcher.match(uri);
         switch (type) {
             case REMINDER: case REMINDERS:
-                newId = db.insert(TABLE_NAME, null, values);
+                newId = db.insertWithOnConflict(TABLE_NAME, null, values,
+                        SQLiteDatabase.CONFLICT_REPLACE);
                 break;
             default:
                 throw new IllegalArgumentException("Invalid uri");
         }
+        Log.d(TAG, "insert: " + uri.toString());
         notifyChanged(uri);
-        return Uri.withAppendedPath(REMINDER_URI, Long.toString(newId));
+        uri = Uri.withAppendedPath(REMINDER_URI, Long.toString(newId));
+        Log.d(TAG, "insert: " + uri.toString());
+        notifyChanged(uri);
+        return uri;
     }
 
     @Override
@@ -124,8 +137,8 @@ public class ReminderProvider extends ContentProvider {
         int type = matcher.match(uri);
         switch (type) {
             case REMINDER:
-                selection = uri.getLastPathSegment();
-                selectionArgs = new String[]{ COLUMN_ID };
+                selection = COLUMN_ID + "=?";
+                selectionArgs = new String[]{ uri.getLastPathSegment() };
             case REMINDERS:
                 int rows = db.delete(TABLE_NAME, selection, selectionArgs);
                 notifyChanged(uri);
@@ -143,8 +156,8 @@ public class ReminderProvider extends ContentProvider {
         int type = matcher.match(uri);
         switch (type) {
             case REMINDER:
-                selection = uri.getLastPathSegment();
-                selectionArgs = new String[]{ COLUMN_ID };
+                selection = COLUMN_ID + "=?";
+                selectionArgs = new String[]{ uri.getLastPathSegment() };
             case REMINDERS:
                 int rows = db.update(TABLE_NAME, values, selection, selectionArgs);
                 notifyChanged(uri);

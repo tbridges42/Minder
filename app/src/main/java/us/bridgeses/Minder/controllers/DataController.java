@@ -13,6 +13,7 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,6 +38,8 @@ import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.REMINDE
  */
 
 public class DataController extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+
+    private static final String TAG = "DataController";
 
     private static final int LOADER_ID = 1;
 
@@ -85,6 +88,7 @@ public class DataController extends Fragment implements LoaderManager.LoaderCall
             throw new NullPointerException("Activity was not ready");
         }
         // TODO: 2/17/2017 Handle case where DataController is ready before ListView
+        Log.d(TAG, "onActivityCreated:");
         loadAll();
     }
 
@@ -132,10 +136,12 @@ public class DataController extends Fragment implements LoaderManager.LoaderCall
         }
         LoaderManager manager = getLoaderManager();
         Loader loader = manager.getLoader(LOADER_ID);
-        if (loader == null) {
+        if (loader == null || !loader.isStarted()) {
+            Log.d(TAG, "loadAll: creating loader");
             loader = manager.initLoader(LOADER_ID, null, this);
             loader.startLoading();
         }
+        Log.d(TAG, "loadAll: ");
     }
 
     public void save(Reminder reminder) {
@@ -162,6 +168,7 @@ public class DataController extends Fragment implements LoaderManager.LoaderCall
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         callback.getListView().displayProgress();
+        Log.d(TAG, "onCreateLoader: ");
         return new CursorLoader(getActivity(), REMINDER_URI, DISPLAY_PROJECTION,
                 null, null, null);
     }
@@ -176,12 +183,21 @@ public class DataController extends Fragment implements LoaderManager.LoaderCall
             Reminder[] reminders = reminderDAO.getReminders();
             Collections.addAll(cachedReminders, reminders);
             callback.getListView().setReminders(cachedReminders);
-            data.close();
+            Log.d(TAG, "onLoadFinished: " + data.getCount());
         }
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
 
+    }
+
+    public void createNew() {
+        callback.createEditor(-1L);
+    }
+
+    public void onReminderSelected(long id) {
+        Log.d(TAG, "onReminderSelected: " + id);
+        callback.createEditor(id);
     }
 }

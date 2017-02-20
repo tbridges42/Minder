@@ -3,9 +3,11 @@ package us.bridgeses.Minder.editor;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import us.bridgeses.Minder.AdHandler;
 import us.bridgeses.Minder.R;
 import us.bridgeses.Minder.util.vandy.LifecycleLoggingActivity;
 import us.bridgeses.Minder.controllers.interfaces.Editor;
@@ -15,10 +17,12 @@ import us.bridgeses.Minder.controllers.interfaces.Editor;
  */
 public abstract class EditorActivity extends LifecycleLoggingActivity implements Editor {
 
+
 	Fragment mFragment;
 	protected Bundle saved;
 	protected String type;
 	protected int frameID = R.layout.edit_frame;
+	private AdHandler adHandler;
 
 
 
@@ -33,6 +37,11 @@ public abstract class EditorActivity extends LifecycleLoggingActivity implements
 		Fragment fragment = EditorFragmentFactory.newInstance(type);
 		FragmentManager fragmentManager = getFragmentManager();
 		mFragment = fragmentManager.findFragmentByTag(type);
+		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+		setSupportActionBar(toolbar);
+		adHandler = new AdHandler();
+		adHandler.initialize(getApplicationContext());
+		adHandler.setUp(findViewById(R.id.adView));
 
 		if (mFragment == null) {
 			fragmentManager.beginTransaction().replace(R.id.reminder_frame, fragment,type).commit();

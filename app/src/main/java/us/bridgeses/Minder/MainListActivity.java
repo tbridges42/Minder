@@ -14,6 +14,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import java.io.PrintWriter;
+
 import us.bridgeses.Minder.controllers.DataController;
 import us.bridgeses.Minder.controllers.TrackingController;
 import us.bridgeses.Minder.editor.EditReminder;
@@ -22,17 +24,20 @@ import us.bridgeses.Minder.exporter.ImportActivity;
 import us.bridgeses.Minder.util.ConfirmDialogFragment;
 import us.bridgeses.Minder.util.vandy.LifecycleLoggingActivity;
 import us.bridgeses.Minder.views.ReminderListViewFragment;
+import us.bridgeses.Minder.views.interfaces.ReminderListView;
 
 /**
  * Created by Tony on 8/8/2014.
  */
 public class MainListActivity extends LifecycleLoggingActivity implements TaskCallbacks,
-        ConfirmDialogFragment.NoticeDialogListener,ReminderListAdapter.ListClicksListener{
+        ConfirmDialogFragment.NoticeDialogListener,ReminderListAdapter.ListClicksListener,
+        DataController.ActivityCallback, ReminderListViewFragment.ViewCallback {
 // TODO: Investigate crash when rotating
 
     private static final String TAG_ASYNC_FRAGMENT = "Async_fragment";
     private static final String TAG_ABOUT_FRAGMENT = "About_fragment";
-    private Fragment mReminderListFragment;
+    public static final String TAG_DATA_FRAGMENT = "Data_fragment";
+    private ReminderListViewFragment mReminderListFragment;
 	private Fragment mAboutFragment;
     private DataController dataController;
     private TrackingController trackingController;
@@ -75,12 +80,25 @@ public class MainListActivity extends LifecycleLoggingActivity implements TaskCa
         startActivity(intent);
     }
 
-    public void onNewClicked(View view) {
-        createEditor(-1L);
+    @Override
+    public ReminderListView getListView() {
+        return mReminderListFragment;
     }
 
-    private void createEditor(long l) {
+    @Override
+    public TrackingController getTracker() {
+        return trackingController;
+    }
 
+    public void createEditor(long l) {
+        if (l == -1) {
+            editReminder(null);
+        }
+        else {
+            Intent intent = new Intent(this, EditReminder.class);
+            intent.putExtra("id",Math.round(l));
+            startActivity(intent);
+        }
     }
 
     @Override
@@ -120,23 +138,29 @@ public class MainListActivity extends LifecycleLoggingActivity implements TaskCa
 
         fragmentManager = getFragmentManager();
 	    Fragment fragment = fragmentManager.findFragmentByTag(TAG_ASYNC_FRAGMENT);
-	    if (fragment instanceof ReminderListFragment){
-		    mReminderListFragment = fragment;
+	    if (fragment instanceof ReminderListViewFragment){
+		    mReminderListFragment = (ReminderListViewFragment) fragment;
 	    }
-	    else{
-		    if (fragment instanceof AboutFragment){
-			    mAboutFragment = fragment;
-		    }
-	    }
+
+        fragment = fragmentManager.findFragmentByTag(TAG_DATA_FRAGMENT);
+        if (fragment instanceof  DataController) {
+            dataController = (DataController) fragment;
+        }
         // If the Fragment is non-null, then it is currently being
         // retained across a configuration change.
-        if (fragment == null) {
+        if (mReminderListFragment == null) {
 	        // create new fragment
             setTracker();
             mReminderListFragment = new ReminderListViewFragment();
 	        fragmentManager.beginTransaction()
                     .replace(R.id.list, mReminderListFragment,TAG_ASYNC_FRAGMENT)
                     .addToBackStack(null).commit();
+        }
+
+        if (dataController == null) {
+            dataController = new DataController();
+            fragmentManager.beginTransaction()
+                    .add(dataController, TAG_DATA_FRAGMENT).commit();
         }
         adHandler = new AdHandler();
         adHandler.initialize(getApplicationContext());
@@ -152,8 +176,8 @@ public class MainListActivity extends LifecycleLoggingActivity implements TaskCa
             fragmentManager = getFragmentManager();
         }
 	    Fragment fragment = fragmentManager.findFragmentByTag(TAG_ASYNC_FRAGMENT);
-	    if (fragment instanceof ReminderListFragment){
-		    mReminderListFragment = fragment;
+	    if (fragment instanceof ReminderListViewFragment){
+		    mReminderListFragment = (ReminderListViewFragment) fragment;
 	    }
 	    else{
 		    if (fragment instanceof AboutFragment){
@@ -163,9 +187,9 @@ public class MainListActivity extends LifecycleLoggingActivity implements TaskCa
         // If the Fragment is non-null, then it is currently being
         // retained across a configuration change.
         if (mReminderListFragment == null) {
-            mReminderListFragment = new ReminderListFragment();
+            mReminderListFragment = new ReminderListViewFragment();
             fragmentManager.beginTransaction()
-                    .replace(R.id.list, (Fragment) mReminderListFragment,TAG_ASYNC_FRAGMENT)
+                    .replace(R.id.list, mReminderListFragment,TAG_ASYNC_FRAGMENT)
                     .addToBackStack(null).commit();
             // TODO: Conditionally add editor fragment based on screen layout
         }
@@ -237,5 +261,10 @@ public class MainListActivity extends LifecycleLoggingActivity implements TaskCa
     @Override
     public void onProgressUpdate(int percent) {
 
+    }
+
+    @Override
+    public DataController getDataController() {
+        return dataController;
     }
 }

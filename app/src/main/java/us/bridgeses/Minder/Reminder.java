@@ -33,7 +33,8 @@ import us.bridgeses.Minder.persistence.dao.ReminderDAO;
  */
 
 public class Reminder implements Parcelable{
-// TODO: 12/10/2016 Export/import reminders
+
+	private static final String TAG = "Reminder";
 // TODO: 1/3/2017  break this up!!!
 //Constructors
     public Reminder() {
@@ -921,7 +922,8 @@ public class Reminder implements Parcelable{
     public static Reminder nextRepeat(Reminder reminder){
         switch (reminder.getRepeatType()) {
             case 0: {
-                reminder.setActive(false);          //Deactivate
+				Log.d(TAG, "nextRepeat: deactivating");
+				reminder.setActive(false);          //Deactivate
 	            break;
             }
             case 1: {

@@ -3,6 +3,7 @@ package us.bridgeses.Minder.adapters;
 import android.content.Context;
 import android.support.v7.util.SortedList;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +23,8 @@ import us.bridgeses.Minder.Reminder;
 
 public class ReminderRecyclerAdapter
         extends RecyclerView.Adapter<ReminderRecyclerAdapter.ReminderHolder> {
+
+    private static final String TAG = "ReminderRecyclerAdapter";
 
     public interface OnFinishClickedListener {
         void onFinishClicked(long id);
@@ -43,6 +46,8 @@ public class ReminderRecyclerAdapter
         reminders = new SortedList<>(Reminder.class,
                 new ReminderSorter(this));
         reminders.addAll(reminderList);
+        setHasStableIds(true);
+        Log.d(TAG, "ReminderRecyclerAdapter: Received " + reminders.size() + " reminders");
     }
 
     public void addReminder(Reminder reminder) {
@@ -61,7 +66,7 @@ public class ReminderRecyclerAdapter
     public ReminderHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         Context context = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(context);
-
+        Log.d(TAG, "onCreateViewHolder: ");
         View reminderView = inflater.inflate(R.layout.item_reminder, parent, false);
 
         ReminderHolder reminderHolder = new ReminderHolder(reminderView);
@@ -71,9 +76,10 @@ public class ReminderRecyclerAdapter
     @Override
     public void onBindViewHolder(ReminderHolder holder, int position) {
         Reminder reminder = reminders.get(position);
-
+        Log.d(TAG, "onBindViewHolder: " + reminder.getName());
         holder.name.setText(reminder.getName());
         holder.description.setText(reminder.getDescription());
+        holder.id = reminder.getId();
         if (reminder.getRepeatType() == 0) {
             holder.repeatIcon.setVisibility(View.INVISIBLE);
         }
@@ -154,6 +160,7 @@ public class ReminderRecyclerAdapter
         TextView description;
         ImageView repeatIcon;
         TextView repeatDescription;
+        long id;
 
         ReminderHolder(View itemView) {
             super(itemView);
@@ -177,7 +184,7 @@ public class ReminderRecyclerAdapter
                 @Override
                 public void onClick(View v) {
                     if (itemClickedListener != null) {
-                        itemClickedListener.onItemClicked(getItemId());
+                        itemClickedListener.onItemClicked(id);
                     }
                 }
             });

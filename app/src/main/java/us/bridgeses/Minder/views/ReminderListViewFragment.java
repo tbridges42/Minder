@@ -1,9 +1,12 @@
 package us.bridgeses.Minder.views;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +16,7 @@ import java.util.List;
 import us.bridgeses.Minder.R;
 import us.bridgeses.Minder.Reminder;
 import us.bridgeses.Minder.adapters.ReminderRecyclerAdapter;
+import us.bridgeses.Minder.controllers.DataController;
 import us.bridgeses.Minder.views.interfaces.ReminderListView;
 
 /**
@@ -23,8 +27,15 @@ public class ReminderListViewFragment extends Fragment implements ReminderListVi
         ReminderRecyclerAdapter.OnFinishClickedListener,
         ReminderRecyclerAdapter.OnItemClickedListener, View.OnClickListener {
 
+    private static final String TAG = "ReminderView";
+
+    public interface ViewCallback {
+        DataController getDataController();
+    }
+
     private RecyclerView reminderView;
     private ReminderRecyclerAdapter reminderAdapter;
+    private ViewCallback callback;
 
     @Nullable
     @Override
@@ -32,12 +43,29 @@ public class ReminderListViewFragment extends Fragment implements ReminderListVi
                              ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_fab_list, container, false);
         reminderView = (RecyclerView) view.findViewById(R.id.reminder_list);
+        reminderView.setLayoutManager(new LinearLayoutManager(getActivity()));
         view.findViewById(R.id.reminder_fab).setOnClickListener(this);
         return view;
     }
 
     @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        try {
+            Activity activity = getActivity();
+            callback = (ViewCallback) activity;
+        }
+        catch (ClassCastException e) {
+            throw new ClassCastException("The caller of View must implement ViewCallback");
+        }
+        catch (NullPointerException e) {
+            throw new NullPointerException("Activity was not ready");
+        }
+    }
+
+    @Override
     public void setReminders(List<Reminder> reminders) {
+        Log.d(TAG, "setReminders: received " + reminders.size() + " reminders");
         reminderAdapter = new ReminderRecyclerAdapter(reminders, this, this);
         reminderView.setAdapter(reminderAdapter);
     }
@@ -80,11 +108,11 @@ public class ReminderListViewFragment extends Fragment implements ReminderListVi
 
     @Override
     public void onItemClicked(long id) {
-        // TODO: Open editor
+        callback.getDataController().onReminderSelected(id);
     }
 
     public void onFABClicked() {
-
+        callback.getDataController().createNew();
     }
 
     @Override
