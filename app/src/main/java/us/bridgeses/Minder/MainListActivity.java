@@ -137,7 +137,7 @@ public class MainListActivity extends LifecycleLoggingActivity implements
             fragmentManager = getFragmentManager();
         }
         adHandler = new AdHandler();
-        fragmentManager.beginTransaction().add(adHandler, TAG_AD_FRAGMENT).commit();
+        fragmentManager.beginTransaction().replace(R.id.adFrame,adHandler, TAG_AD_FRAGMENT).commit();
     }
 
     private void createDataController() {

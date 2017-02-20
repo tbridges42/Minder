@@ -8,7 +8,10 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
         <include layout="@layout/list_toolbar" />
-        <include layout="@layout/banner" />
+        <FrameLayout
+            android:id="@+id/adFrame"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"/>
     </LinearLayout>
     <FrameLayout
         android:layout_width="match_parent"
