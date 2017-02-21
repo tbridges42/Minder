@@ -3,7 +3,6 @@ package us.bridgeses.Minder.controllers;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.Fragment;
-import android.app.FragmentManager;
 import android.app.LoaderManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -23,11 +22,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import us.bridgeses.Minder.AboutFragment;
 import us.bridgeses.Minder.R;
 import us.bridgeses.Minder.Reminder;
 import us.bridgeses.Minder.exporter.ExportActivity;
@@ -42,7 +39,7 @@ import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.DISPLAY
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.REMINDER_URI;
 
 /**
- * Created by tbrid on 2/12/2017.
+ * Manages the loading and saving of reminders
  */
 
 public class DataController extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {

@@ -33,7 +33,6 @@ public class MainListActivity extends LifecycleLoggingActivity implements
     private DataController dataController;
     private TrackingController trackingController;
     private FragmentManager fragmentManager;
-    private AdHandler adHandler;
 
     //<editor-fold desc="DataController.ActivityCallback Methods">
     @Override
@@ -162,8 +161,8 @@ public class MainListActivity extends LifecycleLoggingActivity implements
         if (fragmentManager == null) {
             fragmentManager = getFragmentManager();
         }
-        adHandler = new AdHandler();
-        fragmentManager.beginTransaction().replace(R.id.adFrame,adHandler, TAG_AD_FRAGMENT).commit();
+        AdHandler adHandler = new AdHandler();
+        fragmentManager.beginTransaction().replace(R.id.adFrame, adHandler, TAG_AD_FRAGMENT).commit();
     }
 
     private void createDataController() {
@@ -207,8 +206,7 @@ public class MainListActivity extends LifecycleLoggingActivity implements
     }
 
     //Called if the user creates a new reminder
-    @Deprecated
-    private void editReminder(View view) {
+    private void editReminder(@SuppressWarnings("unused") View view) {
         Intent intent = new Intent(this, EditReminder.class);
         intent.putExtra("New",true);
         startActivity(intent);
