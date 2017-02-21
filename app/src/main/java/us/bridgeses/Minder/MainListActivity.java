@@ -27,6 +27,7 @@ public class MainListActivity extends LifecycleLoggingActivity implements
     private static final String TAG_ABOUT_FRAGMENT = "About_fragment";
     public static final String TAG_DATA_FRAGMENT = "Data_fragment";
     private static final String TAG_AD_FRAGMENT = "Ad_fragment";
+    // TODO: 2/21/2017 Does retaining these here result in leaks?
     private ReminderListViewFragment mReminderListFragment;
 	private Fragment mAboutFragment;
     private DataController dataController;

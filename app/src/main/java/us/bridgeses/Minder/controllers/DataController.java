@@ -98,6 +98,12 @@ public class DataController extends Fragment implements LoaderManager.LoaderCall
     }
 
     @Override
+    public void onDetach() {
+        super.onDetach();
+        callback = null;
+    }
+
+    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.data_menu, menu);
     }
@@ -169,16 +175,10 @@ public class DataController extends Fragment implements LoaderManager.LoaderCall
                 (NotificationManager) applicationContext.getSystemService(NOTIFICATION_SERVICE);
         // Builds the notification and issues it.
         mNotifyMgr.cancel(reminder.getId());
-        // TODO: refresh the list
-        callback.getListView();
-    }
-
-    public void load(long id) {
-        callback.createEditor(id);
     }
 
     public void loadAll() {
-        if (cachedReminders != null) {
+        if (cachedReminders != null && callback != null) {
             callback.getListView().setReminders(cachedReminders);
         }
         LoaderManager manager = getLoaderManager();
@@ -214,7 +214,9 @@ public class DataController extends Fragment implements LoaderManager.LoaderCall
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        callback.getListView().displayProgress();
+        if (callback != null) {
+            callback.getListView().displayProgress();
+        }
         Log.d(TAG, "onCreateLoader: ");
         return new CursorLoader(getActivity(), REMINDER_URI, DISPLAY_PROJECTION,
                 null, null, null);
@@ -222,7 +224,9 @@ public class DataController extends Fragment implements LoaderManager.LoaderCall
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        callback.getListView().removeProgress();
+        if (callback != null) {
+            callback.getListView().removeProgress();
+        }
         if (data != null) {
             DaoFactory daoFactory = DaoFactory.getInstance();
             ReminderDAO reminderDAO =daoFactory.getDao(getActivity());
@@ -240,11 +244,15 @@ public class DataController extends Fragment implements LoaderManager.LoaderCall
     }
 
     public void createNew() {
-        callback.createEditor(-1L);
+        if (callback != null) {
+            callback.createEditor(-1L);
+        }
     }
 
     public void onReminderSelected(long id) {
         Log.d(TAG, "onReminderSelected: " + id);
-        callback.createEditor(id);
+        if (callback != null) {
+            callback.createEditor(id);
+        }
     }
 }
