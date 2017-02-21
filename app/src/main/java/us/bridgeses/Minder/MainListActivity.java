@@ -5,6 +5,7 @@ import android.app.FragmentManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -76,15 +77,14 @@ public class MainListActivity extends LifecycleLoggingActivity implements
 
         // TODO: Figure out how to break out tutorial
 
-        findListView();
         findDataController();
-
+        if (dataController == null) {
+            createDataController();
+        }
+        findListView();
         if (mReminderListFragment == null) {
             setTracker();
             createListView();
-        }
-        if (dataController == null) {
-            createDataController();
         }
     }
 
@@ -106,12 +106,17 @@ public class MainListActivity extends LifecycleLoggingActivity implements
     @Override
     public void onBackPressed()
     {
+        Log.d(TAG, "onBackPressed: ");
         fragmentManager = getFragmentManager();
         Fragment fragment = fragmentManager.findFragmentByTag(TAG_ABOUT_FRAGMENT);
         if (!(fragment instanceof AboutFragment)){
             finish();
         }
-        fragmentManager.popBackStack();
+        fragmentManager.popBackStackImmediate();
+        if (mReminderListFragment != null && mReminderListFragment.isAdded()) {
+            Log.d(TAG, "onBackPressed: loading");
+            dataController.loadAll();
+        }
     }
     //</editor-fold>
 
@@ -120,11 +125,17 @@ public class MainListActivity extends LifecycleLoggingActivity implements
         if (fragmentManager == null) {
             fragmentManager = getFragmentManager();
         }
-        mAboutFragment = new AboutFragment();
-        fragmentManager.beginTransaction()
-                .replace(R.id.list,mAboutFragment,TAG_ABOUT_FRAGMENT)
-                .addToBackStack(null).commit();
-        // TODO: 2/20/2017 Test what happens if about is clicked multiple times without returning
+        if (mAboutFragment == null) {
+            mAboutFragment = fragmentManager.findFragmentByTag(TAG_ABOUT_FRAGMENT);
+            if (mAboutFragment == null) {
+                mAboutFragment = new AboutFragment();
+            }
+        }
+        if (!mAboutFragment.isAdded()) {
+            fragmentManager.beginTransaction()
+                    .replace(R.id.list,mAboutFragment,TAG_ABOUT_FRAGMENT)
+                    .addToBackStack(null).commit();
+        }
     }
 
     private void createToolbar() {
