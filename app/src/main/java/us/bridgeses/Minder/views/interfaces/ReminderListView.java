@@ -5,6 +5,7 @@ import android.database.Cursor;
 import java.util.List;
 
 import us.bridgeses.Minder.Reminder;
+import us.bridgeses.Minder.views.ViewStatus;
 
 /**
  * Created by bridgtxcdf on 2/15/2017.
@@ -23,4 +24,6 @@ public interface ReminderListView {
     void displayProgress();
 
     void removeProgress();
+
+    @ViewStatus int getStatus();
 }

@@ -63,6 +63,11 @@ public class MainListActivity extends LifecycleLoggingActivity implements
         return dataController;
     }
 
+    @Override
+    public void notifyReady() {
+        dataController.loadAll();
+    }
+
     //</editor-fold>
 
     //<editor-fold desc="Lifecycle Methods">

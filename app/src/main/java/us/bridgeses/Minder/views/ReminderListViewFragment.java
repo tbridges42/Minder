@@ -2,7 +2,9 @@ package us.bridgeses.Minder.views;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -19,6 +21,11 @@ import us.bridgeses.Minder.adapters.ReminderRecyclerAdapter;
 import us.bridgeses.Minder.controllers.DataController;
 import us.bridgeses.Minder.views.interfaces.ReminderListView;
 
+import static us.bridgeses.Minder.views.ViewStatus.DETACHED;
+import static us.bridgeses.Minder.views.ViewStatus.LOADING;
+import static us.bridgeses.Minder.views.ViewStatus.PAUSED;
+import static us.bridgeses.Minder.views.ViewStatus.READY;
+
 /**
  * A fragment for displaying a RecyclerView full of Reminders and an FAB
  */
@@ -28,9 +35,11 @@ public class ReminderListViewFragment extends Fragment implements ReminderListVi
         ReminderRecyclerAdapter.OnItemClickedListener, View.OnClickListener {
 
     private static final String TAG = "ReminderView";
+    @ViewStatus public static int status = DETACHED;
 
     public interface ViewCallback {
         DataController getDataController();
+        void notifyReady();
     }
 
     private RecyclerView reminderView;
@@ -64,11 +73,42 @@ public class ReminderListViewFragment extends Fragment implements ReminderListVi
     }
 
     @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        status = LOADING;
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        status = DETACHED;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        status = PAUSED;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        status = READY;
+        callback.notifyReady();
+    }
+
+    @Override
     public void setReminders(List<Reminder> reminders) {
         Log.d(TAG, "setReminders: received " + reminders.size() + " reminders");
-        reminderAdapter = new ReminderRecyclerAdapter(reminders, this, this);
-        reminderView.setAdapter(reminderAdapter);
-        // TODO: 2/20/2017 Crash when datacontroller finishes loading before onCreateView here
+        if (reminderAdapter == null) {
+            reminderAdapter = new ReminderRecyclerAdapter(reminders, this, this);
+            reminderView.setAdapter(reminderAdapter);
+        }
+        else {
+            for (Reminder reminder : reminders) {
+                reminderAdapter.addReminder(reminder);
+            }
+        }
     }
 
     @Override
@@ -100,6 +140,11 @@ public class ReminderListViewFragment extends Fragment implements ReminderListVi
     @Override
     public void removeProgress() {
 
+    }
+
+    @Override
+    public int getStatus() {
+        return status;
     }
 
     @Override

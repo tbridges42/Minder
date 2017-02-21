@@ -64,8 +64,7 @@ public class DataController extends Fragment implements LoaderManager.LoaderCall
     private List<Reminder> cachedReminders;
 
     public static DataController getInstance() {
-        DataController dataController = new DataController();
-        return dataController;
+        return new DataController();
     }
 
     @Override
@@ -96,8 +95,6 @@ public class DataController extends Fragment implements LoaderManager.LoaderCall
         catch (NullPointerException e) {
             throw new NullPointerException("Activity was not ready");
         }
-        // TODO: 2/17/2017 Handle case where DataController is ready before ListView
-        loadAll();
     }
 
     @Override
@@ -111,6 +108,7 @@ public class DataController extends Fragment implements LoaderManager.LoaderCall
         switch (item.getItemId()) {
             /*case R.id.defaults:
                 // TODO: 2/20/2017 Fix defaults
+                // Move default creation into editor controller
                 callback.createEditor(-1L);
                 return true;*/
             case R.id.action_export:
