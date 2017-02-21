@@ -94,6 +94,15 @@ public class MainListActivity extends LifecycleLoggingActivity implements
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        if(isFinishing() && dataController != null) {
+            FragmentManager fm = getFragmentManager();
+            fm.beginTransaction().remove(dataController).commit();
+        }
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
