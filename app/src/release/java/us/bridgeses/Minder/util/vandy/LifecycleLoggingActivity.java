@@ -1,8 +1,6 @@
 package us.bridgeses.Minder.util.vandy;
 
-import android.app.Activity;
-import android.os.Bundle;
-import android.util.Log;
+import android.support.v7.app.AppCompatActivity;
 
 /**
  * This helper class was created by the Vanderbilt University and made available
@@ -13,7 +11,7 @@ import android.util.Log;
  * This abstract class extends the Activity class and overrides lifecycle
  * callbacks for logging various lifecycle events.
  */
-public abstract class LifecycleLoggingActivity extends Activity {
+public abstract class LifecycleLoggingActivity extends AppCompatActivity {
     /**
      * Debugging tag used by the Android logger.
      */
