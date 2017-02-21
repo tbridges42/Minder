@@ -15,6 +15,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NavUtils;
+import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -24,19 +25,23 @@ import com.orhanobut.logger.Logger;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+import us.bridgeses.Minder.AdHandler;
 import us.bridgeses.Minder.R;
 import us.bridgeses.Minder.Reminder;
 import us.bridgeses.Minder.TaskCallbacks;
 import us.bridgeses.Minder.receivers.ReminderReceiver;
 import us.bridgeses.Minder.util.ConfirmDialogFragment;
+import us.bridgeses.Minder.util.vandy.LifecycleLoggingActivity;
 
 /**
  * This is the primary editor class. All essential reminder settings should be changed here.
  * Supplemental settings should be changed in sub-activities
  */
-public class EditReminder extends Activity implements ConfirmDialogFragment.NoticeDialogListener,
+public class EditReminder extends LifecycleLoggingActivity implements
+        ConfirmDialogFragment.NoticeDialogListener,
                                     TaskCallbacks{
 
+    private static final String TAG_AD_FRAGMENT = "Ad_handler";
     TaskCallbacks callbacks;
     ProgressDialog progressDialog;
     Reminder reminder;
@@ -45,6 +50,8 @@ public class EditReminder extends Activity implements ConfirmDialogFragment.Noti
     private Boolean defaults = false;
     ConfirmDialogFragment df;
     Context context;
+    private AdHandler adHandler;
+    private FragmentManager fragmentManager;
 
     /**
      * Called when a ConfirmDialogFragment's negative button is clicked
@@ -240,6 +247,21 @@ public class EditReminder extends Activity implements ConfirmDialogFragment.Noti
                 task.execute(id);
             }
 	    }
+        createAdHandler();
+        createToolbar();
+    }
+
+    private void createAdHandler() {
+        if (fragmentManager == null) {
+            fragmentManager = getFragmentManager();
+        }
+        adHandler = new AdHandler();
+        fragmentManager.beginTransaction().replace(R.id.adFrame,adHandler, TAG_AD_FRAGMENT).commit();
+    }
+
+    private void createToolbar() {
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
     }
 
     @Override

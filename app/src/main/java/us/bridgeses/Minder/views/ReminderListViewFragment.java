@@ -68,6 +68,7 @@ public class ReminderListViewFragment extends Fragment implements ReminderListVi
         Log.d(TAG, "setReminders: received " + reminders.size() + " reminders");
         reminderAdapter = new ReminderRecyclerAdapter(reminders, this, this);
         reminderView.setAdapter(reminderAdapter);
+        // TODO: 2/20/2017 Crash when datacontroller finishes loading before onCreateView here
     }
 
     @Override

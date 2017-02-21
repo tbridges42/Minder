@@ -97,7 +97,6 @@ public class DataController extends Fragment implements LoaderManager.LoaderCall
             throw new NullPointerException("Activity was not ready");
         }
         // TODO: 2/17/2017 Handle case where DataController is ready before ListView
-        Log.d(TAG, "onActivityCreated:");
         loadAll();
     }
 
@@ -180,7 +179,7 @@ public class DataController extends Fragment implements LoaderManager.LoaderCall
         callback.createEditor(id);
     }
 
-    private void loadAll() {
+    public void loadAll() {
         if (cachedReminders != null) {
             callback.getListView().setReminders(cachedReminders);
         }
