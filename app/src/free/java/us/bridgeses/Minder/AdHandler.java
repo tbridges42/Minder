@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
@@ -15,8 +16,7 @@ import com.google.android.gms.ads.MobileAds;
 /**
  * Created by tbrid on 2/12/2017.
  */
-// TODO: 2/19/2017 Can we make this a fragment? Does it retain its own view if we do? 
-public class AdHandler extends Fragment{
+public class AdHandler extends Fragment {
 
     private AdView adView;
 
@@ -27,6 +27,13 @@ public class AdHandler extends Fragment{
     public void setUp(){
         try {
             AdRequest adRequest = new AdRequest.Builder().build();
+            adView.setAdListener(new AdListener() {
+                @Override
+                public void onAdFailedToLoad(int i) {
+                    super.onAdFailedToLoad(i);
+                    adView.setVisibility(View.GONE);
+                }
+            });
             adView.loadAd(adRequest);
         }
         catch (ClassCastException e) {
