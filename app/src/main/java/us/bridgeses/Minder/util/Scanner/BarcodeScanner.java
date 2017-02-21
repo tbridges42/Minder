@@ -3,6 +3,7 @@ package us.bridgeses.Minder.util.Scanner;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.WindowManager;
 
 import com.google.zxing.Result;
 
@@ -20,6 +21,10 @@ public class BarcodeScanner extends LifecycleLoggingActivity implements ZXingSca
     @Override
     public void onCreate(Bundle state) {
         super.onCreate(state);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON |
+                //WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
+                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         mScannerView = new ZXingScannerView(this);   // Programmatically initialize the scanner view
         setContentView(mScannerView);                // Set the scanner view as the content view
     }

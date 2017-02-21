@@ -3,17 +3,26 @@
               android:layout_height="match_parent"
               android:orientation="vertical"
               android:weightSum="10">
-    <FrameLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <include layout="@layout/list_toolbar" />
+        <FrameLayout
+            android:id="@+id/adFrame"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"/>
+    </LinearLayout>
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
         android:id="@+id/reminder_frame"
-        android:layout_weight="8"/>
+        android:layout_weight="10"/>
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:layout_gravity="center_horizontal"
-        android:layout_weight="2">
+        android:layout_gravity="center_horizontal">
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
