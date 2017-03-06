@@ -1,5 +1,6 @@
 package us.bridgeses.Minder;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
@@ -10,12 +11,14 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+
+import java.util.Calendar;
+import java.util.concurrent.TimeUnit;
 
 import us.bridgeses.Minder.controllers.DataController;
 import us.bridgeses.Minder.controllers.TrackingController;
@@ -99,9 +102,19 @@ public class MainListActivity extends LifecycleLoggingActivity implements
             createListView();
         }
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        if (!preferences.getBoolean("do_not_display", false)) {
-            displayAdNotice();
+        long lastSeenMillis = preferences.getLong("ad_notice_last_shown", 0);
+        boolean seenToday = lastSeenMillis != 0;
+        if (!seenToday) {
+            Calendar lastSeen = Calendar.getInstance();
+            long currentMillis = lastSeen.getTimeInMillis();
+            seenToday = currentMillis - lastSeenMillis < TimeUnit.DAYS.toMillis(1);
+            if (!preferences.getBoolean("do_not_display", false)
+                    && !seenToday) {
+                displayAdNotice();
+            }
         }
+
+
     }
 
     @Override
@@ -219,18 +232,22 @@ public class MainListActivity extends LifecycleLoggingActivity implements
     private void displayAdNotice() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Important Notice");
-        builder.setMessage(getString(R.string.advertising_notice));
-        builder.setNeutralButton(getString(R.string.accept),
+        builder.setNeutralButton(getString(R.string.dismiss),
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.cancel();
                     }
                 });
-        View doNotDisplay = View.inflate(this, R.layout.checkbox_do_not_display, null);
-        ((CheckBox)doNotDisplay.findViewById(R.id.do_not_display)).setOnCheckedChangeListener(this);
-        builder.setView(doNotDisplay);
+        // Pass null as the parent view because its going in the dialog layout
+        @SuppressLint("InflateParams")
+        View view = getLayoutInflater().inflate(R.layout.ad_dialog, null);
+        ((CheckBox) view.findViewById(R.id.do_not_display)).setOnCheckedChangeListener(this);
+        builder.setView(view);
         builder.show();
+        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
+        editor.putLong("ad_notice_last_shown", Calendar.getInstance().getTimeInMillis());
+        editor.apply();
     }
 
     //Called if the user creates a new reminder
