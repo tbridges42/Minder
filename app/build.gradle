@@ -18,8 +18,8 @@ android {
     defaultConfig {
         applicationId 'us.bridgeses.Minder'
         minSdkVersion 17
-        targetSdkVersion 28
-        versionCode 24
+        targetSdkVersion 25
+        versionCode 27
         versionName '1.2.6'
     }
     buildTypes {
