@@ -9,7 +9,6 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/do_not_display"
-        android:labelFor="@id/do_not_display"
         android:layout_weight="1"/>
     <CheckBox
         android:id="@+id/do_not_display"

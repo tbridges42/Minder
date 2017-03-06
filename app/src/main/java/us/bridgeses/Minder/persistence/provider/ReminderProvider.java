@@ -95,6 +95,7 @@ public class ReminderProvider extends ContentProvider {
                 Context context = getContext();
                 if (context != null) {
                     ContentResolver resolver = context.getContentResolver();
+                    Log.d(TAG, "query: Listening for " + uri.toString());
                     cursor.setNotificationUri(resolver,
                             uri);
                 }

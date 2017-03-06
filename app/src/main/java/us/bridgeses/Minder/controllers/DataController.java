@@ -27,10 +27,12 @@ import java.util.List;
 
 import us.bridgeses.Minder.R;
 import us.bridgeses.Minder.Reminder;
+import us.bridgeses.Minder.alarms.AlarmHandler;
 import us.bridgeses.Minder.exporter.ExportActivity;
 import us.bridgeses.Minder.exporter.ImportActivity;
 import us.bridgeses.Minder.persistence.dao.DaoFactory;
 import us.bridgeses.Minder.persistence.dao.ReminderDAO;
+import us.bridgeses.Minder.persistence.dao.ReminderSqlDao;
 import us.bridgeses.Minder.receivers.ReminderReceiver;
 import us.bridgeses.Minder.views.interfaces.ReminderListView;
 
@@ -142,36 +144,17 @@ public class DataController extends Fragment implements LoaderManager.LoaderCall
         new ExportActivity(getActivity()).export();
     }
 
-    public void skipNext(int id) {
-        // TODO: Break this godforsaken mess apart
+    public void skipNext(Reminder reminder) {
         trackEvent("Skip Reminder","User Action");
-        Reminder reminder = Reminder.get(applicationContext, id);
-        Intent intentAlarm = new Intent(applicationContext, ReminderReceiver.class);      //Create alarm intent
-        AlarmManager alarmManager = (AlarmManager) applicationContext.getSystemService(Context.ALARM_SERVICE);
-        alarmManager.cancel(PendingIntent.getBroadcast(applicationContext, reminder.getId(), intentAlarm,
-                PendingIntent.FLAG_UPDATE_CURRENT));
-        reminder = Reminder.nextRepeat(reminder).save(applicationContext);
-        if ((reminder.getActive()) && (reminder.getId() != -1)) {
-            int alarmType;
-            if (reminder.getWakeUp()){
-                alarmType = AlarmManager.RTC_WAKEUP;
-            }
-            else {
-                alarmType = AlarmManager.RTC;
-            }
-            intentAlarm = new Intent(applicationContext, ReminderReceiver.class);//Create alarm intent
-            intentAlarm.putExtra("Id", id);           //Associate intent with specific Reminder
-            intentAlarm.putExtra("Snooze", 0);                       //This alarm has not been snoozed
-            alarmManager = (AlarmManager) applicationContext.getSystemService(Context.ALARM_SERVICE);
-            alarmManager.set(alarmType, reminder.getDate().getTimeInMillis(),
-                    PendingIntent.getBroadcast(applicationContext, id, intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
-
+        AlarmHandler alarmHandler = new AlarmHandler(applicationContext);
+        alarmHandler.cancelAlarm(reminder);
+        Log.d(TAG, "skipNext: old id " + reminder.getId());
+        Reminder nextReminder = Reminder.nextRepeat(reminder).save(applicationContext);
+        Log.d(TAG, "skipNext: new id " + reminder.getId());
+        if (!reminder.getActive()) {
+            Log.d(TAG, "skipNext: Reminder is inactive");
         }
-        // Gets an instance of the NotificationManager service
-        NotificationManager mNotifyMgr =
-                (NotificationManager) applicationContext.getSystemService(NOTIFICATION_SERVICE);
-        // Builds the notification and issues it.
-        mNotifyMgr.cancel(reminder.getId());
+        alarmHandler.setAlarm(nextReminder);
     }
 
     public void loadAll() {
@@ -215,7 +198,7 @@ public class DataController extends Fragment implements LoaderManager.LoaderCall
             callback.getListView().displayProgress();
         }
         Log.d(TAG, "onCreateLoader: ");
-        return new CursorLoader(getActivity(), REMINDER_URI, DISPLAY_PROJECTION,
+        return new CursorLoader(getActivity(), REMINDER_URI, null,
                 null, null, null);
     }
 
@@ -225,10 +208,8 @@ public class DataController extends Fragment implements LoaderManager.LoaderCall
             callback.getListView().removeProgress();
         }
         if (data != null) {
-            DaoFactory daoFactory = DaoFactory.getInstance();
-            ReminderDAO reminderDAO =daoFactory.getDao(getActivity());
             cachedReminders = new ArrayList<>();
-            Reminder[] reminders = reminderDAO.getReminders();
+            Reminder[] reminders = ReminderSqlDao.cursorToReminders(data);
             Collections.addAll(cachedReminders, reminders);
             callback.getListView().setReminders(cachedReminders);
             Log.d(TAG, "onLoadFinished: " + data.getCount());
@@ -246,10 +227,10 @@ public class DataController extends Fragment implements LoaderManager.LoaderCall
         }
     }
 
-    public void onReminderSelected(long id) {
-        Log.d(TAG, "onReminderSelected: " + id);
+    public void onReminderSelected(Reminder reminder) {
+        Log.d(TAG, "onReminderSelected: " + reminder.getId());
         if (callback != null) {
-            callback.createEditor(id);
+            callback.createEditor(reminder.getId());
         }
     }
 }

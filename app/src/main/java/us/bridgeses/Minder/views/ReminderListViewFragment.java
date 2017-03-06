@@ -6,6 +6,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -53,6 +54,7 @@ public class ReminderListViewFragment extends Fragment implements ReminderListVi
         View view = inflater.inflate(R.layout.fragment_fab_list, container, false);
         reminderView = (RecyclerView) view.findViewById(R.id.reminder_list);
         reminderView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        reminderView.setItemAnimator(null);
         view.findViewById(R.id.reminder_fab).setOnClickListener(this);
         return view;
     }
@@ -102,6 +104,9 @@ public class ReminderListViewFragment extends Fragment implements ReminderListVi
         Log.d(TAG, "setReminders: received " + reminders.size() + " reminders");
         if (reminderAdapter == null) {
             reminderAdapter = new ReminderRecyclerAdapter(reminders, this, this);
+
+            reminderView.setLayoutManager(new LinearLayoutManager(getActivity()));
+            reminderView.setItemAnimator(new DefaultItemAnimator());
             reminderView.setAdapter(reminderAdapter);
         }
         else {
@@ -120,6 +125,7 @@ public class ReminderListViewFragment extends Fragment implements ReminderListVi
 
     @Override
     public void updateReminder(Reminder reminder) {
+        Log.d(TAG, "updateReminder: ");
         if (reminderAdapter != null) {
             reminderAdapter.addReminder(reminder);
         }
@@ -148,13 +154,13 @@ public class ReminderListViewFragment extends Fragment implements ReminderListVi
     }
 
     @Override
-    public void onFinishClicked(long id) {
-        // TODO: Display confirmation dialog
+    public void onFinishClicked(Reminder reminder) {
+        callback.getDataController().skipNext(reminder);
     }
 
     @Override
-    public void onItemClicked(long id) {
-        callback.getDataController().onReminderSelected(id);
+    public void onItemClicked(Reminder reminder) {
+        callback.getDataController().onReminderSelected(reminder);
     }
 
     public void onFABClicked() {

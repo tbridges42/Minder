@@ -17,6 +17,8 @@ import java.util.List;
 import us.bridgeses.Minder.R;
 import us.bridgeses.Minder.Reminder;
 
+import static android.support.v7.util.SortedList.INVALID_POSITION;
+
 /**
  * Created by tbrid on 2/15/2017.
  */
@@ -27,11 +29,11 @@ public class ReminderRecyclerAdapter
     private static final String TAG = "ReminderRecyclerAdapter";
 
     public interface OnFinishClickedListener {
-        void onFinishClicked(long id);
+        void onFinishClicked(Reminder reminder);
     }
 
     public interface OnItemClickedListener {
-        void onItemClicked(long id);
+        void onItemClicked(Reminder reminder);
     }
 
     private SortedList<Reminder> reminders;
@@ -45,13 +47,26 @@ public class ReminderRecyclerAdapter
         this.itemClickedListener = itemClickedListener;
         reminders = new SortedList<>(Reminder.class,
                 new ReminderSorter(this));
-        reminders.addAll(reminderList);
+        for (Reminder reminder: reminderList) {
+            Log.d(TAG, "ReminderRecyclerAdapter: id " + reminder.getId());
+            Log.d(TAG, "ReminderRecyclerAdapter: active " + reminder.getActive());
+            reminders.add((Reminder)reminder.clone());
+        }
         setHasStableIds(true);
-        Log.d(TAG, "ReminderRecyclerAdapter: Received " + reminders.size() + " reminders");
     }
 
     public void addReminder(Reminder reminder) {
-        reminders.add(reminder);
+        int index = getPosition(reminder.getId());
+        if (index == INVALID_POSITION) {
+            reminders.add(reminder);
+        }
+        else {
+            Log.d(TAG, "addReminder: old reminder id " + reminders.get(index).getId());
+            Log.d(TAG, "addReminder: old reminder active " + reminders.get(index).getActive());
+            Log.d(TAG, "addReminder: new reminder id " + reminder.getId());
+            Log.d(TAG, "addReminder: new reminder active " + reminder.getActive());
+            reminders.updateItemAt(index, reminder);
+        }
     }
 
     public void removeReminder(Reminder reminder) {
@@ -62,11 +77,25 @@ public class ReminderRecyclerAdapter
         return reminders.get(index);
     }
 
+    public int getPosition(long id) {
+        for (int i = 0; i < reminders.size(); i++) {
+            if (reminders.get(i).getId() == id) {
+                return i;
+            }
+        }
+        return INVALID_POSITION;
+    }
+
+
+    @Override
+    public long getItemId(int position) {
+        return reminders.get(position).getId();
+    }
+
     @Override
     public ReminderHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         Context context = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(context);
-        Log.d(TAG, "onCreateViewHolder: ");
         View reminderView = inflater.inflate(R.layout.item_reminder, parent, false);
 
         ReminderHolder reminderHolder = new ReminderHolder(reminderView);
@@ -76,7 +105,6 @@ public class ReminderRecyclerAdapter
     @Override
     public void onBindViewHolder(ReminderHolder holder, int position) {
         Reminder reminder = reminders.get(position);
-        Log.d(TAG, "onBindViewHolder: " + reminder.getName());
         holder.name.setText(reminder.getName());
         holder.description.setText(reminder.getDescription());
         holder.id = reminder.getId();
@@ -95,6 +123,11 @@ public class ReminderRecyclerAdapter
         else {
             holder.itemView.setAlpha(0.4f);
         }
+    }
+
+    @Override
+    public void onBindViewHolder(ReminderHolder holder, int position, List<Object> payload) {
+        super.onBindViewHolder(holder, position, payload);
     }
 
     @Override
@@ -176,7 +209,7 @@ public class ReminderRecyclerAdapter
                 @Override
                 public void onClick(View v) {
                     if (finishClickedListener != null) {
-                        finishClickedListener.onFinishClicked(getItemId());
+                        finishClickedListener.onFinishClicked(reminders.get(getAdapterPosition()));
                     }
                 }
             });
@@ -184,7 +217,7 @@ public class ReminderRecyclerAdapter
                 @Override
                 public void onClick(View v) {
                     if (itemClickedListener != null) {
-                        itemClickedListener.onItemClicked(id);
+                        itemClickedListener.onItemClicked(reminders.get(getAdapterPosition()));
                     }
                 }
             });

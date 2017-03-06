@@ -29,7 +29,7 @@ import us.bridgeses.Minder.persistence.dao.ReminderDAO;
  * Model class for a Reminder
  */
 
-public class Reminder implements Parcelable{
+public class Reminder implements Parcelable, Cloneable {
 
 	private static final String TAG = "Reminder";
 // TODO: 1/3/2017  break this up!!!
@@ -104,10 +104,10 @@ public class Reminder implements Parcelable{
 		}
 		Reminder other = (Reminder) obj;
 		return this.getName().equals(other.getName())
-				&& this.getActive() == other.getActive()
+				&& (this.getActive() == other.getActive())
 				&& this.getDescription().equals(other.getDescription())
 				&& this.repeatType == other.repeatType
-				&& this.date == other.date;
+				&& this.date.equals(other.date);
 	}
 
     public static final Parcelable.Creator<Reminder> CREATOR = new Parcelable.Creator<Reminder>() {
@@ -122,6 +122,7 @@ public class Reminder implements Parcelable{
 
     //Variables! Hooray variables!
     private int id;                            //Unique identifier
+	private boolean active;
     private LatLng location;                   //Geographical location constraint center
     private int radius;                        //Geographical constraint radius
     private String name;                       //User defined string representing name or title
@@ -535,11 +536,11 @@ public class Reminder implements Parcelable{
 	/*********************** Conditions bitwise getters and setters ************************/
 
     public boolean getActive() {
-        return getBitwise(this.getConditions(),ACTIVE);
+        return active;
     }
 
     public void setActive(boolean active) {
-        this.setConditions(makeBitwise(this.getConditions(),ACTIVE,active));
+        this.active = active;
     }
 
 	public boolean getNeedWifi(){
@@ -917,34 +918,35 @@ public class Reminder implements Parcelable{
     //If the reminder is set to repeat, set its Date to the next repeat time
     //Otherwise, deactivate the reminder
     public static Reminder nextRepeat(Reminder reminder){
+		Reminder nextReminder = reminder.clone();
         switch (reminder.getRepeatType()) {
             case 0: {
 				Log.d(TAG, "nextRepeat: deactivating");
-				reminder.setActive(false);          //Deactivate
+				nextReminder.setActive(false);          //Deactivate
 	            break;
             }
             case 1: {
-                nextDailyRepeat(reminder);          //Repeat Daily
+                nextDailyRepeat(nextReminder);          //Repeat Daily
                 break;
             }
             case 2: {
-                nextWeeklyRepeat(reminder);         //Repeat Weekly
+                nextWeeklyRepeat(nextReminder);         //Repeat Weekly
                 break;
             }
             case 3: {
-                nextMonthlyRepeat(reminder);        //Repeat Monthly
+                nextMonthlyRepeat(nextReminder);        //Repeat Monthly
                 break;
             }
             case 4: {
-                nextYearlyRepeat(reminder);         //Repeat Yearly
+                nextYearlyRepeat(nextReminder);         //Repeat Yearly
                 break;
             }
         }
-		if ((reminder.getDate().getTimeInMillis() < Calendar.getInstance().getTimeInMillis()) &&
-                (reminder.getRepeatType() != 0)){
-            reminder = nextRepeat(reminder);
+		if ((nextReminder.getDate().getTimeInMillis() < Calendar.getInstance().getTimeInMillis()) &&
+                (nextReminder.getRepeatType() != 0)){
+            nextReminder = nextRepeat(reminder);
         }
-	    return reminder;
+	    return nextReminder;
     }
 
 
@@ -1227,4 +1229,16 @@ public class Reminder implements Parcelable{
         reminder.setLedColor(sharedPreferences.getInt("led_color",LEDCOLORDEFAULT));
         return reminder;
     }
+
+	@Override
+	public Reminder clone() {
+		try {
+			return (Reminder)super.clone();
+		}
+		catch (CloneNotSupportedException e) {
+			// Should not get here
+			e.printStackTrace();
+		}
+		return null;
+	}
 }

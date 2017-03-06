@@ -98,7 +98,6 @@ public class ReminderSqlDao implements ReminderDAO {
             reminders[i] = reminder;
             cursor.moveToNext();
         }
-        cursor.close();
         return reminders;
     }
 

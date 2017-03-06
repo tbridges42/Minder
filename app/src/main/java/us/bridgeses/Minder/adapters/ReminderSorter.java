@@ -2,6 +2,7 @@ package us.bridgeses.Minder.adapters;
 
 import android.support.v7.util.SortedList;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 
 import us.bridgeses.Minder.Reminder;
 
@@ -10,6 +11,8 @@ import us.bridgeses.Minder.Reminder;
  */
 
 public class ReminderSorter extends SortedList.Callback<Reminder> {
+
+    private static final String TAG = "ReminderSorter";
 
     private RecyclerView.Adapter adapter;
 
@@ -27,9 +30,11 @@ public class ReminderSorter extends SortedList.Callback<Reminder> {
      */
     public int compare(Reminder o1, Reminder o2) {
         if (o1.getActive() && !o2.getActive()) {
+            Log.d(TAG, "compare: Not equal");
             return -1;
         }
         if (!o1.getActive() && o2.getActive()) {
+            Log.d(TAG, "compare: Not equal");
             return 1;
         }
         long o1millis = o1.getDate().getTimeInMillis();
@@ -40,21 +45,25 @@ public class ReminderSorter extends SortedList.Callback<Reminder> {
         if (o1millis > o2millis) {
             return -1;
         }
+        Log.d(TAG, "compare: Equal");
         return 0;
     }
 
     @Override
     public void onChanged(int position, int count) {
+        Log.d(TAG, "onChanged: Notify changed " + position);
         adapter.notifyItemRangeChanged(position, count);
     }
 
     @Override
     public boolean areContentsTheSame(Reminder oldItem, Reminder newItem) {
+        Log.d(TAG, "areContentsTheSame: " + oldItem.displayEquals(newItem));
         return oldItem.displayEquals(newItem);
     }
 
     @Override
     public boolean areItemsTheSame(Reminder item1, Reminder item2) {
+        Log.d(TAG, "areItemsTheSame: " + item1.getId() + ", " + item2.getId());
         return item1.getId() == item2.getId();
     }
 
@@ -70,6 +79,7 @@ public class ReminderSorter extends SortedList.Callback<Reminder> {
 
     @Override
     public void onMoved(int fromPosition, int toPosition) {
-        adapter.notifyItemMoved(fromPosition, toPosition);
+        Log.d(TAG, "onMoved: " + fromPosition + " " + toPosition);
+        adapter.notifyDataSetChanged();
     }
 }
