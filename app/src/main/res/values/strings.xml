@@ -138,5 +138,6 @@
     <string name="export">Export Reminders</string>
     <string name="import_string">Import Reminders</string>
     <string name="do_not_display">Do not display again</string>
+    <string name="buy_ad_free">Remove ads</string>
 
 </resources>

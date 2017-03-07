@@ -1,9 +1,11 @@
 package us.bridgeses.Minder;
 
 import android.app.Fragment;
+import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -13,6 +15,9 @@ import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -21,9 +26,6 @@ import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 
@@ -41,12 +43,14 @@ public class AdHandler extends Fragment {
     private ServiceConnection mServiceConn = new ServiceConnection() {
         @Override
         public void onServiceDisconnected(ComponentName name) {
+            Log.d(TAG, "onServiceDisconnected: ");
             billingService = null;
         }
 
         @Override
         public void onServiceConnected(ComponentName name,
                                        IBinder service) {
+            Log.d(TAG, "onServiceConnected: ");
             billingService = IInAppBillingService.Stub.asInterface(service);
             checkForPurchaseOnline(null);
         }
@@ -145,9 +149,43 @@ public class AdHandler extends Fragment {
             getActivity().bindService(serviceIntent, mServiceConn, Context.BIND_AUTO_CREATE);
             initialize(getActivity());
             setUp();
+            setHasOptionsMenu(true);
         }
         else {
             adView.setVisibility(View.GONE);
+        }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_ads, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        Log.d(TAG, "onOptionsItemSelected: " + item.getTitle());
+        if (item.getItemId() == R.id.action_buy_ad_free) {
+            launchBuyAdFree();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void launchBuyAdFree() {
+        Log.d(TAG, "launchBuyAdFree: ");
+        if (billingService != null) {
+            try {
+                Log.d(TAG, "launchBuyAdFree: ");
+                Bundle buyIntentBundle = billingService.getBuyIntent(3, getActivity().getPackageName(),
+                        "ad_free", "inapp", null);
+                PendingIntent pendingIntent = buyIntentBundle.getParcelable("BUY_INTENT");
+                getActivity().startIntentSenderForResult(pendingIntent.getIntentSender(),
+                        1001, new Intent(), 0, 0,
+                        0);
+            }
+            catch (RemoteException|IntentSender.SendIntentException e) {
+                Log.e(TAG, "launchBuyAdFree: Remote Exception", e);
+            }
         }
     }
 
@@ -162,6 +200,7 @@ public class AdHandler extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
+
         adView.pause();
     }
 
@@ -172,11 +211,16 @@ public class AdHandler extends Fragment {
     }
 
     @Override
+    public void onStop() {
+        super.onStop();
+    }
+
+    @Override
     public void onDestroy() {
         adView.destroy();
-        if (billingService != null) {
-            getActivity().unbindService(mServiceConn);
-        }
+        Log.d(TAG, "onPause: ");
+        getActivity().unbindService(mServiceConn);
+        mServiceConn = null;
         super.onDestroy();
     }
 }
