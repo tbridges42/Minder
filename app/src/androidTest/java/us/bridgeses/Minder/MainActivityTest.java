@@ -3,11 +3,9 @@ package us.bridgeses.Minder;
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import com.robotium.solo.By;
 import com.robotium.solo.Solo;
 
-import us.bridgeses.Minder.R;
-import us.bridgeses.Minder.MainListActivity;
+import us.bridgeses.Minder.activities.MainListActivity;
 
 public class MainActivityTest extends
         ActivityInstrumentationTestCase2<MainListActivity>{

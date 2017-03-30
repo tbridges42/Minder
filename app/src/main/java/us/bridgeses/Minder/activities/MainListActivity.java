@@ -1,4 +1,4 @@
-package us.bridgeses.Minder;
+package us.bridgeses.Minder.activities;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -20,6 +20,9 @@ import android.widget.CompoundButton;
 import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
+import us.bridgeses.Minder.AboutFragment;
+import us.bridgeses.Minder.AdHandler;
+import us.bridgeses.Minder.R;
 import us.bridgeses.Minder.controllers.DataController;
 import us.bridgeses.Minder.controllers.TrackingController;
 import us.bridgeses.Minder.editor.EditReminder;

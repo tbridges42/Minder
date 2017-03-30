@@ -1,12 +1,10 @@
 package us.bridgeses.Minder;
 
 import android.test.ActivityInstrumentationTestCase2;
-import android.test.suitebuilder.annotation.SmallTest;
 
-import com.orhanobut.logger.Logger;
 import com.robotium.solo.Solo;
 
-import us.bridgeses.Minder.editor.EditReminder;
+import us.bridgeses.Minder.activities.MainListActivity;
 
 public class EditActivityTest extends
         ActivityInstrumentationTestCase2<MainListActivity>{

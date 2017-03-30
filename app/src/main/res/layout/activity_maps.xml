@@ -10,7 +10,7 @@ android:weightSum="10">
         android:layout_height="match_parent"
         android:layout_weight="8"
         android:id="@+id/map"
-        tools:context=".MapsActivity"
+        tools:context=".activities.MapsActivity"
         android:name="com.google.android.gms.maps.MapFragment"/>
 
 <RelativeLayout

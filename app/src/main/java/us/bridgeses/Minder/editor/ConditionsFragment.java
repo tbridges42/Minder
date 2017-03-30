@@ -31,7 +31,7 @@ import com.orhanobut.logger.Logger;
 
 import java.util.List;
 
-import us.bridgeses.Minder.MapsActivity;
+import us.bridgeses.Minder.activities.MapsActivity;
 import us.bridgeses.Minder.R;
 import us.bridgeses.Minder.Reminder;
 import us.bridgeses.Minder.util.ActivityLoader;

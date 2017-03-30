@@ -1,4 +1,4 @@
-package us.bridgeses.Minder;
+package us.bridgeses.Minder.activities;
 
 import android.Manifest;
 import android.app.Activity;
@@ -44,6 +44,8 @@ import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.orhanobut.logger.Logger;
 
+import us.bridgeses.Minder.R;
+import us.bridgeses.Minder.Reminder;
 import us.bridgeses.Minder.util.vandy.LifecycleLoggingActivity;
 
 import static com.google.android.gms.common.GooglePlayServicesUtil.isGooglePlayServicesAvailable;
