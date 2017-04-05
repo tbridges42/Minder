@@ -225,7 +225,7 @@ public class MapsActivity extends LifecycleLoggingActivity implements GoogleMap.
                 lastKnown = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
             }
             catch (SecurityException e) {
-                Log.d(TAG, "getLocation: Do not have permission to get location");
+                Log.d(TAG, "getLatLng: Do not have permission to get location");
             }
         }
         if (lastKnown != null) {

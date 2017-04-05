@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 import us.bridgeses.Minder.editor.EditStyle;
 import us.bridgeses.Minder.persistence.dao.DaoFactory;
 import us.bridgeses.Minder.persistence.dao.ReminderDAO;
+import us.bridgeses.Minder.reminder.Conditions;
 
 /**
  * Model class for a Reminder
@@ -36,14 +37,12 @@ public class Reminder implements Parcelable, Cloneable {
 //Constructors
     public Reminder() {
         setActive(ACTIVEDEFAULT);
-        location = LOCATIONDEFAULT;
+		conditions = new Conditions();
         name = NAMEDEFAULT;
         repeatType = REPEATTYPEDEFAULT;
         repeatLength = REPEATLENGTHDEFAULT;
         daysOfWeek = DAYSOFWEEKDEFAULT;
         monthType = MONTHTYPEDEFAULT;
-        setOnlyAtLocation(ONLYATLOCATIONDEFAULT);
-        setUntilLocation(UNTILLOCATIONDEFAULT);
         date = Calendar.getInstance();
         description = DESCRIPTIONDEFAULT;
         qr = QRDEFAULT;
@@ -55,11 +54,6 @@ public class Reminder implements Parcelable, Cloneable {
         ledColor = LEDCOLORDEFAULT;
         setLed(LEDDEFAULT);
         id = IDDEFAULT;
-        radius = RADIUSDEFAULT;
-        ssid = SSIDDEFAULT;
-        setNeedWifi(WIFIDEFAULT);
-        bluetooth = BTDEFAULT;
-        setNeedBluetooth(BTNEEDEDDEFAULT);
         setWakeUp(WAKEUPDEFAULT);
         setDisplayScreen(DISPLAYSCREENDEFAULT);
 	    setConfirmDismiss(DISMISSDIALOGDEFAULT);
@@ -123,8 +117,6 @@ public class Reminder implements Parcelable, Cloneable {
     //Variables! Hooray variables!
     private int id;                            //Unique identifier
 	private boolean active;
-    private LatLng location;                   //Geographical location constraint center
-    private int radius;                        //Geographical constraint radius
     private String name;                       //User defined string representing name or title
     private String description;                //A user defined string intended to give more detail about the purpose of the reminder
     private int repeatType;                    /*Number representing type of repeat to be used
@@ -143,7 +135,7 @@ public class Reminder implements Parcelable, Cloneable {
                                                      (e.g. the last friday, not yet implemented)*/
     private byte daysOfWeek;                   //Bitwise byte representing seven boolean values for the seven days of the week
     private byte persistence;                  //Bitwise byte representing an array of boolean values related to reminder Persistence
-    private byte conditions;                   //Bitwise byte representing an array of boolean values related to reminder Conditions
+    private Conditions conditions;                   //Bitwise byte representing an array of boolean values related to reminder Conditions
     private byte style;                        //Bitwise byte representing an array of boolean values related to reminder Style
     private Calendar date;                     //The date and time at which the reminder should fire, truncated to second
     private String qr;                         //A string representing the encoded value of a barcode or QR code, scanned in by user
@@ -152,8 +144,6 @@ public class Reminder implements Parcelable, Cloneable {
     private int ledColor;                      //An int representing the hexadecimal color of the LED
     private int ledPattern;                    //An int representing the pattern in which the LED should flash
     private String ringtone;                   //A string representing a URI for a ringtone selected by the user, to be played when reminder fires
-    private String ssid;                       //A string representing an SSID for a user selected wifi-network
-    private String bluetooth;                  //A string representing a user selected bluetooth pairing //TODO: Implement bluetooth
 	private int volume;                        //An integer representing the volume ratio out of 100
 	private String image;                      //A path to a background image
     private int textColor;                     //A hexadecimal representation of font color
@@ -253,20 +243,19 @@ public class Reminder implements Parcelable, Cloneable {
     }
 
     public void setSSID(String ssid){
-        this.ssid=ssid;
+        conditions.setSsid(ssid);
     }
 
     public String getSSID(){
-        return ssid;
+        return conditions.getSsid();
     }
 
     public String getBluetooth(){
-        return bluetooth;
+        return conditions.getBtMacAddress();
     }
 
     public void setBluetooth(String bluetooth){
-	    //TODO: determine bluetooth input requirements
-        this.bluetooth = bluetooth;
+        this.conditions.setBtMacAddress(bluetooth);
     }
 
 	public byte getMonthType() {
@@ -296,11 +285,11 @@ public class Reminder implements Parcelable, Cloneable {
 	}
 
 	public LatLng getLocation() {
-		return location;
+		return conditions.getLatLng();
 	}
 
 	public void setLocation(LatLng location) {
-		this.location = location;
+		conditions.setLatLng(location);
 	}
 
 	public String getName() {
@@ -462,16 +451,11 @@ public class Reminder implements Parcelable, Cloneable {
 	}
 
 	public void setRadius(int radius){
-		if (0 < radius){
-			this.radius = radius;
-		}
-		else {
-			throw new IllegalArgumentException("Radius must be greater than zero");
-		}
+		conditions.setRadius(radius);
 	}
 
 	public int getRadius(){
-		return radius;
+		return conditions.getRadius();
 	}
 
 	public void setVolume(int volume){
@@ -482,23 +466,19 @@ public class Reminder implements Parcelable, Cloneable {
 		return volume;
 	}
 
-	public int getLocationType(){
-		if (this.getOnlyAtLocation()){
-			return 1;
-		}
-		if (this.getUntilLocation()){
-			return 2;
-		}
-		return 0;
+	public Conditions.LocationPreference getLocationType(){
+
+		return conditions.getLocationPreference();
 	}
 
 	/******************************* Bitwise getters and setters *************************/
-    public void setConditions (byte conditions){
-        this.conditions = conditions;
+    public void setConditions (Conditions conditions){
+		// Defensive copy
+        this.conditions = new Conditions(conditions);
     }
 
-    public byte getConditions() {
-        return conditions;
+    public Conditions getConditions() {
+        return new Conditions(conditions);
     }
 
 	public byte getPersistence() {
@@ -542,38 +522,6 @@ public class Reminder implements Parcelable, Cloneable {
     public void setActive(boolean active) {
         this.active = active;
     }
-
-	public boolean getNeedWifi(){
-		return getBitwise(this.getConditions(),WIFINEEDED);
-	}
-
-	public void setNeedWifi(boolean wifiNeeded){
-		this.setConditions(makeBitwise(this.getConditions(),WIFINEEDED,wifiNeeded));
-	}
-
-	public boolean getNeedBluetooth(){
-		return getBitwise(this.getConditions(),BLUETOOTHNEEDED);
-	}
-
-	public void setNeedBluetooth(boolean needBluetooth){
-		this.setConditions(makeBitwise(this.getConditions(),BLUETOOTHNEEDED,needBluetooth));
-	}
-
-	public boolean getOnlyAtLocation() {
-		return getBitwise(this.getConditions(),ONLY_AT_LOCATION);
-	}
-
-	public void setOnlyAtLocation(boolean onlyAtLocation) {
-		this.setConditions(makeBitwise(this.getConditions(),ONLY_AT_LOCATION,onlyAtLocation));
-	}
-
-	public boolean getUntilLocation() {
-		return getBitwise(this.getConditions(),UNTIL_LOCATION);
-	}
-
-	public void setUntilLocation(boolean untilLocation) {
-		this.setConditions(makeBitwise(this.getConditions(),UNTIL_LOCATION,untilLocation));
-	}
 
 	/************************ Persistence bitwise getters and setters **********************/
 
@@ -692,8 +640,6 @@ public class Reminder implements Parcelable, Cloneable {
     @Override
     public void writeToParcel(Parcel out, int flags) {
         out.writeInt(id);
-        out.writeDouble(location.latitude);
-        out.writeDouble(location.longitude);
         out.writeString(name);
         out.writeInt(repeatType);
         out.writeInt(repeatLength);
@@ -707,21 +653,17 @@ public class Reminder implements Parcelable, Cloneable {
         out.writeInt(ledColor);
         out.writeInt(ledPattern);
         out.writeString(ringtone);
-        out.writeInt(radius);
-        out.writeString(ssid);
-        out.writeByte(conditions);
+        out.writeParcelable(conditions, 0);
         out.writeByte(style);
 	    out.writeInt(volume);
 	    out.writeInt(snoozeNumber);
         out.writeString(image);
         out.writeInt(textColor);
+		out.writeParcelable(conditions, 0);
     }
 
     public void readFromParcel(Parcel in){
         id = in.readInt();
-        double lon = in.readDouble();
-        double lat = in.readDouble();
-        location = new LatLng(lon,lat);
         name = in.readString();
         repeatType = in.readInt();
         repeatLength = in.readInt();
@@ -735,14 +677,13 @@ public class Reminder implements Parcelable, Cloneable {
         ledColor = in.readInt();
         ledPattern = in.readInt();
         ringtone = in.readString();
-        radius = in.readInt();
-        ssid = in.readString();
-        conditions = in.readByte();
+        conditions = in.readParcelable(Conditions.class.getClassLoader());
         style = in.readByte();
 	    volume = in.readInt();
 	    snoozeNumber = in.readInt();
         image = in.readString();
         textColor = in.readInt();
+		conditions = in.readParcelable(Conditions.class.getClassLoader());
     }
 
     @Override
@@ -1034,7 +975,7 @@ public class Reminder implements Parcelable, Cloneable {
         editor.putBoolean("temp_vibrate",reminder.getVibrate());
         editor.putString("temp_ringtone",reminder.getRingtone());
         editor.putBoolean("volume_override", reminder.getVolumeOverride());
-	    editor.putString("location_type",Integer.toString(reminder.getLocationType()));
+	    editor.putString("location_type",Integer.toString(reminder.getLocationType().ordinal()));
         LatLng location = reminder.getLocation();
         editor.putFloat("Latitude",(float) location.latitude);
         editor.putFloat("Longitude",(float) location.longitude);
@@ -1080,9 +1021,9 @@ public class Reminder implements Parcelable, Cloneable {
         editor.putString("temp_monthly_type", Integer.toString(reminder.getMonthType()));
         
         editor.putString("ssid", reminder.getSSID());
-        editor.putBoolean("wifi", reminder.getNeedWifi());
+        editor.putString("wifi", reminder.getConditions().getWifiPreference().name());
         editor.putString("snooze_duration", Integer.toString(reminder.getSnoozeDuration()));
-        editor.putBoolean("bluetooth", reminder.getNeedBluetooth());
+        editor.putString("bluetooth", reminder.getConditions().getBluetoothPreference().name());
         editor.putString("bt_name", reminder.getBluetooth());
 	    editor.putInt("volume", reminder.getVolume());
 	    editor.putBoolean("vibrate_repeat", reminder.getVibrateRepeat());
@@ -1136,29 +1077,8 @@ public class Reminder implements Parcelable, Cloneable {
 	}
 
     public void setLocation(SharedPreferences sharedPreferences){
-        int locationType = Integer.parseInt(sharedPreferences.getString("location_type", "-1"));
-        switch (locationType){
-            case 0: {
-                setOnlyAtLocation(false);
-                setUntilLocation(false);
-                break;
-            }
-            case 1: {
-                setOnlyAtLocation(true);
-                setUntilLocation(false);
-                break;
-            }
-            case 2: {
-                setOnlyAtLocation(false);
-                setUntilLocation(true);
-                break;
-            }
-            default: {
-                setOnlyAtLocation(ONLYATLOCATIONDEFAULT);
-                setUntilLocation(UNTILLOCATIONDEFAULT);
-                break;
-            }
-        }
+        String locationType = sharedPreferences.getString("location_type", "-1");
+        conditions.setLocationPreference(Conditions.LocationPreference.valueOf(locationType));
 
         LatLng location = new LatLng(sharedPreferences.getFloat("Latitude",(float)LOCATIONDEFAULT.latitude),
                 sharedPreferences.getFloat("Longitude",(float)LOCATIONDEFAULT.longitude));
@@ -1203,8 +1123,10 @@ public class Reminder implements Parcelable, Cloneable {
         reminder.setDisplayScreen(sharedPreferences.getBoolean("display_screen", DISPLAYSCREENDEFAULT));
         reminder.setWakeUp(sharedPreferences.getBoolean("wake_up", WAKEUPDEFAULT));
         reminder.setSSID(sharedPreferences.getString("ssid", SSIDDEFAULT));
-        reminder.setNeedWifi(sharedPreferences.getBoolean("wifi", WIFIDEFAULT));
-        reminder.setNeedBluetooth(sharedPreferences.getBoolean("bluetooth", BTNEEDEDDEFAULT));
+		reminder.conditions.setWifiPreference(Conditions.WifiPreference.valueOf(
+				sharedPreferences.getString("wifi", Conditions.WIFI_PREFERENCE_DEFAULT.name())));
+		reminder.conditions.setBluetoothPreference(Conditions.BluetoothPreference.valueOf(
+				sharedPreferences.getString("bluetooth", Conditions.BLUETOOTH_PREFERENCE_DEFAULT.name())));
         reminder.setBluetooth(sharedPreferences.getString("bt_name", BTDEFAULT));
         reminder.setSnoozeDuration(Integer.parseInt(sharedPreferences
                 .getString("snooze_duration", Integer.toString(SNOOZEDURATIONDEFAULT))));

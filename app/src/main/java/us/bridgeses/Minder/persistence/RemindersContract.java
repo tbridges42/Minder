@@ -28,8 +28,6 @@ public class RemindersContract {
 
         public static final String COLUMN_ID = "_id";
         public static final String COLUMN_ACTIVE = "Active";
-        public static final String COLUMN_LATITUDE = "Latitude";
-        public static final String COLUMN_LONGITUDE = "Longitude";
         public static final String COLUMN_NAME = "Name";
         public static final String COLUMN_REPEATTYPE = "RepeatType";
         public static final String COLUMN_REPEATLENGTH = "RepeatLength";
@@ -43,14 +41,19 @@ public class RemindersContract {
         public static final String COLUMN_LEDCOLOR = "LedColor";
         public static final String COLUMN_LEDPATTERN = "LedPattern";
         public static final String COLUMN_RINGTONE = "Ringtone";
-        public static final String COLUMN_RADIUS = "Radius";
-        public static final String COLUMN_SSID = "SSID";
         public static final String COLUMN_CONDITIONS = "Conditions";
         public static final String COLUMN_STYLE = "Style";
         public static final String COLUMN_VOLUME = "Volume";
         public static final String COLUMN_SNOOZENUM = "SnoozeNum";
         public static final String COLUMN_IMAGE = "Image";
         public static final String COLUMN_TEXTCOLOR = "TextColor";
+
+        public static final String COLUMN_LATITUDE = "Latitude";
+        public static final String COLUMN_LONGITUDE = "Longitude";
+        public static final String COLUMN_RADIUS = "Radius";
+        public static final String COLUMN_SSID = "SSID";
+        public static final String COLUMN_LOCATION_PREFERENCE = "LocationsPreference";
+        public static final String COLUMN_WIFI_PREFERENCE = "WifiPreference";
 
         public static final String[] DISPLAY_PROJECTION = {
                 COLUMN_ID,

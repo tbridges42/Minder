@@ -14,6 +14,10 @@ import java.io.Serializable;
  */
 public final class Conditions implements Parcelable, Serializable {
 
+    public int getRadius() {
+        return radius;
+    }
+
     public static enum LocationPreference{
         NONE,
         AT_LOCATION,
@@ -36,14 +40,6 @@ public final class Conditions implements Parcelable, Serializable {
         NOT_CONNECTED
     }
 
-    private LocationPreference locationPreference;
-    private double latitude;
-    private double longitude;
-    private WifiPreference wifiPreference;
-    private String ssid;
-    private BluetoothPreference bluetoothPreference;
-    private String btMacAddress;
-
     public static final LocationPreference LOCATION_PREFERENCE_DEFAULT = LocationPreference.NONE;
     public static final double LATITUDE_DEFAULT = 0.0;
     public static final double LONGITUDE_DEFAULT = 0.0;
@@ -51,6 +47,20 @@ public final class Conditions implements Parcelable, Serializable {
     public static final String SSID_DEFAULT = "";
     public static final BluetoothPreference BLUETOOTH_PREFERENCE_DEFAULT = BluetoothPreference.NONE;
     public static final String BT_MAC_ADDRESS_DEFAULT = "";
+    public static final int RADIUS_DEFAULT = 200;
+
+    private LocationPreference locationPreference = LOCATION_PREFERENCE_DEFAULT;
+    private double latitude = LATITUDE_DEFAULT;
+    private double longitude = LONGITUDE_DEFAULT;
+    private int radius = RADIUS_DEFAULT;
+    private WifiPreference wifiPreference = WIFI_PREFERENCE_DEFAULT;
+    private String ssid = SSID_DEFAULT;
+    private BluetoothPreference bluetoothPreference = BLUETOOTH_PREFERENCE_DEFAULT;
+    private String btMacAddress = BT_MAC_ADDRESS_DEFAULT;
+
+    public Conditions() {
+
+    }
 
     public LocationPreference getLocationPreference() {
         return locationPreference;
@@ -62,6 +72,10 @@ public final class Conditions implements Parcelable, Serializable {
 
     public double getLongitude() {
         return longitude;
+    }
+
+    public LatLng getLatLng() {
+        return new LatLng(latitude, longitude);
     }
 
     public WifiPreference getWifiPreference() {
@@ -100,112 +114,112 @@ public final class Conditions implements Parcelable, Serializable {
     public static final Creator<Conditions> CREATOR = new Creator<Conditions>() {
         @Override
         public Conditions createFromParcel(Parcel parcel) {
-            return new Builder().readFromParcel(parcel).build();
+            return new Conditions(parcel);
         }
 
         @Override
         public Conditions[] newArray(int i) {
-            return new Conditions[0];
+            return new Conditions[i];
         }
     };
 
-    private Conditions(Builder builder){
-        this.locationPreference = builder.locationPreference;
-        this.latitude = builder.latitude;
-        this.longitude = builder.longitude;
-        this.wifiPreference = builder.wifiPreference;
-        this.ssid = builder.ssid;
-        this.bluetoothPreference = builder.bluetoothPreference;
-        this.btMacAddress = builder.btMacAddress;
+    public void setLocationPreference(@NonNull LocationPreference locationPreference){
+        this.locationPreference = locationPreference;
     }
 
-    public static final class Builder{
-        private LocationPreference locationPreference = LOCATION_PREFERENCE_DEFAULT;
-        private double latitude = LATITUDE_DEFAULT;
-        private double longitude = LONGITUDE_DEFAULT;
-        private WifiPreference wifiPreference = WIFI_PREFERENCE_DEFAULT;
-        private String ssid = SSID_DEFAULT;
-        private BluetoothPreference bluetoothPreference = BLUETOOTH_PREFERENCE_DEFAULT;
-        private String btMacAddress = BT_MAC_ADDRESS_DEFAULT;
-
-        public Builder(){ }
-
-        public Builder setLocationPreference(@NonNull LocationPreference locationPreference){
-            this.locationPreference = locationPreference;
-            return this;
+    public void setLatitude(double latitude){
+        if ((latitude > 90)||(latitude < -90)){
+            throw new IllegalArgumentException("Min: -90, Max: 90, value: " + latitude);
         }
+        this.latitude = latitude;
+    }
 
-        public Builder setLatitude(double latitude){
-            if ((latitude > 90)||(latitude < -90)){
-                throw new IllegalArgumentException("Min: -90, Max: 90, value: " + latitude); 
-            }
-            this.latitude = latitude;
-            return this;
+    public void setLongitude(double longitude){
+        if ((longitude > 180)||(longitude < -180)){
+            throw new IllegalArgumentException("Min: -180, Max: 180, value: " + longitude);
         }
+        this.longitude = longitude;
+    }
 
-        public Builder setLongitude(double longitude){
-            if ((longitude > 180)||(longitude < -180)){
-                throw new IllegalArgumentException("Min: -180, Max: 180, value: " + longitude);
-            }
-            this.longitude = longitude;
-            return this;
+    public void setLatLng(LatLng latLng){
+        if (latLng == null) {
+            setLatitude(LATITUDE_DEFAULT);
+            setLongitude(LONGITUDE_DEFAULT);
         }
+        else {
+            setLatitude(latLng.latitude);
+            setLongitude(latLng.longitude);
+        }
+    }
 
-        public Builder setLatLng(@NonNull LatLng latLng){
-            return setLatitude(latLng.latitude).setLongitude(latLng.longitude);
+    public void setLocation(Location location){
+        if (location == null){
+            setLatitude(LATITUDE_DEFAULT);
+            setLongitude(LONGITUDE_DEFAULT);
         }
+        else {
+            setLatitude(location.getLatitude());
+            setLongitude(location.getLongitude());
+        }
+    }
 
-        public Builder setLocation(Location location){
-            if (location == null){
-                throw new NullPointerException();
-            }
-            return setLatitude(location.getLatitude()).setLongitude(location.getLongitude());
-        }
+    public void setWifiPreference(@NonNull WifiPreference wifiPreference){
+        this.wifiPreference = wifiPreference;
+    }
 
-        public Builder setWifiPreference(@NonNull WifiPreference wifiPreference){
-            this.wifiPreference = wifiPreference;
-            return this;
+    public void setSsid(@NonNull String ssid){
+        if (ssid.isEmpty() && wifiPreference != null && wifiPreference != WifiPreference.NONE) {
+            throw new IllegalArgumentException("SSID cannot be blank if wifi preference is not NONE or null");
         }
+        if (ssid.length() > 32) {
+            throw new IllegalArgumentException("SSID cannot be more than 32 characters");
+        }
+        this.ssid = ssid;
+    }
 
-        public Builder setSsid(@NonNull String ssid){
-            this.ssid = ssid;
-            return this;
-        }
+    public void setBluetoothPreference(@NonNull BluetoothPreference bluetoothPreference){
+        this.bluetoothPreference = bluetoothPreference;
+    }
 
-        public Builder setBluetoothPreference(@NonNull BluetoothPreference bluetoothPreference){
-            this.bluetoothPreference = bluetoothPreference;
-            return this;
+    public void setBtMacAddress(@NonNull String btMacAddress){
+        if (btMacAddress.isEmpty() && bluetoothPreference != null
+                && bluetoothPreference != BluetoothPreference.NONE) {
+            throw new IllegalArgumentException("BT Mac Address cannot be blank if " +
+                    "BT preference is not NONE or null");
         }
+        if (!btMacAddress.isEmpty() &&
+                !btMacAddress.matches("(?i)^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$")) {
+            throw new IllegalArgumentException("Invalid Mac address");
+        }
+        this.btMacAddress = btMacAddress;
+    }
 
-        public Builder setBtMacAddress(@NonNull String btMacAddress){
-            this.btMacAddress = btMacAddress;
-            return this;
+    public void setRadius(int radius){
+        if (0 < radius){
+            this.radius = radius;
         }
+        else {
+            throw new IllegalArgumentException("Radius must be greater than zero");
+        }
+    }
 
-        public Builder copyConditions(Conditions conditions){
-            this.locationPreference = conditions.locationPreference;
-            this.longitude = conditions.longitude;
-            this.latitude = conditions.latitude;
-            this.wifiPreference = conditions.wifiPreference;
-            this.ssid = conditions.ssid;
-            this.bluetoothPreference = conditions.bluetoothPreference;
-            this.btMacAddress = conditions.btMacAddress;
-            return this;
-        }
+    public Conditions(Parcel parcel){
+        setLocationPreference(LocationPreference.valueOf(parcel.readString()));
+        setLatitude(parcel.readDouble());
+        setLongitude(parcel.readDouble());
+        setWifiPreference(WifiPreference.valueOf(parcel.readString()));
+        setSsid(parcel.readString());
+        setBluetoothPreference(BluetoothPreference.valueOf(parcel.readString()));
+        setBtMacAddress(parcel.readString());
+    }
 
-        public Builder readFromParcel(Parcel parcel){
-            this.setLocationPreference(LocationPreference.valueOf(parcel.readString()));
-            this.setLatitude(parcel.readDouble());
-            this.setLongitude(parcel.readDouble());
-            this.setWifiPreference(WifiPreference.valueOf(parcel.readString()));
-            this.setSsid(parcel.readString());
-            this.setBluetoothPreference(BluetoothPreference.valueOf(parcel.readString()));
-            this.setBtMacAddress(parcel.readString());
-            return this;
-        }
-
-        public Conditions build(){
-            return new Conditions(this);
-        }
+    public Conditions(Conditions conditions){
+        this.locationPreference = conditions.locationPreference;
+        this.longitude = conditions.longitude;
+        this.latitude = conditions.latitude;
+        this.wifiPreference = conditions.wifiPreference;
+        this.ssid = conditions.ssid;
+        this.bluetoothPreference = conditions.bluetoothPreference;
+        this.btMacAddress = conditions.btMacAddress;
     }
 }
