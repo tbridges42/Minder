@@ -8,9 +8,14 @@ import android.net.Uri;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import java.util.IllegalFormatException;
+
 import us.bridgeses.Minder.Reminder;
+import us.bridgeses.Minder.reminder.Conditions;
 
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_ACTIVE;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_BLUETOOTH_MAC_ADDRESS;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_BLUETOOTH_PREFERENCE;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_CONDITIONS;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_DATE;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_DAYSOFWEEK;
@@ -20,6 +25,7 @@ import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_LATITUDE;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_LEDCOLOR;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_LEDPATTERN;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_LOCATION_PREFERENCE;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_LONGITUDE;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_MONTHTYPE;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_NAME;
@@ -35,6 +41,7 @@ import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_STYLE;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_TEXTCOLOR;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_VOLUME;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_WIFI_PREFERENCE;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.REMINDER_URI;
 
 /**
@@ -63,39 +70,7 @@ public class ReminderSqlDao implements ReminderDAO {
         cursor.moveToFirst();
         Reminder[] reminders = new Reminder[cursor.getCount()];
         for (int i=0; i<cursor.getCount(); i++) {
-            Reminder reminder = new Reminder();
-            reminder.setId(cursor.getInt(cursor.getColumnIndex(COLUMN_ID)));
-            reminder.setActive(cursor.getInt(cursor.getColumnIndex(COLUMN_ACTIVE)) == 1);
-            reminder.setName(cursor.getString(cursor.getColumnIndex(COLUMN_NAME)));
-            reminder.setDescription(cursor.getString(cursor.getColumnIndex(COLUMN_DESCRIPTION)));
-            reminder.setDate(cursor.getLong(cursor.getColumnIndex(COLUMN_DATE)) * 1000);
-            reminder.setDaysOfWeek((byte) cursor.getInt(cursor.getColumnIndex(COLUMN_DAYSOFWEEK)));
-            reminder.setMonthType((byte) cursor.getInt(cursor.getColumnIndex(COLUMN_MONTHTYPE)));
-            reminder.setLocation(new LatLng(cursor.getFloat(cursor.getColumnIndex(COLUMN_LATITUDE)),
-                    cursor.getFloat(cursor.getColumnIndex(COLUMN_LONGITUDE))));
-            reminder.setRepeatLength(cursor.getInt(cursor.getColumnIndex(COLUMN_REPEATLENGTH)));
-            reminder.setRepeatType(cursor.getInt(cursor.getColumnIndex(COLUMN_REPEATTYPE)));
-            reminder.setRadius(cursor.getInt(cursor.getColumnIndex(COLUMN_RADIUS)));
-            reminder.setQr(cursor.getString(cursor.getColumnIndex(COLUMN_QR)));
-            reminder.setPersistence((byte) cursor.getInt(cursor.getColumnIndex(COLUMN_PERSISTENCE)));
-            reminder.setConditions((byte) cursor.getInt(cursor.getColumnIndex(COLUMN_CONDITIONS)));
-            reminder.setStyle((byte) cursor.getInt(cursor.getColumnIndex(COLUMN_STYLE)));
-            reminder.setSSID(cursor.getString(cursor.getColumnIndex(COLUMN_SSID)));
-            reminder.setSnoozeDuration(cursor.getInt(cursor.getColumnIndex(COLUMN_SNOOZEDURATION)));
-            reminder.setLedColor(cursor.getInt(cursor.getColumnIndex(COLUMN_LEDCOLOR)));
-            reminder.setLedPattern(cursor.getInt(cursor.getColumnIndex(COLUMN_LEDPATTERN)));
-            reminder.setSnoozeNumber(cursor.getInt(cursor.getColumnIndex(COLUMN_SNOOZENUM)));
-            try {
-                reminder.setRingtone(cursor.getString(cursor.getColumnIndex(COLUMN_RINGTONE)));
-            }
-            catch (NullPointerException e){
-                reminder.setRingtone("");
-            }
-            reminder.setVolume(cursor.getInt(cursor.getColumnIndex(COLUMN_VOLUME)));
-            reminder.setLedColor(cursor.getInt(cursor.getColumnIndex(COLUMN_LEDCOLOR)));
-            reminder.setTextColor(cursor.getInt(cursor.getColumnIndex(COLUMN_TEXTCOLOR)));
-            reminder.setImage(cursor.getString(cursor.getColumnIndex(COLUMN_IMAGE)));
-            reminders[i] = reminder;
+            reminders[i] = new Reminder(cursor);
             cursor.moveToNext();
         }
         return reminders;
@@ -134,6 +109,10 @@ public class ReminderSqlDao implements ReminderDAO {
                 COLUMN_TEXTCOLOR,
                 COLUMN_LEDCOLOR,
                 COLUMN_IMAGE,
+                COLUMN_LOCATION_PREFERENCE,
+                COLUMN_WIFI_PREFERENCE,
+                COLUMN_BLUETOOTH_PREFERENCE,
+                COLUMN_BLUETOOTH_MAC_ADDRESS
         };
         String sortOrder = COLUMN_ACTIVE + " DESC, " + COLUMN_DATE + " ASC";
         return resolver.query(
@@ -198,33 +177,8 @@ public class ReminderSqlDao implements ReminderDAO {
      */
     @Override
     public Reminder saveReminder(Reminder reminder) {
-        ContentValues values = new ContentValues();
-        if (reminder.getId() != -1)
-            values.put(COLUMN_ID,reminder.getId());
+        ContentValues values = reminder.toContentValues();
 
-        values.put(COLUMN_ACTIVE,reminder.getActive());
-        values.put(COLUMN_NAME,reminder.getName());
-        values.put(COLUMN_DESCRIPTION,reminder.getDescription());
-        values.put(COLUMN_DATE,reminder.getDate().getTimeInMillis()/1000);
-        values.put(COLUMN_DAYSOFWEEK,reminder.getDaysOfWeek());
-        values.put(COLUMN_MONTHTYPE,reminder.getMonthType());
-        values.put(COLUMN_LATITUDE,reminder.getLocation().latitude);
-        values.put(COLUMN_LONGITUDE,reminder.getLocation().longitude);
-        values.put(COLUMN_REPEATTYPE,reminder.getRepeatType());
-        values.put(COLUMN_REPEATLENGTH,reminder.getRepeatLength());
-        values.put(COLUMN_RINGTONE,reminder.getRingtone());
-        values.put(COLUMN_PERSISTENCE,reminder.getPersistence());
-        values.put(COLUMN_RADIUS,reminder.getRadius());
-        values.put(COLUMN_QR,reminder.getQr());
-        values.put(COLUMN_SSID, reminder.getSSID());
-        values.put(COLUMN_SNOOZEDURATION, reminder.getSnoozeDuration());
-        values.put(COLUMN_CONDITIONS, reminder.getConditions());
-        values.put(COLUMN_STYLE, reminder.getStyle());
-        values.put(COLUMN_VOLUME, reminder.getVolume());
-        values.put(COLUMN_SNOOZENUM, reminder.getSnoozeNumber());
-        values.put(COLUMN_LEDCOLOR, reminder.getLedColor());
-        values.put(COLUMN_TEXTCOLOR, reminder.getTextColor());
-        values.put(COLUMN_IMAGE, reminder.getImage());
         Uri response = resolver.insert(
                 REMINDER_URI,
                 values);

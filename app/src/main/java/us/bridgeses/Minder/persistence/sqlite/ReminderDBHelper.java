@@ -1,11 +1,20 @@
 package us.bridgeses.Minder.persistence.sqlite;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import us.bridgeses.Minder.reminder.Conditions;
+
+import static us.bridgeses.Minder.Reminder.ONLY_AT_LOCATION;
+import static us.bridgeses.Minder.Reminder.UNTIL_LOCATION;
+import static us.bridgeses.Minder.Reminder.WIFINEEDED;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.*;
 
 /**
@@ -43,11 +52,16 @@ public class ReminderDBHelper extends SQLiteOpenHelper {
 		            COLUMN_VOLUME + " INTEGER, " +
 		            COLUMN_SNOOZENUM + " INTEGER, " +
                     COLUMN_IMAGE + " TEXT, " +
-                    COLUMN_TEXTCOLOR + " INTEGER " + ")";
+                    COLUMN_TEXTCOLOR + " INTEGER " +
+                    COLUMN_LOCATION_PREFERENCE + " TEXT" + 
+                    COLUMN_WIFI_PREFERENCE + " TEXT" + 
+                    COLUMN_BLUETOOTH_PREFERENCE + " TEXT" + 
+                    COLUMN_BLUETOOTH_MAC_ADDRESS+ " TEXT" +
+                    ")";
 
     private static final String SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS " + TABLE_NAME;
 
-    public static final int DATABASE_VERSION = 17;
+    public static final int DATABASE_VERSION = 18;
     public static final String DATABASE_NAME = "Reminders.db";
 
     /**
@@ -83,15 +97,21 @@ public class ReminderDBHelper extends SQLiteOpenHelper {
             database.execSQL(SQL_DELETE_ENTRIES);     //Versions less than 13 are incompatible and need to be rewritten
             database.execSQL(SQL_CREATE_ENTRIES);
         }
-	    if (oldVersion == 14) {
+	    if (oldVersion <= 14) {
 		    database.execSQL("ALTER TABLE "+TABLE_NAME+" ADD " + COLUMN_VOLUME + " INTEGER");
 	    }
-	    if (oldVersion == 15) {
+	    if (oldVersion <= 15) {
 		    database.execSQL("ALTER TABLE "+TABLE_NAME+" ADD " + COLUMN_SNOOZENUM + " INTEGER");
 	    }
-        if (oldVersion == 16){
-            database.execSQL("ALTER TABLE "+TABLE_NAME+" ADD " + COLUMN_IMAGE + " STRING" );
+        if (oldVersion <= 16){
+            database.execSQL("ALTER TABLE "+TABLE_NAME+" ADD " + COLUMN_IMAGE + " TEXT" );
             database.execSQL("ALTER TABLE "+TABLE_NAME+" ADD " + COLUMN_TEXTCOLOR + " INTEGER");
+        }
+        if (oldVersion <= 17) {
+            database.execSQL("ALTER TABLE "+TABLE_NAME+" ADD " + COLUMN_LOCATION_PREFERENCE + " TEXT" );
+            database.execSQL("ALTER TABLE "+TABLE_NAME+" ADD " + COLUMN_WIFI_PREFERENCE + " TEXT" );
+            database.execSQL("ALTER TABLE "+TABLE_NAME+" ADD " + COLUMN_BLUETOOTH_PREFERENCE + " TEXT" );
+            database.execSQL("ALTER TABLE "+TABLE_NAME+" ADD " + COLUMN_BLUETOOTH_MAC_ADDRESS+ " TEXT" );
         }
     }
 

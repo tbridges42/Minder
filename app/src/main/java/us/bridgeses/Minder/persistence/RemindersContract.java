@@ -54,6 +54,8 @@ public class RemindersContract {
         public static final String COLUMN_SSID = "SSID";
         public static final String COLUMN_LOCATION_PREFERENCE = "LocationsPreference";
         public static final String COLUMN_WIFI_PREFERENCE = "WifiPreference";
+        public static final String COLUMN_BLUETOOTH_PREFERENCE = "BluetoothPreference";
+        public static final String COLUMN_BLUETOOTH_MAC_ADDRESS = "BluetoothMacAddress";
 
         public static final String[] DISPLAY_PROJECTION = {
                 COLUMN_ID,
