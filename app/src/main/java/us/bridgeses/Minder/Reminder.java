@@ -1,10 +1,13 @@
 package us.bridgeses.Minder;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -25,6 +28,32 @@ import us.bridgeses.Minder.editor.EditStyle;
 import us.bridgeses.Minder.persistence.dao.DaoFactory;
 import us.bridgeses.Minder.persistence.dao.ReminderDAO;
 import us.bridgeses.Minder.reminder.Conditions;
+
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_ACTIVE;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_CONDITIONS;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_DATE;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_DAYSOFWEEK;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_DESCRIPTION;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_ID;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_IMAGE;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_LATITUDE;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_LEDCOLOR;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_LEDPATTERN;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_LONGITUDE;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_MONTHTYPE;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_NAME;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_PERSISTENCE;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_QR;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_RADIUS;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_REPEATLENGTH;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_REPEATTYPE;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_RINGTONE;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_SNOOZEDURATION;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_SNOOZENUM;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_SSID;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_STYLE;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_TEXTCOLOR;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_VOLUME;
 
 /**
  * Model class for a Reminder
@@ -64,6 +93,39 @@ public class Reminder implements Parcelable, Cloneable {
         setImage(IMAGEDEFAULT);
         setTextColor(TEXTCOLORDEFAULT);
     }
+	
+	public Reminder(@NonNull Cursor cursor) {
+		if (cursor.isBeforeFirst() || cursor.isAfterLast()) {
+			throw new IllegalArgumentException("Cursor is not pointing at a valid row");
+		}
+		setId(cursor.getInt(cursor.getColumnIndex(COLUMN_ID)));
+		setActive(cursor.getInt(cursor.getColumnIndex(COLUMN_ACTIVE)) == 1);
+		setName(cursor.getString(cursor.getColumnIndex(COLUMN_NAME)));
+		setDescription(cursor.getString(cursor.getColumnIndex(COLUMN_DESCRIPTION)));
+		setDate(cursor.getLong(cursor.getColumnIndex(COLUMN_DATE)) * 1000);
+		setDaysOfWeek((byte) cursor.getInt(cursor.getColumnIndex(COLUMN_DAYSOFWEEK)));
+		setMonthType((byte) cursor.getInt(cursor.getColumnIndex(COLUMN_MONTHTYPE)));
+		setRepeatLength(cursor.getInt(cursor.getColumnIndex(COLUMN_REPEATLENGTH)));
+		setRepeatType(cursor.getInt(cursor.getColumnIndex(COLUMN_REPEATTYPE)));
+		setQr(cursor.getString(cursor.getColumnIndex(COLUMN_QR)));
+		setPersistence((byte) cursor.getInt(cursor.getColumnIndex(COLUMN_PERSISTENCE)));
+		setStyle((byte) cursor.getInt(cursor.getColumnIndex(COLUMN_STYLE)));
+		setSnoozeDuration(cursor.getInt(cursor.getColumnIndex(COLUMN_SNOOZEDURATION)));
+		setLedColor(cursor.getInt(cursor.getColumnIndex(COLUMN_LEDCOLOR)));
+		setLedPattern(cursor.getInt(cursor.getColumnIndex(COLUMN_LEDPATTERN)));
+		setSnoozeNumber(cursor.getInt(cursor.getColumnIndex(COLUMN_SNOOZENUM)));
+		try {
+			setRingtone(cursor.getString(cursor.getColumnIndex(COLUMN_RINGTONE)));
+		}
+		catch (NullPointerException e){
+			setRingtone("");
+		}
+		setVolume(cursor.getInt(cursor.getColumnIndex(COLUMN_VOLUME)));
+		setLedColor(cursor.getInt(cursor.getColumnIndex(COLUMN_LEDCOLOR)));
+		setTextColor(cursor.getInt(cursor.getColumnIndex(COLUMN_TEXTCOLOR)));
+		setImage(cursor.getString(cursor.getColumnIndex(COLUMN_IMAGE)));
+		setConditions(new Conditions(cursor));
+	}
 
     /**
      * Return a new reminder from the defaults in the given SharedPreferences
@@ -209,6 +271,7 @@ public class Reminder implements Parcelable, Cloneable {
     public static final byte DISPLAY_SCREEN = 4;
     public static final byte WAKE_UP = 8;
 	public static final byte DISMISS_DIALOG = 16;
+	public static final byte INSISTENT = 32;
 
     //Conditions constants
     public static final byte UNTIL_LOCATION = 1;
@@ -216,7 +279,6 @@ public class Reminder implements Parcelable, Cloneable {
     public static final byte WIFINEEDED = 4;
     public static final byte BLUETOOTHNEEDED = 8;
     public static final byte ACTIVE = 16;
-	public static final byte INSISTENT = 32;
 
     //Style constants
     public static final byte LED = 1;
@@ -477,6 +539,11 @@ public class Reminder implements Parcelable, Cloneable {
         this.conditions = new Conditions(conditions);
     }
 
+	public void setConditions(byte conditions) {
+		this.conditions = new Conditions(conditions);
+
+	}
+
     public Conditions getConditions() {
         return new Conditions(conditions);
     }
@@ -633,6 +700,37 @@ public class Reminder implements Parcelable, Cloneable {
 		DaoFactory daoFactory = DaoFactory.getInstance();
 		ReminderDAO dao = daoFactory.getDao(context);
 		return dao.getReminders();
+	}
+	
+	public ContentValues toContentValues() {
+		ContentValues values = new ContentValues();
+		return toContentValues(values);
+	}
+
+	private ContentValues toContentValues(ContentValues values) {
+		if (getId() != -1)
+			values.put(COLUMN_ID,getId());
+
+		values.put(COLUMN_ACTIVE,getActive());
+		values.put(COLUMN_NAME,getName());
+		values.put(COLUMN_DESCRIPTION,getDescription());
+		values.put(COLUMN_DATE,getDate().getTimeInMillis()/1000);
+		values.put(COLUMN_DAYSOFWEEK,getDaysOfWeek());
+		values.put(COLUMN_MONTHTYPE,getMonthType());
+		values.put(COLUMN_REPEATTYPE,getRepeatType());
+		values.put(COLUMN_REPEATLENGTH,getRepeatLength());
+		values.put(COLUMN_RINGTONE,getRingtone());
+		values.put(COLUMN_PERSISTENCE,getPersistence());
+		values.put(COLUMN_QR,getQr());
+		values.put(COLUMN_SNOOZEDURATION, getSnoozeDuration());
+		values.put(COLUMN_STYLE, getStyle());
+		values.put(COLUMN_VOLUME, getVolume());
+		values.put(COLUMN_SNOOZENUM, getSnoozeNumber());
+		values.put(COLUMN_LEDCOLOR, getLedColor());
+		values.put(COLUMN_TEXTCOLOR, getTextColor());
+		values.put(COLUMN_IMAGE, getImage());
+		conditions.toContentValues(values);
+		return values;
 	}
 
 	/******************************** Parcel Methods ******************************/

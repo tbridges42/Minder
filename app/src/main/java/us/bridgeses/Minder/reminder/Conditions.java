@@ -1,5 +1,7 @@
 package us.bridgeses.Minder.reminder;
 
+import android.content.ContentValues;
+import android.database.Cursor;
 import android.location.Location;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -8,6 +10,21 @@ import android.support.annotation.NonNull;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.io.Serializable;
+
+import static us.bridgeses.Minder.Reminder.ONLY_AT_LOCATION;
+import static us.bridgeses.Minder.Reminder.UNTIL_LOCATION;
+import static us.bridgeses.Minder.Reminder.WIFINEEDED;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_BLUETOOTH_MAC_ADDRESS;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_BLUETOOTH_PREFERENCE;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_LATITUDE;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_LOCATION_PREFERENCE;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_LONGITUDE;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_RADIUS;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_SSID;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_WIFI_PREFERENCE;
+import static us.bridgeses.Minder.reminder.Conditions.LocationPreference.AT_LOCATION;
+import static us.bridgeses.Minder.reminder.Conditions.LocationPreference.AWAY_FROM_LOCATION;
+import static us.bridgeses.Minder.reminder.Conditions.WifiPreference.CONNECTED;
 
 /**
  * Created by Laura on 7/9/2015.
@@ -60,6 +77,79 @@ public final class Conditions implements Parcelable, Serializable {
 
     public Conditions() {
 
+    }
+
+    public Conditions(byte conditions) {
+        if (getBitwise(conditions, UNTIL_LOCATION)) {
+            locationPreference = AWAY_FROM_LOCATION;
+        }
+        if (getBitwise(conditions, ONLY_AT_LOCATION)) {
+            locationPreference = AT_LOCATION;
+        }
+        if (getBitwise(conditions, WIFINEEDED)) {
+            wifiPreference = CONNECTED;
+        }
+    }
+
+    public Conditions(Parcel parcel){
+        setLocationPreference(LocationPreference.valueOf(parcel.readString()));
+        setLatitude(parcel.readDouble());
+        setLongitude(parcel.readDouble());
+        setWifiPreference(WifiPreference.valueOf(parcel.readString()));
+        setSsid(parcel.readString());
+        setBluetoothPreference(BluetoothPreference.valueOf(parcel.readString()));
+        setBtMacAddress(parcel.readString());
+    }
+
+    public Conditions(Conditions conditions){
+        setLocationPreference(conditions.locationPreference);
+        setLongitude(conditions.longitude);
+        setLatitude(conditions.latitude);
+        setWifiPreference(conditions.wifiPreference);
+        setSsid(conditions.ssid);
+        setBluetoothPreference(conditions.bluetoothPreference);
+        setBtMacAddress(conditions.btMacAddress);
+    }
+
+    public Conditions(@NonNull Cursor cursor) {
+        if (cursor.isAfterLast() || cursor.isBeforeFirst()) {
+            throw new IllegalArgumentException("Cursor is not pointing to a valid row");
+        }
+        setLocationPreference(LocationPreference.valueOf(
+                cursor.getString(cursor.getColumnIndex(COLUMN_LOCATION_PREFERENCE))
+        ));
+        setLatitude(cursor.getFloat(cursor.getColumnIndex(COLUMN_LATITUDE)));
+        setLongitude(cursor.getFloat(cursor.getColumnIndex(COLUMN_LONGITUDE)));
+        setRadius(cursor.getInt(cursor.getColumnIndex(COLUMN_RADIUS)));
+        setWifiPreference(WifiPreference.valueOf(
+                cursor.getString(cursor.getColumnIndex(COLUMN_WIFI_PREFERENCE))
+        ));
+        setSsid(cursor.getString(cursor.getColumnIndex(COLUMN_SSID)));
+        setBluetoothPreference(BluetoothPreference.valueOf(
+                cursor.getString(cursor.getColumnIndex(COLUMN_BLUETOOTH_PREFERENCE))
+        ));
+        setBtMacAddress(cursor.getString(cursor.getColumnIndex(COLUMN_BLUETOOTH_MAC_ADDRESS)));
+    }
+
+    public ContentValues toContentValues() {
+        ContentValues values = new ContentValues();
+        return toContentValues(values);
+    }
+
+    public ContentValues toContentValues(@NonNull ContentValues contentValues) {
+        contentValues.put(COLUMN_LOCATION_PREFERENCE, locationPreference.name());
+        contentValues.put(COLUMN_LATITUDE, latitude);
+        contentValues.put(COLUMN_LONGITUDE, longitude);
+        contentValues.put(COLUMN_RADIUS, radius);
+        contentValues.put(COLUMN_WIFI_PREFERENCE, wifiPreference.name());
+        contentValues.put(COLUMN_SSID, ssid);
+        contentValues.put(COLUMN_BLUETOOTH_PREFERENCE, bluetoothPreference.name());
+        contentValues.put(COLUMN_BLUETOOTH_MAC_ADDRESS, btMacAddress);
+        return contentValues;
+    }
+
+    private boolean getBitwise(byte store, byte key){
+        return (store & key) == key;
     }
 
     public LocationPreference getLocationPreference() {
@@ -201,25 +291,5 @@ public final class Conditions implements Parcelable, Serializable {
         else {
             throw new IllegalArgumentException("Radius must be greater than zero");
         }
-    }
-
-    public Conditions(Parcel parcel){
-        setLocationPreference(LocationPreference.valueOf(parcel.readString()));
-        setLatitude(parcel.readDouble());
-        setLongitude(parcel.readDouble());
-        setWifiPreference(WifiPreference.valueOf(parcel.readString()));
-        setSsid(parcel.readString());
-        setBluetoothPreference(BluetoothPreference.valueOf(parcel.readString()));
-        setBtMacAddress(parcel.readString());
-    }
-
-    public Conditions(Conditions conditions){
-        this.locationPreference = conditions.locationPreference;
-        this.longitude = conditions.longitude;
-        this.latitude = conditions.latitude;
-        this.wifiPreference = conditions.wifiPreference;
-        this.ssid = conditions.ssid;
-        this.bluetoothPreference = conditions.bluetoothPreference;
-        this.btMacAddress = conditions.btMacAddress;
     }
 }
