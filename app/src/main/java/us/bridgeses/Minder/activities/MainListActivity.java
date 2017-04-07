@@ -34,7 +34,7 @@ import us.bridgeses.Minder.views.interfaces.ReminderListView;
  * The main Activity of Minder. Controls and provides Fragments
  */
 public class MainListActivity extends LifecycleLoggingActivity implements
-        DataController.ActivityCallback, ReminderListViewFragment.ViewCallback, CompoundButton.OnCheckedChangeListener {
+        DataController.ActivityCallback, ReminderListView.ViewCallback, CompoundButton.OnCheckedChangeListener {
 
     private static final String TAG_ASYNC_FRAGMENT = "Async_fragment";
     private static final String TAG_ABOUT_FRAGMENT = "About_fragment";

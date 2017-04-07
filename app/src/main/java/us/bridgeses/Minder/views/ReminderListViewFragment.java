@@ -38,11 +38,6 @@ public class ReminderListViewFragment extends Fragment implements ReminderListVi
     private static final String TAG = "ReminderView";
     @ViewStatus public static int status = DETACHED;
 
-    public interface ViewCallback {
-        DataController getDataController();
-        void notifyReady();
-    }
-
     private RecyclerView reminderView;
     private ReminderRecyclerAdapter reminderAdapter;
     private ViewCallback callback;

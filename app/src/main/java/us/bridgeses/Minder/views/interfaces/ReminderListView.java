@@ -1,10 +1,9 @@
 package us.bridgeses.Minder.views.interfaces;
 
-import android.database.Cursor;
-
 import java.util.List;
 
 import us.bridgeses.Minder.Reminder;
+import us.bridgeses.Minder.controllers.DataController;
 import us.bridgeses.Minder.views.ViewStatus;
 
 /**
@@ -12,6 +11,11 @@ import us.bridgeses.Minder.views.ViewStatus;
  */
 
 public interface ReminderListView {
+
+    interface ViewCallback {
+        DataController getDataController();
+        void notifyReady();
+    }
 
     void setReminders(List<Reminder> reminders);
 
