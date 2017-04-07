@@ -23,6 +23,7 @@ import com.orhanobut.logger.Logger;
 
 import java.util.Calendar;
 
+import us.bridgeses.Minder.reminder.Conditions;
 import us.bridgeses.Minder.util.AlertService;
 
 /**
@@ -222,30 +223,16 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
         float results[] = new float[1];
         Location.distanceBetween(mLastLocation.getLatitude(),mLastLocation.getLongitude()
                 ,location.latitude,location.longitude,results);
-        if (results[0] <= reminder.getRadius()){
-            Logger.i("At Location");
-            if (reminder.getOnlyAtLocation()) {
-                Logger.i("Supposed to be at location");
-                hasLocation = true;
-                stopLocationUpdates();
-                checkConditions();
-            }
-            else {
-                Logger.i("Not supposed to be at location");
-                snooze((int) Reminder.MINUTE);
-            }
+        boolean atLocation = results[0] <= reminder.getRadius();
+        Conditions.LocationPreference locationPreference = reminder.getLocationType();
+        if ((atLocation && locationPreference == Conditions.LocationPreference.AT_LOCATION) ||
+            (!atLocation && locationPreference == Conditions.LocationPreference.AWAY_FROM_LOCATION)) {
+            hasLocation = true;
+            stopLocationUpdates();
+            checkConditions();
         }
-        else{
-            Logger.i("Not at Location");
-            if (reminder.getUntilLocation()){
-                Logger.i("Not supposed to be at location");
-                hasLocation = true;
-                stopLocationUpdates();
-                checkConditions();
-            }
-            else {
-                snooze((int) Reminder.MINUTE);
-            }
+        else {
+            snooze((int) Reminder.MINUTE);
         }
     }
 
@@ -272,43 +259,15 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
         float results[] = new float[1];
         Location.distanceBetween(mLastLocation.getLatitude(),mLastLocation.getLongitude()
                 ,location.latitude,location.longitude,results);
-        if (results[0] <= reminder.getRadius()){
-            Logger.i("At Location");
-            if (reminder.getOnlyAtLocation()){
-                Logger.i("Supposed to be at location");
-                hasLocation = true;
-                checkConditions();
-            }
-            else {
-                if (reminder.getUntilLocation()) {
-                    Logger.i("Not supposed to be at Location");
-                    try {
-                        snooze((int) Reminder.MINUTE);
-                    }
-                    catch (Exception e){
-                        Logger.e("Unable to start location updates");
-                    }
-                }
-            }
+        boolean atLocation = results[0] <= reminder.getRadius();
+        Conditions.LocationPreference locationPreference = reminder.getLocationType();
+        if ((atLocation && locationPreference == Conditions.LocationPreference.AT_LOCATION) ||
+                (!atLocation && locationPreference == Conditions.LocationPreference.AWAY_FROM_LOCATION)) {
+            hasLocation = true;
+            checkConditions();
         }
-        else{
-            Logger.i("Not at location");
-            if (reminder.getUntilLocation()){
-                Logger.i("Not supposed to be at location");
-                hasLocation = true;
-                checkConditions();
-            }
-            else {
-                if (reminder.getOnlyAtLocation()) {
-                    Logger.i("Supposed to be at location");
-                    try {
-                        snooze(reminder.getSnoozeDuration());
-                    }
-                    catch (Exception e){
-                        Logger.e("Unable to start location updates");
-                    }
-                }
-            }
+        else {
+            snooze((int) Reminder.MINUTE);
         }
     }
 
@@ -389,9 +348,9 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
     }
 
     private void initConditions(){
-        hasLocation = !((reminder.getOnlyAtLocation()) || (reminder.getUntilLocation()));
-        hasWiFi = !reminder.getNeedWifi();
-        hasBT = !reminder.getNeedBluetooth();
+        hasLocation = reminder.getLocationType() == Conditions.LocationPreference.NONE;
+        hasWiFi = reminder.getConditions().getWifiPreference() == Conditions.WifiPreference.NONE;
+        hasBT = reminder.getConditions().getBluetoothPreference() == Conditions.BluetoothPreference.NONE;
     }
 
     public void run(){
