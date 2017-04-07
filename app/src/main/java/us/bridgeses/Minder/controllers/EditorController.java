@@ -7,6 +7,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 import us.bridgeses.Minder.Reminder;
+import us.bridgeses.Minder.reminder.ReminderComponent;
+import us.bridgeses.Minder.views.interfaces.EditorView;
 
 /**
  * Created by bridgtxcdf on 3/30/2017.
@@ -19,10 +21,11 @@ public class EditorController extends Fragment {
     private ActivityCallback callback;
 
     public interface ActivityCallback {
-        public Fragment launchEditor(@EditorType int type);
-        public Fragment dismissEditor();
-        public DataController getDataController();
-        public Fragment doneEditing();
+        EditorView launchEditor(ReminderComponent component);
+        EditorView dismissEditor();
+        EditorView getCurrentEditor();
+        DataController getDataController();
+        Fragment doneEditing();
     }
 
     @Retention(RetentionPolicy.SOURCE)
@@ -36,19 +39,19 @@ public class EditorController extends Fragment {
 
 
     public void save() {
-        Fragment editorFragment = callback.dismissEditor();
+        callback.getCurrentEditor().getValues().addTo(reminder);
+        EditorView editorFragment = callback.dismissEditor();
         if (editorFragment == null) {
             callback.getDataController().save(reminder);
             callback.doneEditing();
         }
         else {
-            lastSavedReminder = reminder;
             // Populate fragment with lastSavedReminder values
         }
     }
 
     public void cancel() {
-        Fragment editorFragment = callback.dismissEditor();
+        EditorView editorFragment = callback.dismissEditor();
         if (editorFragment == null) {
             callback.doneEditing();
         }
@@ -62,7 +65,18 @@ public class EditorController extends Fragment {
     }
 
     public void onEditButtonClicked(@EditorType int type) {
-        Fragment editorFragment = callback.launchEditor(type);
-        // Populate fragment with reminder values
+        switch (type) {
+            case CONDITIONS:
+                callback.launchEditor(reminder.getConditions());
+                break;
+            case MAIN:
+                break;
+            case PERSISTENCE:
+                break;
+            case REPEAT:
+                break;
+            case STYLE:
+                break;
+        }
     }
 }

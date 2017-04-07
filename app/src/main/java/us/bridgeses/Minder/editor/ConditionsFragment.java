@@ -27,6 +27,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.widget.BaseAdapter;
 
+import com.google.android.gms.maps.model.LatLng;
 import com.orhanobut.logger.Logger;
 
 import java.util.List;
@@ -34,7 +35,9 @@ import java.util.List;
 import us.bridgeses.Minder.activities.MapsActivity;
 import us.bridgeses.Minder.R;
 import us.bridgeses.Minder.Reminder;
+import us.bridgeses.Minder.reminder.Conditions;
 import us.bridgeses.Minder.util.ActivityLoader;
+import us.bridgeses.Minder.views.interfaces.EditorView;
 
 /**
  * Displays options to the user that effect under what conditions the reminder will fire
@@ -43,7 +46,10 @@ import us.bridgeses.Minder.util.ActivityLoader;
  */
 //TODO: Is there any way to make these editor classes agnostic of the preferences referenced in xml?
 //TODO: Move all editor activities into one with multiple fragments?
-public class ConditionsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener, Preference.OnPreferenceClickListener{
+public class ConditionsFragment extends PreferenceFragment implements
+        SharedPreferences.OnSharedPreferenceChangeListener,
+        Preference.OnPreferenceClickListener,
+        EditorView<Conditions> {
 
     final static int MAP_ACTIVITY_CODE = 1;
 
@@ -329,9 +335,65 @@ public class ConditionsFragment extends PreferenceFragment implements SharedPref
                     mPreference.setValue("0");
                     mPreference.setSummary(mPreference.getEntry());
                 }
-                return;
             }
         }
+    }
+
+    @Override
+    public void setup(Conditions reminder) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+
+        switch (reminder.getLocationPreference()) {
+            case NONE: editor.putString("location_type", "0");
+                break;
+            case AT_LOCATION: editor.putString("location_type", "1");
+                break;
+            case AWAY_FROM_LOCATION: editor.putString("location_type", "2");
+                break;
+        }
+        editor.putFloat("Latitude",(float) reminder.getLatitude());
+        editor.putFloat("Longitude",(float) reminder.getLongitude());
+        editor.putInt("radius",reminder.getRadius());
+        editor.putString("ssid", reminder.getSsid());
+        editor.putBoolean("wifi", reminder.getWifiPreference() == Conditions.WifiPreference.CONNECTED);
+        editor.putBoolean("bluetooth", reminder.getBluetoothPreference() == Conditions.BluetoothPreference.CONNECTED);
+        editor.putString("bt_name", reminder.getBtMacAddress());
+
+        editor.commit();
+        initSummaries();
+    }
+
+    @Override
+    public Conditions getValues() {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity);
+        Conditions conditions = new Conditions();
+        switch (sharedPreferences.getString("location_type", "0")) {
+            case "0": conditions.setLocationPreference(Conditions.LocationPreference.NONE);
+                break;
+            case "1": conditions.setLocationPreference(Conditions.LocationPreference.AT_LOCATION);
+                break;
+            case "2": conditions.setLocationPreference(Conditions.LocationPreference.AWAY_FROM_LOCATION);
+        }
+        conditions.setLatitude(sharedPreferences.getFloat("Latitude", Conditions.LATITUDE_DEFAULT));
+        conditions.setLongitude(sharedPreferences.getFloat("Longitude", Conditions.LONGITUDE_DEFAULT));
+        conditions.setRadius(sharedPreferences.getInt("radius", Conditions.RADIUS_DEFAULT));
+        if (sharedPreferences.getBoolean("wifi", false)) {
+            conditions.setWifiPreference(Conditions.WifiPreference.CONNECTED);
+        }
+        else {
+            conditions.setWifiPreference(Conditions.WifiPreference.NONE);
+        }
+        conditions.setSsid(sharedPreferences.getString("ssid", Conditions.SSID_DEFAULT));
+        if (sharedPreferences.getBoolean("bluetooth", false)) {
+            conditions.setBluetoothPreference(Conditions.BluetoothPreference.CONNECTED);
+        }
+        else {
+            conditions.setBluetoothPreference(Conditions.BluetoothPreference.NONE);
+        }
+        conditions.setBtMacAddress(sharedPreferences.getString("bt_name",
+                Conditions.BT_MAC_ADDRESS_DEFAULT));
+        return conditions;
     }
 
     /**
