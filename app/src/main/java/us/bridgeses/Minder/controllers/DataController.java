@@ -90,7 +90,7 @@ public class DataController extends Fragment implements LoaderManager.LoaderCall
         }
         catch (ClassCastException e) {
             throw new IllegalStateException(
-                    "The caller of DataController must implement ViewCallback", e
+                    "The caller of DataController must implement ActivityCallback", e
             );
         }
         catch (NullPointerException e) {

@@ -1,7 +1,13 @@
 package us.bridgeses.Minder.controllers;
 
+import android.app.Activity;
 import android.app.Fragment;
+import android.os.Bundle;
 import android.support.annotation.IntDef;
+import android.support.annotation.Nullable;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -17,7 +23,6 @@ import us.bridgeses.Minder.views.interfaces.EditorView;
 public class EditorController extends Fragment {
 
     private Reminder reminder;
-    private Reminder lastSavedReminder;
     private ActivityCallback callback;
 
     public interface ActivityCallback {
@@ -37,6 +42,50 @@ public class EditorController extends Fragment {
     public static final int STYLE = 3;
     public static final int PERSISTENCE = 4;
 
+    public static EditorController getInstance(Reminder reminder) {
+        EditorController editorController = new EditorController();
+        Bundle bundle = new Bundle();
+        bundle.putParcelable("reminder", reminder);
+        editorController.setArguments(bundle);
+        return editorController;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+        reminder = getArguments().getParcelable("reminder");
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        // This fragment has no UI. Do not attempt to inflate it
+        return null;
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        try {
+            Activity activity = getActivity();
+            callback = (EditorController.ActivityCallback) activity;
+        }
+        catch (ClassCastException e) {
+            throw new IllegalStateException(
+                    "The caller of EditorController must implement ActivityCallback", e
+            );
+        }
+        catch (NullPointerException e) {
+            throw new IllegalStateException("Activity was not ready", e);
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        callback = null;
+    }
 
     public void save() {
         callback.getCurrentEditor().getValues().addTo(reminder);
