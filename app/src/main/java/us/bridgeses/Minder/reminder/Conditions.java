@@ -11,6 +11,8 @@ import com.google.android.gms.maps.model.LatLng;
 
 import java.io.Serializable;
 
+import us.bridgeses.Minder.Reminder;
+
 import static us.bridgeses.Minder.Reminder.ONLY_AT_LOCATION;
 import static us.bridgeses.Minder.Reminder.UNTIL_LOCATION;
 import static us.bridgeses.Minder.Reminder.WIFINEEDED;
@@ -29,7 +31,7 @@ import static us.bridgeses.Minder.reminder.Conditions.WifiPreference.CONNECTED;
 /**
  * Created by Laura on 7/9/2015.
  */
-public final class Conditions implements Parcelable, Serializable {
+public final class Conditions implements ReminderComponent, Parcelable, Serializable {
 
     public int getRadius() {
         return radius;
@@ -58,8 +60,12 @@ public final class Conditions implements Parcelable, Serializable {
     }
 
     public static final LocationPreference LOCATION_PREFERENCE_DEFAULT = LocationPreference.NONE;
-    public static final double LATITUDE_DEFAULT = 0.0;
-    public static final double LONGITUDE_DEFAULT = 0.0;
+
+    // Even though lat and long are doubles, 0.0 does not require double precision and this allows
+    // backwards compatibility with older classes
+    public static final float LATITUDE_DEFAULT = 0.0f;
+    public static final float LONGITUDE_DEFAULT = 0.0f;
+
     public static final WifiPreference WIFI_PREFERENCE_DEFAULT = WifiPreference.NONE;
     public static final String SSID_DEFAULT = "";
     public static final BluetoothPreference BLUETOOTH_PREFERENCE_DEFAULT = BluetoothPreference.NONE;
@@ -146,6 +152,12 @@ public final class Conditions implements Parcelable, Serializable {
         contentValues.put(COLUMN_BLUETOOTH_PREFERENCE, bluetoothPreference.name());
         contentValues.put(COLUMN_BLUETOOTH_MAC_ADDRESS, btMacAddress);
         return contentValues;
+    }
+
+    @Override
+    public void addTo(Reminder reminder) {
+        // defensive copy
+        reminder.setConditions(new Conditions(this));
     }
 
     private boolean getBitwise(byte store, byte key){

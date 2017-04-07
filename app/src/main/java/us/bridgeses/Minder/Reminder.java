@@ -30,27 +30,22 @@ import us.bridgeses.Minder.persistence.dao.ReminderDAO;
 import us.bridgeses.Minder.reminder.Conditions;
 
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_ACTIVE;
-import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_CONDITIONS;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_DATE;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_DAYSOFWEEK;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_DESCRIPTION;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_ID;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_IMAGE;
-import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_LATITUDE;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_LEDCOLOR;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_LEDPATTERN;
-import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_LONGITUDE;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_MONTHTYPE;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_NAME;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_PERSISTENCE;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_QR;
-import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_RADIUS;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_REPEATLENGTH;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_REPEATTYPE;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_RINGTONE;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_SNOOZEDURATION;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_SNOOZENUM;
-import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_SSID;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_STYLE;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_TEXTCOLOR;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_VOLUME;
@@ -1119,9 +1114,11 @@ public class Reminder implements Parcelable, Cloneable {
         editor.putString("temp_monthly_type", Integer.toString(reminder.getMonthType()));
         
         editor.putString("ssid", reminder.getSSID());
-        editor.putString("wifi", reminder.getConditions().getWifiPreference().name());
+        editor.putBoolean("wifi", reminder.getConditions().getWifiPreference() ==
+				Conditions.WifiPreference.CONNECTED);
         editor.putString("snooze_duration", Integer.toString(reminder.getSnoozeDuration()));
-        editor.putString("bluetooth", reminder.getConditions().getBluetoothPreference().name());
+        editor.putBoolean("bluetooth", reminder.getConditions().getBluetoothPreference() ==
+				Conditions.BluetoothPreference.CONNECTED);
         editor.putString("bt_name", reminder.getBluetooth());
 	    editor.putInt("volume", reminder.getVolume());
 	    editor.putBoolean("vibrate_repeat", reminder.getVibrateRepeat());
@@ -1221,11 +1218,19 @@ public class Reminder implements Parcelable, Cloneable {
         reminder.setDisplayScreen(sharedPreferences.getBoolean("display_screen", DISPLAYSCREENDEFAULT));
         reminder.setWakeUp(sharedPreferences.getBoolean("wake_up", WAKEUPDEFAULT));
         reminder.setSSID(sharedPreferences.getString("ssid", SSIDDEFAULT));
-		reminder.conditions.setWifiPreference(Conditions.WifiPreference.valueOf(
-				sharedPreferences.getString("wifi", Conditions.WIFI_PREFERENCE_DEFAULT.name())));
-		reminder.conditions.setBluetoothPreference(Conditions.BluetoothPreference.valueOf(
-				sharedPreferences.getString("bluetooth", Conditions.BLUETOOTH_PREFERENCE_DEFAULT.name())));
-        reminder.setBluetooth(sharedPreferences.getString("bt_name", BTDEFAULT));
+		if (sharedPreferences.getBoolean("wifi", false)) {
+			reminder.getConditions().setWifiPreference(Conditions.WifiPreference.CONNECTED);
+		}
+		else {
+			reminder.getConditions().setWifiPreference(Conditions.WifiPreference.NONE);
+		}
+		if (sharedPreferences.getBoolean("bluetooth", false)) {
+			reminder.getConditions().setBluetoothPreference(Conditions.BluetoothPreference.CONNECTED);
+		}
+		else {
+			reminder.getConditions().setBluetoothPreference(Conditions.BluetoothPreference.NONE);
+		}
+        reminder.getConditions().setBtMacAddress(sharedPreferences.getString("bt_name", BTDEFAULT));
         reminder.setSnoozeDuration(Integer.parseInt(sharedPreferences
                 .getString("snooze_duration", Integer.toString(SNOOZEDURATIONDEFAULT))));
 	    reminder.setSnoozeNumber(Integer.parseInt(sharedPreferences
