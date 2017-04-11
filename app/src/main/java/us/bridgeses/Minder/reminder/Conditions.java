@@ -5,14 +5,18 @@ import android.database.Cursor;
 import android.location.Location;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 
 import java.io.Serializable;
+import java.lang.annotation.Retention;
 
 import us.bridgeses.Minder.Reminder;
 
+import static java.lang.annotation.RetentionPolicy.SOURCE;
 import static us.bridgeses.Minder.Reminder.ONLY_AT_LOCATION;
 import static us.bridgeses.Minder.Reminder.UNTIL_LOCATION;
 import static us.bridgeses.Minder.Reminder.WIFINEEDED;
@@ -26,59 +30,68 @@ import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_WIFI_PREFERENCE;
 import static us.bridgeses.Minder.reminder.Conditions.LocationPreference.AT_LOCATION;
 import static us.bridgeses.Minder.reminder.Conditions.LocationPreference.AWAY_FROM_LOCATION;
-import static us.bridgeses.Minder.reminder.Conditions.WifiPreference.CONNECTED;
 
 /**
  * Created by Laura on 7/9/2015.
  */
 public final class Conditions implements ReminderComponent, Parcelable, Serializable {
 
+    private static final String TAG = "Conditions";
+
     public int getRadius() {
         return radius;
     }
 
-    public static enum LocationPreference{
-        NONE,
-        AT_LOCATION,
-        AWAY_FROM_LOCATION
+    @Retention(SOURCE)
+    @IntDef({LocationPreference.NONE, AT_LOCATION, AWAY_FROM_LOCATION})
+    public @interface LocationPreference {
+        int NONE = 0;
+        int AT_LOCATION = 1;
+        int AWAY_FROM_LOCATION = 2;
     }
 
-    public static enum WifiPreference{
-        NONE,
-        NEAR,
-        CONNECTED,
-        NOT_NEAR,
-        NOT_CONNECTED
+    @Retention(SOURCE)
+    @IntDef({WifiPreference.NONE, WifiPreference.NEAR, WifiPreference.CONNECTED,
+            WifiPreference.NOT_NEAR, WifiPreference.NOT_CONNECTED})
+    public @interface WifiPreference {
+        int NONE = 0;
+        int NEAR = 1;
+        int CONNECTED = 2;
+        int NOT_NEAR = 3;
+        int NOT_CONNECTED = 4;
     }
 
-    public static enum BluetoothPreference{
-        NONE,
-        NEAR,
-        CONNECTED,
-        NOT_NEAR,
-        NOT_CONNECTED
+    @Retention(SOURCE)
+    @IntDef({BluetoothPreference.NONE, BluetoothPreference.NEAR, BluetoothPreference.CONNECTED,
+            BluetoothPreference.NOT_NEAR, BluetoothPreference.NOT_CONNECTED})
+    public @interface BluetoothPreference{
+        int NONE = 0;
+        int NEAR = 1;
+        int CONNECTED = 2;
+        int NOT_NEAR = 3;
+        int NOT_CONNECTED = 4;
     }
 
-    public static final LocationPreference LOCATION_PREFERENCE_DEFAULT = LocationPreference.NONE;
+    public static final @LocationPreference int LOCATION_PREFERENCE_DEFAULT = LocationPreference.NONE;
 
     // Even though lat and long are doubles, 0.0 does not require double precision and this allows
     // backwards compatibility with older classes
     public static final float LATITUDE_DEFAULT = 0.0f;
     public static final float LONGITUDE_DEFAULT = 0.0f;
 
-    public static final WifiPreference WIFI_PREFERENCE_DEFAULT = WifiPreference.NONE;
+    public static final @WifiPreference int WIFI_PREFERENCE_DEFAULT = WifiPreference.NONE;
     public static final String SSID_DEFAULT = "";
-    public static final BluetoothPreference BLUETOOTH_PREFERENCE_DEFAULT = BluetoothPreference.NONE;
+    public static final @BluetoothPreference int  BLUETOOTH_PREFERENCE_DEFAULT = BluetoothPreference.NONE;
     public static final String BT_MAC_ADDRESS_DEFAULT = "";
     public static final int RADIUS_DEFAULT = 200;
 
-    private LocationPreference locationPreference = LOCATION_PREFERENCE_DEFAULT;
+    private @LocationPreference int locationPreference = LOCATION_PREFERENCE_DEFAULT;
     private double latitude = LATITUDE_DEFAULT;
     private double longitude = LONGITUDE_DEFAULT;
     private int radius = RADIUS_DEFAULT;
-    private WifiPreference wifiPreference = WIFI_PREFERENCE_DEFAULT;
+    private @WifiPreference int wifiPreference = WIFI_PREFERENCE_DEFAULT;
     private String ssid = SSID_DEFAULT;
-    private BluetoothPreference bluetoothPreference = BLUETOOTH_PREFERENCE_DEFAULT;
+    private @BluetoothPreference int bluetoothPreference = BLUETOOTH_PREFERENCE_DEFAULT;
     private String btMacAddress = BT_MAC_ADDRESS_DEFAULT;
 
     public Conditions() {
@@ -93,17 +106,20 @@ public final class Conditions implements ReminderComponent, Parcelable, Serializ
             locationPreference = AT_LOCATION;
         }
         if (getBitwise(conditions, WIFINEEDED)) {
-            wifiPreference = CONNECTED;
+            wifiPreference = WifiPreference.CONNECTED;
         }
     }
 
     public Conditions(Parcel parcel){
-        setLocationPreference(LocationPreference.valueOf(parcel.readString()));
+        @LocationPreference int locationPreference = parcel.readInt();
+        setLocationPreference(locationPreference);
         setLatitude(parcel.readDouble());
         setLongitude(parcel.readDouble());
-        setWifiPreference(WifiPreference.valueOf(parcel.readString()));
+        @WifiPreference int wifiPreference = parcel.readInt();
+        setWifiPreference(wifiPreference);
         setSsid(parcel.readString());
-        setBluetoothPreference(BluetoothPreference.valueOf(parcel.readString()));
+        @BluetoothPreference int btPreference = parcel.readInt();
+        setBluetoothPreference(btPreference);
         setBtMacAddress(parcel.readString());
     }
 
@@ -121,19 +137,20 @@ public final class Conditions implements ReminderComponent, Parcelable, Serializ
         if (cursor.isAfterLast() || cursor.isBeforeFirst()) {
             throw new IllegalArgumentException("Cursor is not pointing to a valid row");
         }
-        setLocationPreference(LocationPreference.valueOf(
-                cursor.getString(cursor.getColumnIndex(COLUMN_LOCATION_PREFERENCE))
-        ));
+        @LocationPreference int locationPreference =
+                cursor.getInt(cursor.getColumnIndex(COLUMN_LOCATION_PREFERENCE));
+        setLocationPreference(locationPreference);
         setLatitude(cursor.getFloat(cursor.getColumnIndex(COLUMN_LATITUDE)));
         setLongitude(cursor.getFloat(cursor.getColumnIndex(COLUMN_LONGITUDE)));
         setRadius(cursor.getInt(cursor.getColumnIndex(COLUMN_RADIUS)));
-        setWifiPreference(WifiPreference.valueOf(
-                cursor.getString(cursor.getColumnIndex(COLUMN_WIFI_PREFERENCE))
-        ));
+        @WifiPreference int wifiPreference =
+                cursor.getInt(cursor.getColumnIndex(COLUMN_WIFI_PREFERENCE));
+        Log.d(TAG, "Conditions: Loaded wifi as " + wifiPreference);
+        setWifiPreference(wifiPreference);
         setSsid(cursor.getString(cursor.getColumnIndex(COLUMN_SSID)));
-        setBluetoothPreference(BluetoothPreference.valueOf(
-                cursor.getString(cursor.getColumnIndex(COLUMN_BLUETOOTH_PREFERENCE))
-        ));
+        @BluetoothPreference int btPreference =
+                cursor.getInt(cursor.getColumnIndex(COLUMN_BLUETOOTH_PREFERENCE));
+        setBluetoothPreference(btPreference);
         setBtMacAddress(cursor.getString(cursor.getColumnIndex(COLUMN_BLUETOOTH_MAC_ADDRESS)));
     }
 
@@ -143,13 +160,14 @@ public final class Conditions implements ReminderComponent, Parcelable, Serializ
     }
 
     public ContentValues toContentValues(@NonNull ContentValues contentValues) {
-        contentValues.put(COLUMN_LOCATION_PREFERENCE, locationPreference.name());
+        contentValues.put(COLUMN_LOCATION_PREFERENCE, locationPreference);
         contentValues.put(COLUMN_LATITUDE, latitude);
         contentValues.put(COLUMN_LONGITUDE, longitude);
         contentValues.put(COLUMN_RADIUS, radius);
-        contentValues.put(COLUMN_WIFI_PREFERENCE, wifiPreference.name());
+        contentValues.put(COLUMN_WIFI_PREFERENCE, wifiPreference);
+        Log.d(TAG, "toContentValues: Saving wifi as " + wifiPreference);
         contentValues.put(COLUMN_SSID, ssid);
-        contentValues.put(COLUMN_BLUETOOTH_PREFERENCE, bluetoothPreference.name());
+        contentValues.put(COLUMN_BLUETOOTH_PREFERENCE, bluetoothPreference);
         contentValues.put(COLUMN_BLUETOOTH_MAC_ADDRESS, btMacAddress);
         return contentValues;
     }
@@ -164,7 +182,7 @@ public final class Conditions implements ReminderComponent, Parcelable, Serializ
         return (store & key) == key;
     }
 
-    public LocationPreference getLocationPreference() {
+    public @LocationPreference int getLocationPreference() {
         return locationPreference;
     }
 
@@ -180,7 +198,7 @@ public final class Conditions implements ReminderComponent, Parcelable, Serializ
         return new LatLng(latitude, longitude);
     }
 
-    public WifiPreference getWifiPreference() {
+    public @WifiPreference int getWifiPreference() {
         return wifiPreference;
     }
 
@@ -188,7 +206,7 @@ public final class Conditions implements ReminderComponent, Parcelable, Serializ
         return ssid;
     }
 
-    public BluetoothPreference getBluetoothPreference() {
+    public @BluetoothPreference int getBluetoothPreference() {
         return bluetoothPreference;
     }
 
@@ -204,12 +222,12 @@ public final class Conditions implements ReminderComponent, Parcelable, Serializ
     @Override
     public void writeToParcel(Parcel parcel, int returnCode)
     {
-        parcel.writeString(locationPreference.name());
+        parcel.writeInt(locationPreference);
         parcel.writeDouble(latitude);
         parcel.writeDouble(longitude);
-        parcel.writeString(wifiPreference.name());
+        parcel.writeInt(wifiPreference);
         parcel.writeString(ssid);
-        parcel.writeString(bluetoothPreference.name());
+        parcel.writeInt(bluetoothPreference);
         parcel.writeString(btMacAddress);
     }
 
@@ -225,7 +243,7 @@ public final class Conditions implements ReminderComponent, Parcelable, Serializ
         }
     };
 
-    public void setLocationPreference(@NonNull LocationPreference locationPreference){
+    public void setLocationPreference(@LocationPreference int locationPreference){
         this.locationPreference = locationPreference;
     }
 
@@ -265,12 +283,12 @@ public final class Conditions implements ReminderComponent, Parcelable, Serializ
         }
     }
 
-    public void setWifiPreference(@NonNull WifiPreference wifiPreference){
+    public void setWifiPreference(@WifiPreference int wifiPreference){
         this.wifiPreference = wifiPreference;
     }
 
     public void setSsid(@NonNull String ssid){
-        if (ssid.isEmpty() && wifiPreference != null && wifiPreference != WifiPreference.NONE) {
+        if (ssid.isEmpty() && wifiPreference != WifiPreference.NONE) {
             throw new IllegalArgumentException("SSID cannot be blank if wifi preference is not NONE or null");
         }
         if (ssid.length() > 32) {
@@ -279,13 +297,12 @@ public final class Conditions implements ReminderComponent, Parcelable, Serializ
         this.ssid = ssid;
     }
 
-    public void setBluetoothPreference(@NonNull BluetoothPreference bluetoothPreference){
+    public void setBluetoothPreference(@BluetoothPreference int bluetoothPreference){
         this.bluetoothPreference = bluetoothPreference;
     }
 
     public void setBtMacAddress(@NonNull String btMacAddress){
-        if (btMacAddress.isEmpty() && bluetoothPreference != null
-                && bluetoothPreference != BluetoothPreference.NONE) {
+        if (btMacAddress.isEmpty() && bluetoothPreference != BluetoothPreference.NONE) {
             throw new IllegalArgumentException("BT Mac Address cannot be blank if " +
                     "BT preference is not NONE or null");
         }

@@ -25,6 +25,7 @@ import android.preference.PreferenceScreen;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.widget.BaseAdapter;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -39,6 +40,10 @@ import us.bridgeses.Minder.reminder.Conditions;
 import us.bridgeses.Minder.util.ActivityLoader;
 import us.bridgeses.Minder.views.interfaces.EditorView;
 
+import static us.bridgeses.Minder.reminder.Conditions.LocationPreference.AT_LOCATION;
+import static us.bridgeses.Minder.reminder.Conditions.LocationPreference.AWAY_FROM_LOCATION;
+import static us.bridgeses.Minder.reminder.Conditions.LocationPreference.NONE;
+
 /**
  * Displays options to the user that effect under what conditions the reminder will fire
  * Uses the contents of the default preference file and the layout defined in conditions_preference.xml
@@ -50,6 +55,8 @@ public class ConditionsFragment extends PreferenceFragment implements
         SharedPreferences.OnSharedPreferenceChangeListener,
         Preference.OnPreferenceClickListener,
         EditorView<Conditions> {
+
+    private static final String TAG = "ConditionsFragment";
 
     final static int MAP_ACTIVITY_CODE = 1;
 
@@ -357,6 +364,7 @@ public class ConditionsFragment extends PreferenceFragment implements
         editor.putInt("radius",reminder.getRadius());
         editor.putString("ssid", reminder.getSsid());
         editor.putBoolean("wifi", reminder.getWifiPreference() == Conditions.WifiPreference.CONNECTED);
+        Log.d(TAG, "setup: Setting wifi to " + (reminder.getWifiPreference() == Conditions.WifiPreference.CONNECTED));
         editor.putBoolean("bluetooth", reminder.getBluetoothPreference() == Conditions.BluetoothPreference.CONNECTED);
         editor.putString("bt_name", reminder.getBtMacAddress());
 
@@ -369,21 +377,23 @@ public class ConditionsFragment extends PreferenceFragment implements
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity);
         Conditions conditions = new Conditions();
         switch (sharedPreferences.getString("location_type", "0")) {
-            case "0": conditions.setLocationPreference(Conditions.LocationPreference.NONE);
+            case "0": conditions.setLocationPreference(NONE);
                 break;
-            case "1": conditions.setLocationPreference(Conditions.LocationPreference.AT_LOCATION);
+            case "1": conditions.setLocationPreference(AT_LOCATION);
                 break;
-            case "2": conditions.setLocationPreference(Conditions.LocationPreference.AWAY_FROM_LOCATION);
+            case "2": conditions.setLocationPreference(AWAY_FROM_LOCATION);
         }
         conditions.setLatitude(sharedPreferences.getFloat("Latitude", Conditions.LATITUDE_DEFAULT));
         conditions.setLongitude(sharedPreferences.getFloat("Longitude", Conditions.LONGITUDE_DEFAULT));
         conditions.setRadius(sharedPreferences.getInt("radius", Conditions.RADIUS_DEFAULT));
+        Log.d(TAG, "getValues: Wifi checkbox is " + sharedPreferences.getBoolean("wifi", false));
         if (sharedPreferences.getBoolean("wifi", false)) {
             conditions.setWifiPreference(Conditions.WifiPreference.CONNECTED);
         }
         else {
             conditions.setWifiPreference(Conditions.WifiPreference.NONE);
         }
+        Log.d(TAG, "getValues: got " + conditions.getWifiPreference() + " for wifiPreference");
         conditions.setSsid(sharedPreferences.getString("ssid", Conditions.SSID_DEFAULT));
         if (sharedPreferences.getBoolean("bluetooth", false)) {
             conditions.setBluetoothPreference(Conditions.BluetoothPreference.CONNECTED);

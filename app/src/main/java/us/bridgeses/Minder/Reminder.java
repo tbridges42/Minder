@@ -523,7 +523,7 @@ public class Reminder implements Parcelable, Cloneable {
 		return volume;
 	}
 
-	public Conditions.LocationPreference getLocationType(){
+	public @Conditions.LocationPreference int getLocationType(){
 
 		return conditions.getLocationPreference();
 	}
@@ -540,7 +540,7 @@ public class Reminder implements Parcelable, Cloneable {
 	}
 
     public Conditions getConditions() {
-        return new Conditions(conditions);
+        return conditions;
     }
 
 	public byte getPersistence() {
@@ -1068,7 +1068,7 @@ public class Reminder implements Parcelable, Cloneable {
         editor.putBoolean("temp_vibrate",reminder.getVibrate());
         editor.putString("temp_ringtone",reminder.getRingtone());
         editor.putBoolean("volume_override", reminder.getVolumeOverride());
-	    editor.putString("location_type",Integer.toString(reminder.getLocationType().ordinal()));
+	    editor.putString("location_type",Integer.toString(reminder.getLocationType()));
         LatLng location = reminder.getLocation();
         editor.putFloat("Latitude",(float) location.latitude);
         editor.putFloat("Longitude",(float) location.longitude);
@@ -1172,8 +1172,9 @@ public class Reminder implements Parcelable, Cloneable {
 	}
 
     public void setLocation(SharedPreferences sharedPreferences){
-        int locationType = Integer.valueOf(sharedPreferences.getString("location_type", "-1"));
-        conditions.setLocationPreference(Conditions.LocationPreference.values()[locationType]);
+        @Conditions.LocationPreference int locationType =
+				Integer.valueOf(sharedPreferences.getString("location_type", "-1"));
+        conditions.setLocationPreference(locationType);
 
         LatLng location = new LatLng(sharedPreferences.getFloat("Latitude",(float)LOCATIONDEFAULT.latitude),
                 sharedPreferences.getFloat("Longitude",(float)LOCATIONDEFAULT.longitude));
@@ -1218,8 +1219,10 @@ public class Reminder implements Parcelable, Cloneable {
         reminder.setDisplayScreen(sharedPreferences.getBoolean("display_screen", DISPLAYSCREENDEFAULT));
         reminder.setWakeUp(sharedPreferences.getBoolean("wake_up", WAKEUPDEFAULT));
         reminder.setSSID(sharedPreferences.getString("ssid", SSIDDEFAULT));
+		Log.d(TAG, "preferenceToReminder: wifi checked " + sharedPreferences.getBoolean("wifi", false));
 		if (sharedPreferences.getBoolean("wifi", false)) {
 			reminder.getConditions().setWifiPreference(Conditions.WifiPreference.CONNECTED);
+			Log.d(TAG, "preferenceToReminder: wifi is now" + reminder.getConditions().getWifiPreference());
 		}
 		else {
 			reminder.getConditions().setWifiPreference(Conditions.WifiPreference.NONE);

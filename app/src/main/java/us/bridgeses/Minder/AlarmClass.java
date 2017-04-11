@@ -224,7 +224,7 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
         Location.distanceBetween(mLastLocation.getLatitude(),mLastLocation.getLongitude()
                 ,location.latitude,location.longitude,results);
         boolean atLocation = results[0] <= reminder.getRadius();
-        Conditions.LocationPreference locationPreference = reminder.getLocationType();
+        @Conditions.LocationPreference int locationPreference = reminder.getLocationType();
         if ((atLocation && locationPreference == Conditions.LocationPreference.AT_LOCATION) ||
             (!atLocation && locationPreference == Conditions.LocationPreference.AWAY_FROM_LOCATION)) {
             hasLocation = true;
@@ -260,7 +260,7 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
         Location.distanceBetween(mLastLocation.getLatitude(),mLastLocation.getLongitude()
                 ,location.latitude,location.longitude,results);
         boolean atLocation = results[0] <= reminder.getRadius();
-        Conditions.LocationPreference locationPreference = reminder.getLocationType();
+        @Conditions.LocationPreference int locationPreference = reminder.getLocationType();
         if ((atLocation && locationPreference == Conditions.LocationPreference.AT_LOCATION) ||
                 (!atLocation && locationPreference == Conditions.LocationPreference.AWAY_FROM_LOCATION)) {
             hasLocation = true;
