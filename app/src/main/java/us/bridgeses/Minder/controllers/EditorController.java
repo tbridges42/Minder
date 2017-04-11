@@ -121,6 +121,7 @@ public class EditorController extends Fragment {
             case MAIN:
                 break;
             case PERSISTENCE:
+                callback.launchEditor(reminder.getPersistence());
                 break;
             case REPEAT:
                 break;

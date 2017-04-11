@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
+import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
@@ -19,10 +20,14 @@ import android.widget.BaseAdapter;
 
 import com.orhanobut.logger.Logger;
 
+import java.util.concurrent.TimeUnit;
+
 import us.bridgeses.Minder.R;
 import us.bridgeses.Minder.Reminder;
+import us.bridgeses.Minder.reminder.Persistence;
 import us.bridgeses.Minder.util.Scanner.BarcodeScanner;
 import us.bridgeses.Minder.util.SeekbarPreference;
+import us.bridgeses.Minder.views.interfaces.EditorView;
 
 /**
  * Displays options to the user that effect how the reminder is displayed
@@ -30,7 +35,8 @@ import us.bridgeses.Minder.util.SeekbarPreference;
  * Creating without setting the values of the default preference file may have unexpected results
  */
 public class PersistenceFragment extends PreferenceFragment implements
-        SharedPreferences.OnSharedPreferenceChangeListener, Preference.OnPreferenceClickListener{
+        SharedPreferences.OnSharedPreferenceChangeListener, Preference.OnPreferenceClickListener,
+		EditorView<Persistence> {
 
 	private static final String TAG = "PersistenceFragment";
 
@@ -195,12 +201,14 @@ public class PersistenceFragment extends PreferenceFragment implements
 	 * Ensure that all display values match stored values when fragment is created
 	 */
 	private void initSummaries() {
+		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
 		CheckBoxPreference codeType = (CheckBoxPreference) super.findPreference("code_type");
 		PreferenceScreen codeButton = (PreferenceScreen) super.findPreference("button_code");
-		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         CheckBoxPreference outLoudPreference = (CheckBoxPreference) super.findPreference("out_loud");
         CheckBoxPreference displayScreenPreference = (CheckBoxPreference) super.findPreference("display_screen");
         CheckBoxPreference wakeUpPreference = (CheckBoxPreference) super.findPreference("wake_up");
+		EditTextPreference snoozeLimitPreference = (EditTextPreference) super.findPreference("snooze_number");
+		EditTextPreference snoozeTimePreference = (EditTextPreference) super.findPreference("snooze_duration");
 		SeekbarPreference seekbarPreference = (SeekbarPreference) super.findPreference("volume");
 		seekbarPreference.setPosition(sharedPreferences.getInt("volume", Reminder.VOLUMEDEFAULT));
 		if (checkCamera()) {
@@ -220,6 +228,11 @@ public class PersistenceFragment extends PreferenceFragment implements
         outLoudPreference.setChecked(sharedPreferences.getBoolean("out_loud",false));
         displayScreenPreference.setChecked(sharedPreferences.getBoolean("display_screen",false));
         wakeUpPreference.setChecked(sharedPreferences.getBoolean("wake_up", false));
+		snoozeLimitPreference.setSummary(sharedPreferences.getString("snooze_number", "-1"));
+		long minutes = TimeUnit.MILLISECONDS.toMinutes(
+				Long.parseLong(sharedPreferences.getString("snooze_duration", "0"))
+		);
+		snoozeTimePreference.setSummary(Long.toString(minutes));
 	}
 
 	@Override
@@ -238,4 +251,27 @@ public class PersistenceFragment extends PreferenceFragment implements
         getPreferenceScreen().getSharedPreferences()
                 .unregisterOnSharedPreferenceChangeListener(this);
     }
+
+	@Override
+	public void setup(Persistence model) {
+		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+		SharedPreferences.Editor editor = sharedPreferences.edit();
+
+		editor.putBoolean("code_type", model.hasFlag(Persistence.PersistenceFlags.REQUIRE_CODE));
+		editor.putString("temp_code", model.getCode());
+		editor.putBoolean("out_loud", model.hasFlag(Persistence.PersistenceFlags.OVERRIDE_VOLUME));
+		editor.putBoolean("display_screen", model.hasFlag(Persistence.PersistenceFlags.DISPLAY_SCREEN));
+		editor.putBoolean("wake_up", model.hasFlag(Persistence.PersistenceFlags.WAKE_UP));
+		editor.putInt("volume", model.getVolume());
+		editor.putInt("snooze_number", model.getSnoozeLimit());
+		editor.putFloat("snooze_duration", model.getSnoozeTime());
+
+		editor.commit();
+		initSummaries();
+	}
+
+	@Override
+	public Persistence getValues() {
+		return null;
+	}
 }
