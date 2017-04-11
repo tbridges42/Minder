@@ -1,4 +1,4 @@
-package us.bridgeses.Minder.reminder;
+package us.bridgeses.Minder.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;

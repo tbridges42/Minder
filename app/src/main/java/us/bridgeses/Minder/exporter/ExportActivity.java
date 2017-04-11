@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Locale;
 
 import us.bridgeses.Minder.persistence.dao.DaoFactory;
-import us.bridgeses.Minder.Reminder;
+import us.bridgeses.Minder.model.Reminder;
 import us.bridgeses.Minder.persistence.dao.ReminderDAO;
 
 /**

@@ -20,8 +20,8 @@ import java.util.Calendar;
 import java.util.Locale;
 
 import us.bridgeses.Minder.R;
-import us.bridgeses.Minder.Reminder;
-import us.bridgeses.Minder.reminder.Repeat;
+import us.bridgeses.Minder.model.Reminder;
+import us.bridgeses.Minder.model.Repeat;
 
 /**
  * Created by Tony on 9/13/2014.

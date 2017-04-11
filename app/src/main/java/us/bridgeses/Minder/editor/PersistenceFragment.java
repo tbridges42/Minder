@@ -23,8 +23,8 @@ import com.orhanobut.logger.Logger;
 import java.util.concurrent.TimeUnit;
 
 import us.bridgeses.Minder.R;
-import us.bridgeses.Minder.Reminder;
-import us.bridgeses.Minder.reminder.Persistence;
+import us.bridgeses.Minder.model.Reminder;
+import us.bridgeses.Minder.model.Persistence;
 import us.bridgeses.Minder.util.Scanner.BarcodeScanner;
 import us.bridgeses.Minder.util.SeekbarPreference;
 import us.bridgeses.Minder.views.interfaces.EditorView;

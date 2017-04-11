@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -17,9 +16,8 @@ import android.view.ViewGroup;
 import java.util.List;
 
 import us.bridgeses.Minder.R;
-import us.bridgeses.Minder.Reminder;
+import us.bridgeses.Minder.model.Reminder;
 import us.bridgeses.Minder.adapters.ReminderRecyclerAdapter;
-import us.bridgeses.Minder.controllers.DataController;
 import us.bridgeses.Minder.views.interfaces.ReminderListView;
 
 import static us.bridgeses.Minder.views.ViewStatus.DETACHED;

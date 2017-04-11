@@ -9,7 +9,6 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Debug;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
@@ -22,7 +21,7 @@ import android.widget.BaseAdapter;
 import java.text.SimpleDateFormat;
 
 import us.bridgeses.Minder.R;
-import us.bridgeses.Minder.Reminder;
+import us.bridgeses.Minder.model.Reminder;
 import us.bridgeses.Minder.util.DatePreference;
 import us.bridgeses.Minder.util.TimePreference;
 

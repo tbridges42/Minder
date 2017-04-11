@@ -1,7 +1,7 @@
 package us.bridgeses.Minder.views.interfaces;
 
 import us.bridgeses.Minder.controllers.EditorController;
-import us.bridgeses.Minder.reminder.ReminderComponent;
+import us.bridgeses.Minder.model.ReminderComponent;
 
 /**
  * Created by bridgtxcdf on 4/7/2017.

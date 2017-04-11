@@ -2,7 +2,7 @@ package us.bridgeses.Minder.views.interfaces;
 
 import java.util.List;
 
-import us.bridgeses.Minder.Reminder;
+import us.bridgeses.Minder.model.Reminder;
 import us.bridgeses.Minder.controllers.DataController;
 import us.bridgeses.Minder.views.ViewStatus;
 

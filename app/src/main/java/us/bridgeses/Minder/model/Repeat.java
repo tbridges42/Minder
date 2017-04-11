@@ -1,4 +1,4 @@
-package us.bridgeses.Minder.reminder;
+package us.bridgeses.Minder.model;
 
 import android.content.Context;
 import android.content.res.Resources;

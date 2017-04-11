@@ -8,7 +8,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import us.bridgeses.Minder.R;
-import us.bridgeses.Minder.Reminder;
+import us.bridgeses.Minder.model.Reminder;
 
 /**
  *  The activity for displaying, editing and saving options related to how persistent the reminder

@@ -1,18 +1,12 @@
-package us.bridgeses.Minder.reminder;
+package us.bridgeses.Minder.model;
 
 import android.os.Parcel;
 
 import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
-
-import dalvik.annotation.TestTargetClass;
-import us.bridgeses.Minder.reminder.Conditions;
 
 import  static org.junit.Assert.*;
 /**

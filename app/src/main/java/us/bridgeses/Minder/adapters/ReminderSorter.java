@@ -4,7 +4,7 @@ import android.support.v7.util.SortedList;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 
-import us.bridgeses.Minder.Reminder;
+import us.bridgeses.Minder.model.Reminder;
 
 /**
  * Created by tbrid on 2/15/2017.

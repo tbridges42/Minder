@@ -6,7 +6,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 
-import us.bridgeses.Minder.Reminder;
+import us.bridgeses.Minder.model.Reminder;
 import us.bridgeses.Minder.receivers.ReminderReceiver;
 
 import static android.content.Context.NOTIFICATION_SERVICE;

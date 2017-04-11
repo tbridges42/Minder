@@ -15,7 +15,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import us.bridgeses.Minder.R;
-import us.bridgeses.Minder.Reminder;
+import us.bridgeses.Minder.model.Reminder;
 
 import static android.support.v7.util.SortedList.INVALID_POSITION;
 

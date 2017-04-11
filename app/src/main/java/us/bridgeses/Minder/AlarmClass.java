@@ -6,7 +6,6 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
@@ -23,7 +22,8 @@ import com.orhanobut.logger.Logger;
 
 import java.util.Calendar;
 
-import us.bridgeses.Minder.reminder.Conditions;
+import us.bridgeses.Minder.model.Conditions;
+import us.bridgeses.Minder.model.Reminder;
 import us.bridgeses.Minder.util.AlertService;
 
 /**

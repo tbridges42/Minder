@@ -1,20 +1,11 @@
 package us.bridgeses.Minder.persistence.sqlite;
 
-import android.content.ContentValues;
 import android.content.Context;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import us.bridgeses.Minder.reminder.Conditions;
-
-import static us.bridgeses.Minder.Reminder.ONLY_AT_LOCATION;
-import static us.bridgeses.Minder.Reminder.UNTIL_LOCATION;
-import static us.bridgeses.Minder.Reminder.WIFINEEDED;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.*;
 
 /**

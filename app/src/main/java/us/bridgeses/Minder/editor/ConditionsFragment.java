@@ -28,21 +28,20 @@ import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.widget.BaseAdapter;
 
-import com.google.android.gms.maps.model.LatLng;
 import com.orhanobut.logger.Logger;
 
 import java.util.List;
 
 import us.bridgeses.Minder.activities.MapsActivity;
 import us.bridgeses.Minder.R;
-import us.bridgeses.Minder.Reminder;
-import us.bridgeses.Minder.reminder.Conditions;
+import us.bridgeses.Minder.model.Reminder;
+import us.bridgeses.Minder.model.Conditions;
 import us.bridgeses.Minder.util.ActivityLoader;
 import us.bridgeses.Minder.views.interfaces.EditorView;
 
-import static us.bridgeses.Minder.reminder.Conditions.LocationPreference.AT_LOCATION;
-import static us.bridgeses.Minder.reminder.Conditions.LocationPreference.AWAY_FROM_LOCATION;
-import static us.bridgeses.Minder.reminder.Conditions.LocationPreference.NONE;
+import static us.bridgeses.Minder.model.Conditions.LocationPreference.AT_LOCATION;
+import static us.bridgeses.Minder.model.Conditions.LocationPreference.AWAY_FROM_LOCATION;
+import static us.bridgeses.Minder.model.Conditions.LocationPreference.NONE;
 
 /**
  * Displays options to the user that effect under what conditions the reminder will fire

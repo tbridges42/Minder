@@ -1,4 +1,4 @@
-package us.bridgeses.Minder.reminder;
+package us.bridgeses.Minder.model;
 
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -14,12 +14,10 @@ import com.google.android.gms.maps.model.LatLng;
 import java.io.Serializable;
 import java.lang.annotation.Retention;
 
-import us.bridgeses.Minder.Reminder;
-
 import static java.lang.annotation.RetentionPolicy.SOURCE;
-import static us.bridgeses.Minder.Reminder.ONLY_AT_LOCATION;
-import static us.bridgeses.Minder.Reminder.UNTIL_LOCATION;
-import static us.bridgeses.Minder.Reminder.WIFINEEDED;
+import static us.bridgeses.Minder.model.Reminder.ONLY_AT_LOCATION;
+import static us.bridgeses.Minder.model.Reminder.UNTIL_LOCATION;
+import static us.bridgeses.Minder.model.Reminder.WIFINEEDED;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_BLUETOOTH_MAC_ADDRESS;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_BLUETOOTH_PREFERENCE;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_LATITUDE;
@@ -28,8 +26,8 @@ import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_RADIUS;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_SSID;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_WIFI_PREFERENCE;
-import static us.bridgeses.Minder.reminder.Conditions.LocationPreference.AT_LOCATION;
-import static us.bridgeses.Minder.reminder.Conditions.LocationPreference.AWAY_FROM_LOCATION;
+import static us.bridgeses.Minder.model.Conditions.LocationPreference.AT_LOCATION;
+import static us.bridgeses.Minder.model.Conditions.LocationPreference.AWAY_FROM_LOCATION;
 
 /**
  * Created by Laura on 7/9/2015.

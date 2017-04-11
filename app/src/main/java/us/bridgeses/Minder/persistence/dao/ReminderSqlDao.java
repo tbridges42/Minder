@@ -6,12 +6,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 
-import com.google.android.gms.maps.model.LatLng;
-
-import java.util.IllegalFormatException;
-
-import us.bridgeses.Minder.Reminder;
-import us.bridgeses.Minder.reminder.Conditions;
+import us.bridgeses.Minder.model.Reminder;
 
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_ACTIVE;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_BLUETOOTH_MAC_ADDRESS;

@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.util.List;
 
 import us.bridgeses.Minder.persistence.dao.DaoFactory;
-import us.bridgeses.Minder.Reminder;
+import us.bridgeses.Minder.model.Reminder;
 import us.bridgeses.Minder.persistence.dao.ReminderDAO;
 
 /**

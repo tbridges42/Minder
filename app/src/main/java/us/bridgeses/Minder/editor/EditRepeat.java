@@ -1,15 +1,12 @@
 package us.bridgeses.Minder.editor;
 
-import android.app.Activity;
-import android.app.FragmentManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
 
-import us.bridgeses.Minder.R;
-import us.bridgeses.Minder.Reminder;
+import us.bridgeses.Minder.model.Reminder;
 
 /**
  * The activity for displaying, editing and saving options related to the pattern by which

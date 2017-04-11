@@ -12,8 +12,8 @@ import android.view.ViewGroup;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-import us.bridgeses.Minder.Reminder;
-import us.bridgeses.Minder.reminder.ReminderComponent;
+import us.bridgeses.Minder.model.Reminder;
+import us.bridgeses.Minder.model.ReminderComponent;
 import us.bridgeses.Minder.views.interfaces.EditorView;
 
 /**

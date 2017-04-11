@@ -5,11 +5,8 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
-import android.widget.Toast;
 
-import java.io.File;
-
-import us.bridgeses.Minder.Reminder;
+import us.bridgeses.Minder.model.Reminder;
 
 /**
  * The activity for displaying, editing and saving options related to the manner

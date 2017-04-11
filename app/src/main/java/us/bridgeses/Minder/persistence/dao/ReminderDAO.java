@@ -3,7 +3,7 @@ package us.bridgeses.Minder.persistence.dao;
 import android.content.Context;
 import android.database.Cursor;
 
-import us.bridgeses.Minder.Reminder;
+import us.bridgeses.Minder.model.Reminder;
 
 /**
  * An interface to be implemented by any data source for Reminders

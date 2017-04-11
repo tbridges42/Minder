@@ -13,7 +13,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
@@ -29,6 +28,7 @@ import com.orhanobut.logger.Logger;
 
 import java.io.File;
 
+import us.bridgeses.Minder.model.Reminder;
 import us.bridgeses.Minder.receivers.ReminderReceiver;
 import us.bridgeses.Minder.util.AlertService;
 import us.bridgeses.Minder.util.Scanner.BarcodeScanner;

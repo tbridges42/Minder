@@ -22,9 +22,9 @@ public class RemindersContract {
         public static final Uri REMINDER_URI = Uri.withAppendedPath(BASE_URI, TABLE_NAME);
 
         public static final String SINGLE_TYPE =
-                "vnd.android.cursor.item/vnd.us.bridgeses.Minder.Reminder";
+                "vnd.android.cursor.item/vnd.us.bridgeses.Minder.model.Reminder";
         public static final String MULTI_TYPE =
-                "vnd.android.cursor.dir/vnd.us.bridgeses.Minder.Reminder";
+                "vnd.android.cursor.dir/vnd.us.bridgeses.Minder.model.Reminder";
 
         public static final String COLUMN_ID = "_id";
         public static final String COLUMN_ACTIVE = "Active";

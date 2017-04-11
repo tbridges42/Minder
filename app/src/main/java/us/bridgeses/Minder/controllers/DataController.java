@@ -1,14 +1,10 @@
 package us.bridgeses.Minder.controllers;
 
 import android.app.Activity;
-import android.app.AlarmManager;
 import android.app.Fragment;
 import android.app.LoaderManager;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.CursorLoader;
-import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -26,18 +22,13 @@ import java.util.Collections;
 import java.util.List;
 
 import us.bridgeses.Minder.R;
-import us.bridgeses.Minder.Reminder;
+import us.bridgeses.Minder.model.Reminder;
 import us.bridgeses.Minder.alarms.AlarmHandler;
 import us.bridgeses.Minder.exporter.ExportActivity;
 import us.bridgeses.Minder.exporter.ImportActivity;
-import us.bridgeses.Minder.persistence.dao.DaoFactory;
-import us.bridgeses.Minder.persistence.dao.ReminderDAO;
 import us.bridgeses.Minder.persistence.dao.ReminderSqlDao;
-import us.bridgeses.Minder.receivers.ReminderReceiver;
 import us.bridgeses.Minder.views.interfaces.ReminderListView;
 
-import static android.content.Context.NOTIFICATION_SERVICE;
-import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.DISPLAY_PROJECTION;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.REMINDER_URI;
 
 /**

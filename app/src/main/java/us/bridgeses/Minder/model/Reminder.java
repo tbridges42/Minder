@@ -1,4 +1,4 @@
-package us.bridgeses.Minder;
+package us.bridgeses.Minder.model;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -27,8 +27,6 @@ import java.util.concurrent.TimeUnit;
 import us.bridgeses.Minder.editor.EditStyle;
 import us.bridgeses.Minder.persistence.dao.DaoFactory;
 import us.bridgeses.Minder.persistence.dao.ReminderDAO;
-import us.bridgeses.Minder.reminder.Conditions;
-import us.bridgeses.Minder.reminder.Persistence;
 
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_ACTIVE;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_DATE;
@@ -40,7 +38,6 @@ import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_LEDPATTERN;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_MONTHTYPE;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_NAME;
-import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_PERSISTENCE;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_QR;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_REPEATLENGTH;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_REPEATTYPE;

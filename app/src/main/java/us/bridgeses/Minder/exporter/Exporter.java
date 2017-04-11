@@ -5,7 +5,7 @@ import com.orhanobut.logger.Logger;
 import java.io.PrintWriter;
 import java.util.List;
 
-import us.bridgeses.Minder.Reminder;
+import us.bridgeses.Minder.model.Reminder;
 
 /**
  * Created by tbrid on 1/9/2017.

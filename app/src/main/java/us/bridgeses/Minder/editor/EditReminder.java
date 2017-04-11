@@ -1,6 +1,5 @@
 package us.bridgeses.Minder.editor;
 
-import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.DialogFragment;
 import android.app.FragmentManager;
@@ -27,7 +26,7 @@ import java.util.Calendar;
 
 import us.bridgeses.Minder.AdHandler;
 import us.bridgeses.Minder.R;
-import us.bridgeses.Minder.Reminder;
+import us.bridgeses.Minder.model.Reminder;
 import us.bridgeses.Minder.TaskCallbacks;
 import us.bridgeses.Minder.receivers.ReminderReceiver;
 import us.bridgeses.Minder.util.ConfirmDialogFragment;

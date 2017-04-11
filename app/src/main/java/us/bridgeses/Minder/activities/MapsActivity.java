@@ -1,26 +1,19 @@
 package us.bridgeses.Minder.activities;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.location.Criteria;
 import android.location.Location;
-import android.location.LocationManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.text.Editable;
-import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
@@ -30,7 +23,6 @@ import android.widget.SeekBar;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.FusedLocationProviderApi;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
@@ -45,7 +37,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.orhanobut.logger.Logger;
 
 import us.bridgeses.Minder.R;
-import us.bridgeses.Minder.Reminder;
+import us.bridgeses.Minder.model.Reminder;
 import us.bridgeses.Minder.util.vandy.LifecycleLoggingActivity;
 
 import static com.google.android.gms.common.GooglePlayServicesUtil.isGooglePlayServicesAvailable;

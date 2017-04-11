@@ -1,4 +1,4 @@
-package us.bridgeses.Minder.reminder;
+package us.bridgeses.Minder.model;
 
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -11,20 +11,18 @@ import java.io.Serializable;
 import java.lang.annotation.Retention;
 import java.util.concurrent.TimeUnit;
 
-import us.bridgeses.Minder.Reminder;
-
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_PERSISTENCE;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_QR;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_SNOOZEDURATION;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_SNOOZENUM;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_VOLUME;
-import static us.bridgeses.Minder.reminder.Persistence.PersistenceFlags.CONFIRM_DISMISS;
-import static us.bridgeses.Minder.reminder.Persistence.PersistenceFlags.DISPLAY_SCREEN;
-import static us.bridgeses.Minder.reminder.Persistence.PersistenceFlags.KEEP_TRYING;
-import static us.bridgeses.Minder.reminder.Persistence.PersistenceFlags.OVERRIDE_VOLUME;
-import static us.bridgeses.Minder.reminder.Persistence.PersistenceFlags.REQUIRE_CODE;
-import static us.bridgeses.Minder.reminder.Persistence.PersistenceFlags.WAKE_UP;
+import static us.bridgeses.Minder.model.Persistence.PersistenceFlags.CONFIRM_DISMISS;
+import static us.bridgeses.Minder.model.Persistence.PersistenceFlags.DISPLAY_SCREEN;
+import static us.bridgeses.Minder.model.Persistence.PersistenceFlags.KEEP_TRYING;
+import static us.bridgeses.Minder.model.Persistence.PersistenceFlags.OVERRIDE_VOLUME;
+import static us.bridgeses.Minder.model.Persistence.PersistenceFlags.REQUIRE_CODE;
+import static us.bridgeses.Minder.model.Persistence.PersistenceFlags.WAKE_UP;
 
 /**
  * Created by Laura on 7/9/2015.

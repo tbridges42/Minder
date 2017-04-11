@@ -2,7 +2,7 @@ package us.bridgeses.Minder.exporter;
 
 import com.google.gson.Gson;
 
-import us.bridgeses.Minder.Reminder;
+import us.bridgeses.Minder.model.Reminder;
 
 /**
  * Created by tbrid on 1/9/2017.
