@@ -28,6 +28,7 @@ import us.bridgeses.Minder.editor.EditStyle;
 import us.bridgeses.Minder.persistence.dao.DaoFactory;
 import us.bridgeses.Minder.persistence.dao.ReminderDAO;
 import us.bridgeses.Minder.reminder.Conditions;
+import us.bridgeses.Minder.reminder.Persistence;
 
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_ACTIVE;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_DATE;
@@ -62,6 +63,7 @@ public class Reminder implements Parcelable, Cloneable {
     public Reminder() {
         setActive(ACTIVEDEFAULT);
 		conditions = new Conditions();
+		persistence = new Persistence();
         name = NAMEDEFAULT;
         repeatType = REPEATTYPEDEFAULT;
         repeatLength = REPEATLENGTHDEFAULT;
@@ -69,22 +71,11 @@ public class Reminder implements Parcelable, Cloneable {
         monthType = MONTHTYPEDEFAULT;
         date = Calendar.getInstance();
         description = DESCRIPTIONDEFAULT;
-        qr = QRDEFAULT;
-	    setNeedQr(NEEDQRDEFAULT);
-        snoozeDuration = SNOOZEDURATIONDEFAULT;
-        setVibrate(VIBRATEDEFAULT);
         ringtone = RINGTONEDEFAULT;
         ledPattern = LEDPATTERNDEFAULT;
         ledColor = LEDCOLORDEFAULT;
         setLed(LEDDEFAULT);
         id = IDDEFAULT;
-        setWakeUp(WAKEUPDEFAULT);
-        setDisplayScreen(DISPLAYSCREENDEFAULT);
-	    setConfirmDismiss(DISMISSDIALOGDEFAULT);
-	    setFadeVolume(FADEDEFAULT);
-	    setVibrateRepeat(VIBRATEREPEATDEFAULT);
-	    setVolume(VOLUMEDEFAULT);
-	    setSnoozeNumber(SNOOZENUMDEFAULT);
         setImage(IMAGEDEFAULT);
         setTextColor(TEXTCOLORDEFAULT);
     }
@@ -102,20 +93,16 @@ public class Reminder implements Parcelable, Cloneable {
 		setMonthType((byte) cursor.getInt(cursor.getColumnIndex(COLUMN_MONTHTYPE)));
 		setRepeatLength(cursor.getInt(cursor.getColumnIndex(COLUMN_REPEATLENGTH)));
 		setRepeatType(cursor.getInt(cursor.getColumnIndex(COLUMN_REPEATTYPE)));
-		setQr(cursor.getString(cursor.getColumnIndex(COLUMN_QR)));
-		setPersistence((byte) cursor.getInt(cursor.getColumnIndex(COLUMN_PERSISTENCE)));
+		setPersistence(new Persistence(cursor));
 		setStyle((byte) cursor.getInt(cursor.getColumnIndex(COLUMN_STYLE)));
-		setSnoozeDuration(cursor.getInt(cursor.getColumnIndex(COLUMN_SNOOZEDURATION)));
 		setLedColor(cursor.getInt(cursor.getColumnIndex(COLUMN_LEDCOLOR)));
 		setLedPattern(cursor.getInt(cursor.getColumnIndex(COLUMN_LEDPATTERN)));
-		setSnoozeNumber(cursor.getInt(cursor.getColumnIndex(COLUMN_SNOOZENUM)));
 		try {
 			setRingtone(cursor.getString(cursor.getColumnIndex(COLUMN_RINGTONE)));
 		}
 		catch (NullPointerException e){
 			setRingtone("");
 		}
-		setVolume(cursor.getInt(cursor.getColumnIndex(COLUMN_VOLUME)));
 		setLedColor(cursor.getInt(cursor.getColumnIndex(COLUMN_LEDCOLOR)));
 		setTextColor(cursor.getInt(cursor.getColumnIndex(COLUMN_TEXTCOLOR)));
 		setImage(cursor.getString(cursor.getColumnIndex(COLUMN_IMAGE)));
@@ -191,17 +178,13 @@ public class Reminder implements Parcelable, Cloneable {
                                                  3: Monthly on this day of week, counting from end of the month 
                                                      (e.g. the last friday, not yet implemented)*/
     private byte daysOfWeek;                   //Bitwise byte representing seven boolean values for the seven days of the week
-    private byte persistence;                  //Bitwise byte representing an array of boolean values related to reminder Persistence
-    private Conditions conditions;                   //Bitwise byte representing an array of boolean values related to reminder Conditions
+    private Persistence persistence;
+    private Conditions conditions;
     private byte style;                        //Bitwise byte representing an array of boolean values related to reminder Style
     private Calendar date;                     //The date and time at which the reminder should fire, truncated to second
-    private String qr;                         //A string representing the encoded value of a barcode or QR code, scanned in by user
-	private int snoozeNumber;                  //A limit on the number of times the reminder can be snoozed
-    private int snoozeDuration;                //The default duration before trying the reminder again if not dismissed
     private int ledColor;                      //An int representing the hexadecimal color of the LED
     private int ledPattern;                    //An int representing the pattern in which the LED should flash
     private String ringtone;                   //A string representing a URI for a ringtone selected by the user, to be played when reminder fires
-	private int volume;                        //An integer representing the volume ratio out of 100
 	private String image;                      //A path to a background image
     private int textColor;                     //A hexadecimal representation of font color
 
@@ -449,28 +432,28 @@ public class Reminder implements Parcelable, Cloneable {
 	}
 
 	public String getQr() {
-		return qr;
+		return persistence.getCode();
 	}
 
 	public void setQr(String qr) {
-		this.qr = qr;
+		this.persistence.setCode(qr);
 	}
 
 	public int getSnoozeNumber() {
-		return snoozeNumber;
+		return persistence.getSnoozeLimit();
 	}
 
 	public void setSnoozeNumber(int snoozeNumber){
-		this.snoozeNumber = snoozeNumber;
+		this.persistence.setSnoozeLimit(snoozeNumber);
 	}
 
-	public int getSnoozeDuration() {
-		return snoozeDuration;
+	public long getSnoozeDuration() {
+		return persistence.getSnoozeTime();
 	}
 
 	public void setSnoozeDuration(int snoozeDuration) {
 		if (0 < snoozeDuration){
-			this.snoozeDuration = snoozeDuration;
+			this.persistence.setSnoozeTime(snoozeDuration);
 		}
 		else {
 			throw new IllegalArgumentException("Snooze Duration must be greater than zero");
@@ -516,11 +499,11 @@ public class Reminder implements Parcelable, Cloneable {
 	}
 
 	public void setVolume(int volume){
-		this.volume = volume;
+		this.persistence.setVolume(volume);
 	}
 
 	public int getVolume(){
-		return volume;
+		return persistence.getVolume();
 	}
 
 	public @Conditions.LocationPreference int getLocationType(){
@@ -536,18 +519,17 @@ public class Reminder implements Parcelable, Cloneable {
 
 	public void setConditions(byte conditions) {
 		this.conditions = new Conditions(conditions);
-
 	}
 
     public Conditions getConditions() {
         return conditions;
     }
 
-	public byte getPersistence() {
+	public Persistence getPersistence() {
 		return persistence;
 	}
 
-	public void setPersistence(byte persistence) {
+	public void setPersistence(Persistence persistence) {
 		this.persistence = persistence;
 	}
 
@@ -588,53 +570,53 @@ public class Reminder implements Parcelable, Cloneable {
 	/************************ Persistence bitwise getters and setters **********************/
 
 	public boolean getNeedQr() {
-		return getBitwise(this.getPersistence(),REQUIRE_CODE);
+		return persistence.hasFlag(Persistence.PersistenceFlags.REQUIRE_CODE);
 	}
 
 	public void setNeedQr(boolean needQr) {
-		this.setPersistence(makeBitwise(this.getPersistence(),REQUIRE_CODE,needQr));
+		persistence.setFlag(Persistence.PersistenceFlags.REQUIRE_CODE, needQr);
 	}
 
 	public boolean getVolumeOverride(){
-		return getBitwise(this.getPersistence(),VOLUME_OVERRIDE);
+		return persistence.hasFlag(Persistence.PersistenceFlags.OVERRIDE_VOLUME);
 	}
 
 	public void setVolumeOverride(boolean volumeOverride){
-		this.setPersistence(makeBitwise(this.getPersistence(),VOLUME_OVERRIDE,volumeOverride));
+		persistence.setFlag(Persistence.PersistenceFlags.OVERRIDE_VOLUME, volumeOverride);
 	}
 
 	public boolean getDisplayScreen(){
-		return getBitwise(this.getPersistence(),DISPLAY_SCREEN);
+		return persistence.hasFlag(Persistence.PersistenceFlags.DISPLAY_SCREEN);
 	}
 
 	public void setDisplayScreen(boolean displayScreen){
-		this.setPersistence(makeBitwise(this.getPersistence(),DISPLAY_SCREEN,displayScreen));
+		persistence.setFlag(Persistence.PersistenceFlags.DISPLAY_SCREEN, displayScreen);
 	}
 
 	public boolean getWakeUp(){
-		return getBitwise(this.getPersistence(),WAKE_UP);
+		return persistence.hasFlag(Persistence.PersistenceFlags.WAKE_UP);
 
 	}
 
 	public void setWakeUp(boolean wakeUp){
-		this.setPersistence(makeBitwise(this.getPersistence(),WAKE_UP,wakeUp));
+		persistence.setFlag(Persistence.PersistenceFlags.WAKE_UP, wakeUp);
 	}
 
 	public boolean getConfirmDismiss(){
-		return getBitwise(this.getPersistence(),DISMISS_DIALOG);
+		return persistence.hasFlag(Persistence.PersistenceFlags.CONFIRM_DISMISS);
 
 	}
 
 	public void setConfirmDismiss(boolean dismissDialog){
-		this.setPersistence(makeBitwise(this.getPersistence(),DISMISS_DIALOG,dismissDialog));
+		persistence.setFlag(Persistence.PersistenceFlags.CONFIRM_DISMISS, dismissDialog);
 	}
 
 	public boolean isInsistent(){
-		return getBitwise(this.getPersistence(),INSISTENT);
+		return persistence.hasFlag(Persistence.PersistenceFlags.KEEP_TRYING);
 	}
 
 	public void setInsistent(boolean insistent){
-		this.setPersistence(makeBitwise(this.getPersistence(),INSISTENT,insistent));
+		persistence.setFlag(Persistence.PersistenceFlags.KEEP_TRYING, insistent);
 	}
 
 	/*************************** Style bitwise getters and setters ************************/
@@ -715,7 +697,6 @@ public class Reminder implements Parcelable, Cloneable {
 		values.put(COLUMN_REPEATTYPE,getRepeatType());
 		values.put(COLUMN_REPEATLENGTH,getRepeatLength());
 		values.put(COLUMN_RINGTONE,getRingtone());
-		values.put(COLUMN_PERSISTENCE,getPersistence());
 		values.put(COLUMN_QR,getQr());
 		values.put(COLUMN_SNOOZEDURATION, getSnoozeDuration());
 		values.put(COLUMN_STYLE, getStyle());
@@ -725,6 +706,7 @@ public class Reminder implements Parcelable, Cloneable {
 		values.put(COLUMN_TEXTCOLOR, getTextColor());
 		values.put(COLUMN_IMAGE, getImage());
 		conditions.toContentValues(values);
+		persistence.toContentValues(values);
 		return values;
 	}
 
@@ -738,21 +720,16 @@ public class Reminder implements Parcelable, Cloneable {
         out.writeInt(repeatLength);
 	    out.writeByte(monthType);
         out.writeByte(daysOfWeek);
-        out.writeByte(persistence);
         out.writeSerializable(date);
         out.writeString(description);
-        out.writeString(qr);
-        out.writeInt(snoozeDuration);
         out.writeInt(ledColor);
         out.writeInt(ledPattern);
         out.writeString(ringtone);
-        out.writeParcelable(conditions, 0);
         out.writeByte(style);
-	    out.writeInt(volume);
-	    out.writeInt(snoozeNumber);
         out.writeString(image);
         out.writeInt(textColor);
 		out.writeParcelable(conditions, 0);
+		out.writeParcelable(persistence, 0);
     }
 
     public void readFromParcel(Parcel in){
@@ -762,21 +739,16 @@ public class Reminder implements Parcelable, Cloneable {
         repeatLength = in.readInt();
 	    monthType = in.readByte();
         daysOfWeek = in.readByte();
-        persistence = in.readByte();
         date = (Calendar) in.readSerializable();
         description = in.readString();
-        qr = in.readString();
-        snoozeDuration = in.readInt();
         ledColor = in.readInt();
         ledPattern = in.readInt();
         ringtone = in.readString();
-        conditions = in.readParcelable(Conditions.class.getClassLoader());
         style = in.readByte();
-	    volume = in.readInt();
-	    snoozeNumber = in.readInt();
         image = in.readString();
         textColor = in.readInt();
 		conditions = in.readParcelable(Conditions.class.getClassLoader());
+		persistence = in.readParcelable(Persistence.class.getClassLoader());
     }
 
     @Override
@@ -1116,7 +1088,7 @@ public class Reminder implements Parcelable, Cloneable {
         editor.putString("ssid", reminder.getSSID());
         editor.putBoolean("wifi", reminder.getConditions().getWifiPreference() ==
 				Conditions.WifiPreference.CONNECTED);
-        editor.putString("snooze_duration", Integer.toString(reminder.getSnoozeDuration()));
+        editor.putString("snooze_duration", Long.toString(reminder.getSnoozeDuration()));
         editor.putBoolean("bluetooth", reminder.getConditions().getBluetoothPreference() ==
 				Conditions.BluetoothPreference.CONNECTED);
         editor.putString("bt_name", reminder.getBluetooth());

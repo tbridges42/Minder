@@ -1,49 +1,174 @@
 package us.bridgeses.Minder.reminder;
 
+import android.content.ContentValues;
+import android.database.Cursor;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 
 import java.io.Serializable;
-import java.util.EnumSet;
+import java.lang.annotation.Retention;
+import java.util.concurrent.TimeUnit;
+
+import us.bridgeses.Minder.Reminder;
+
+import static java.lang.annotation.RetentionPolicy.SOURCE;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_PERSISTENCE;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_QR;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_SNOOZEDURATION;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_SNOOZENUM;
+import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_VOLUME;
+import static us.bridgeses.Minder.reminder.Persistence.PersistenceFlags.CONFIRM_DISMISS;
+import static us.bridgeses.Minder.reminder.Persistence.PersistenceFlags.DISPLAY_SCREEN;
+import static us.bridgeses.Minder.reminder.Persistence.PersistenceFlags.KEEP_TRYING;
+import static us.bridgeses.Minder.reminder.Persistence.PersistenceFlags.OVERRIDE_VOLUME;
+import static us.bridgeses.Minder.reminder.Persistence.PersistenceFlags.REQUIRE_CODE;
+import static us.bridgeses.Minder.reminder.Persistence.PersistenceFlags.WAKE_UP;
 
 /**
  * Created by Laura on 7/9/2015.
  */
-public class Persistence implements Serializable, Parcelable{
-    public static enum Flags {
-        REQUIRE_CODE,
-        OVERRIDE_VOLUME,
-        DISPLAY_SCREEN,
-        WAKE_UP,
-        CONFIRM_DISMISS,
-        KEEP_TRYING
+public class Persistence implements ReminderComponent, Serializable, Parcelable{
+
+    // TODO: 4/11/2017 Consider finding a more extensible way to implement this. Decorators?
+
+    @Retention(SOURCE)
+    @IntDef(flag=true, value = {REQUIRE_CODE,
+            OVERRIDE_VOLUME,
+            DISPLAY_SCREEN,
+            WAKE_UP,
+            CONFIRM_DISMISS,
+            KEEP_TRYING})
+    public @interface PersistenceFlags {
+        int REQUIRE_CODE = 1;
+        int OVERRIDE_VOLUME = 1<<1;
+        int DISPLAY_SCREEN = 1<<2;
+        int WAKE_UP = 1<<3;
+        int CONFIRM_DISMISS = 1<<4;
+        int KEEP_TRYING = 1<<5;
     }
 
-    private EnumSet<Flags> flags;
-    private String code;
-    private byte volume;
-    private byte snoozeLimit;
-    private int snoozeTime;
+    public static final int FLAGS_DEFAULT = 0;
+    public static final String CODE_DEFAULT = "";
+    public static final int VOLUME_DEFAULT = 75;
+    public static final int SNOOZE_LIMIT_DEFAULT = -1;
+    public static final long SNOOZE_TIME_DEFAULT = TimeUnit.MINUTES.toMicros(5);
 
-    public boolean hasFlag(Flags flag){
-        return flags.contains(flag);
+    private int flags = FLAGS_DEFAULT;
+    private String code = CODE_DEFAULT;
+    private int volume = VOLUME_DEFAULT;
+    private int snoozeLimit = SNOOZE_LIMIT_DEFAULT;
+    private long snoozeTime = SNOOZE_TIME_DEFAULT;
+
+    public Persistence() {
+
+    }
+
+    public Persistence(Persistence that) {
+        setFlags(flags);
+        setCode(that.code);
+        setVolume(that.volume);
+        setSnoozeLimit(that.snoozeLimit);
+        setSnoozeTime(that.snoozeTime);
+    }
+
+    public Persistence(Parcel parcel) {
+        setFlags(parcel.readInt());
+        setCode(parcel.readString());
+        setVolume(parcel.readInt());
+        setSnoozeLimit(parcel.readInt());
+        setSnoozeTime(parcel.readLong());
+    }
+
+    public Persistence(@NonNull Cursor cursor) {
+        if (cursor.isAfterLast() || cursor.isBeforeFirst()) {
+            throw new IllegalArgumentException("Cursor is not pointing to a valid row");
+        }
+        setFlags(cursor.getInt(cursor.getColumnIndex(COLUMN_PERSISTENCE)));
+        setCode(cursor.getString(cursor.getColumnIndex(COLUMN_QR)));
+        setVolume(cursor.getInt(cursor.getColumnIndex(COLUMN_VOLUME)));
+        setSnoozeTime(cursor.getLong(cursor.getColumnIndex(COLUMN_SNOOZEDURATION)));
+        setSnoozeLimit(cursor.getInt(cursor.getColumnIndex(COLUMN_SNOOZENUM)));
+    }
+
+    public ContentValues toContentValues() {
+        ContentValues values = new ContentValues();
+        return toContentValues(values);
+    }
+
+    public ContentValues toContentValues(@NonNull ContentValues contentValues) {
+        contentValues.put(COLUMN_PERSISTENCE, flags);
+        contentValues.put(COLUMN_QR, code);
+        contentValues.put(COLUMN_VOLUME, volume);
+        contentValues.put(COLUMN_SNOOZEDURATION, snoozeTime);
+        contentValues.put(COLUMN_SNOOZENUM, snoozeLimit);
+        return contentValues;
+    }
+
+    @Override
+    public void addTo(Reminder reminder) {
+        // defensive copy
+        reminder.setPersistence(new Persistence(this));
+    }
+
+    public boolean hasFlag(@PersistenceFlags int flag){
+        @PersistenceFlags int flagValue = flag & flags;
+        return flagValue == flag;
     }
 
     public String getCode() {
         return code;
     }
 
-    public byte getVolume() {
+    public int getVolume() {
         return volume;
     }
 
-    public byte getSnoozeLimit() {
+    public int getSnoozeLimit() {
         return snoozeLimit;
     }
 
-    public int getSnoozeTime() {
+    public long getSnoozeTime() {
         return snoozeTime;
+    }
+
+    public void setFlags(int flags) {
+        if ((flags < 0) || (flags > 1<<6)) {
+            throw new IllegalArgumentException("Flags is outside of range: " + flags);
+        }
+        this.flags = flags;
+    }
+
+    public void setFlag(@PersistenceFlags int flag, boolean value) {
+        if (value) {
+            setFlags(flags|flag);
+        }
+        else {
+            setFlags(flags&~flag);
+        }
+    }
+
+    public void setCode(@NonNull String code){
+        this.code = code;
+    }
+
+    public void setVolume(int volume){
+        if ((volume < 0)||(volume > 100)){
+            throw new IllegalArgumentException("Volume must be between 0 and 100. Was: " + volume);
+        }
+        this.volume = volume;
+    }
+
+    public void setSnoozeLimit(int snoozeLimit){
+        this.snoozeLimit = snoozeLimit;
+    }
+
+    public void setSnoozeTime(long snoozeTime){
+        if (snoozeTime <= 0){
+            throw new IllegalArgumentException("Time must be greater than zero");
+        }
+        this.snoozeTime = snoozeTime;
     }
 
     @Override
@@ -55,15 +180,15 @@ public class Persistence implements Serializable, Parcelable{
     public void writeToParcel(Parcel parcel, int i) {
         parcel.writeSerializable(flags);
         parcel.writeString(code);
-        parcel.writeByte(volume);
-        parcel.writeByte(snoozeLimit);
-        parcel.writeInt(snoozeTime);
+        parcel.writeInt(volume);
+        parcel.writeInt(snoozeLimit);
+        parcel.writeLong(snoozeTime);
     }
 
     public static final Creator<Persistence> CREATOR = new Creator<Persistence>() {
         @Override
         public Persistence createFromParcel(Parcel parcel) {
-            return new Builder().readFromParcel(parcel).build();
+            return new Persistence(parcel);
         }
 
         @Override
@@ -71,89 +196,4 @@ public class Persistence implements Serializable, Parcelable{
             return new Persistence[0];
         }
     };
-
-    private Persistence(Builder builder){
-        this.flags = builder.flags;
-        this.code = builder.code;
-        this.volume = builder.volume;
-        this.snoozeLimit = builder.snoozeLimit;
-        this.snoozeTime = builder.snoozeTime;
-    }
-
-    public static final class Builder {
-        private EnumSet<Flags> flags = EnumSet.of(
-                Flags.DISPLAY_SCREEN,
-                Flags.WAKE_UP,
-                Flags.KEEP_TRYING
-        );
-        private String code = "";
-        private byte volume = 75;
-        private byte snoozeLimit = -1;
-        private int snoozeTime = 300000;
-
-        public Builder() {}
-
-        public Builder setFlag(Flags flag, boolean value){
-            if (value){
-                if (!flags.contains(flag)){
-                    flags.add(flag);
-                }
-            }
-            else{
-                if (flags.contains(flag)){
-                    flags.remove(flag);
-                }
-            }
-            return this;
-        }
-
-        public Builder setCode(@NonNull String code){
-            this.code = code;
-            return this;
-        }
-
-        public Builder setVolume(byte volume){
-            if ((volume < 0)||(volume > 100)){
-                throw new IllegalArgumentException("Volume must be between 0 and 100. Was: " + volume);
-            }
-            this.volume = volume;
-            return this;
-        }
-
-        public Builder setSnoozeLimit(byte snoozeLimit){
-            this.snoozeLimit = snoozeLimit;
-            return this;
-        }
-
-        public Builder setSnoozeTime(int snoozeTime){
-            if (snoozeTime <= 0){
-                throw new IllegalArgumentException("Time must be greater than zero");
-            }
-            this.snoozeTime = snoozeTime;
-            return this;
-        }
-
-        public Builder copyPersistence(Persistence persistence){
-            this.flags = persistence.flags;
-            this.code = persistence.code;
-            this.volume = persistence.volume;
-            this.snoozeLimit = persistence.snoozeLimit;
-            this.snoozeTime = persistence.snoozeTime;
-            return this;
-        }
-
-        @SuppressWarnings("unchecked")
-        public Builder readFromParcel(Parcel parcel){
-            this.flags = (EnumSet<Flags>)parcel.readSerializable();
-            this.code = parcel.readString();
-            this.volume = parcel.readByte();
-            this.snoozeLimit = parcel.readByte();
-            this.snoozeTime = parcel.readByte();
-            return this;
-        }
-
-        public Persistence build() {
-            return new Persistence(this);
-        }
-    }
 }

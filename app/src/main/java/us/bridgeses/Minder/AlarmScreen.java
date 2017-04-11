@@ -270,7 +270,7 @@ public class AlarmScreen extends LifecycleLoggingActivity implements View.OnLong
 		checkDismiss();
 	}
 
-    private void snooze(int duration) {
+    private void snooze(long duration) {
 	    AlarmClass.silence(reminder, context);
 	    Intent snoozeIntent = new Intent(context,AlertService.class);
 	    snoozeIntent.putExtra("Id",reminder.getId());
