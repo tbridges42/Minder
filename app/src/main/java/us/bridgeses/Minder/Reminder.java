@@ -1172,8 +1172,8 @@ public class Reminder implements Parcelable, Cloneable {
 	}
 
     public void setLocation(SharedPreferences sharedPreferences){
-        String locationType = sharedPreferences.getString("location_type", "-1");
-        conditions.setLocationPreference(Conditions.LocationPreference.valueOf(locationType));
+        int locationType = Integer.valueOf(sharedPreferences.getString("location_type", "-1"));
+        conditions.setLocationPreference(Conditions.LocationPreference.values()[locationType]);
 
         LatLng location = new LatLng(sharedPreferences.getFloat("Latitude",(float)LOCATIONDEFAULT.latitude),
                 sharedPreferences.getFloat("Longitude",(float)LOCATIONDEFAULT.longitude));

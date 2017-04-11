@@ -229,8 +229,7 @@ public class EditReminder extends LifecycleLoggingActivity implements
 
 	    if (isNew||defaults){
             // Load the defaults into the reminder
-            SharedPreferences defaultPreferences = getSharedPreferences("Minder.Defaults", Context.MODE_PRIVATE);
-		    reminder = Reminder.reminderFactory(defaultPreferences,getApplicationContext());
+		    reminder = new Reminder();
 		    reminder.setDate(Calendar.getInstance());
 
             // The user should not be able to delete a reminder that is not saved
