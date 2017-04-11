@@ -53,7 +53,7 @@ public class Persistence implements ReminderComponent, Serializable, Parcelable{
     public static final String CODE_DEFAULT = "";
     public static final int VOLUME_DEFAULT = 75;
     public static final int SNOOZE_LIMIT_DEFAULT = -1;
-    public static final long SNOOZE_TIME_DEFAULT = TimeUnit.MINUTES.toMicros(5);
+    public static final long SNOOZE_TIME_DEFAULT = TimeUnit.MINUTES.toMillis(5);
 
     private int flags = FLAGS_DEFAULT;
     private String code = CODE_DEFAULT;
