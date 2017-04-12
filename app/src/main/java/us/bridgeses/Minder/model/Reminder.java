@@ -675,6 +675,7 @@ public class Reminder implements Parcelable, Cloneable {
 		values.put(COLUMN_IMAGE, getImage());
 		conditions.toContentValues(values);
 		persistence.toContentValues(values);
+		repeat.toContentValues(values);
 		return values;
 	}
 
