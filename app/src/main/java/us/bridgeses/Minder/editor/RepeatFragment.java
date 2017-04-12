@@ -22,15 +22,24 @@ import java.util.Locale;
 import us.bridgeses.Minder.R;
 import us.bridgeses.Minder.model.Reminder;
 import us.bridgeses.Minder.model.Repeat;
+import us.bridgeses.Minder.views.interfaces.EditorView;
 
-import static us.bridgeses.Minder.model.Repeat.RepeatType.DAILY;
-import static us.bridgeses.Minder.model.Repeat.RepeatType.MONTHLY;
-import static us.bridgeses.Minder.model.Repeat.RepeatType.WEEKLY;
+import static us.bridgeses.Minder.model.Reminder.FRIDAY;
+import static us.bridgeses.Minder.model.Reminder.MONDAY;
+import static us.bridgeses.Minder.model.Reminder.SATURDAY;
+import static us.bridgeses.Minder.model.Reminder.SUNDAY;
+import static us.bridgeses.Minder.model.Reminder.THURSDAY;
+import static us.bridgeses.Minder.model.Reminder.TUESDAY;
+import static us.bridgeses.Minder.model.Reminder.WEDNESDAY;
+import static us.bridgeses.Minder.model.Repeat.REPEAT_DATE_TYPE_DEFAULT;
+import static us.bridgeses.Minder.model.Repeat.REPEAT_PERIOD_DEFAULT;
+import static us.bridgeses.Minder.model.Repeat.REPEAT_TYPE_DEFAULT;
 
 /**
  * Created by Tony on 9/13/2014.
  */
-public class RepeatFragment extends PreferenceFragment  implements SharedPreferences.OnSharedPreferenceChangeListener{
+public class RepeatFragment extends PreferenceFragment  implements
+        SharedPreferences.OnSharedPreferenceChangeListener, EditorView<Repeat> {
 
     PreferenceScreen repeatScreenPreference;
     SharedPreferences sharedPreferences;
@@ -253,13 +262,13 @@ public class RepeatFragment extends PreferenceFragment  implements SharedPrefere
     private byte setDaysOfWeek() {
         byte daysOfWeek = 0;
         if (sharedPreferences.getBoolean("temp_sunday",false)) {
-            daysOfWeek += Reminder.SUNDAY;
+            daysOfWeek += SUNDAY;
         }
         if (sharedPreferences.getBoolean("temp_monday",false)) {
             daysOfWeek += Reminder.MONDAY;
         }
         if (sharedPreferences.getBoolean("temp_tuesday",false)) {
-            daysOfWeek += Reminder.TUESDAY;
+            daysOfWeek += TUESDAY;
         }
         if (sharedPreferences.getBoolean("temp_wednesday",false)) {
             daysOfWeek += Reminder.WEDNESDAY;
@@ -268,7 +277,7 @@ public class RepeatFragment extends PreferenceFragment  implements SharedPrefere
             daysOfWeek += Reminder.THURSDAY;
         }
         if (sharedPreferences.getBoolean("temp_friday",false)) {
-            daysOfWeek += Reminder.FRIDAY;
+            daysOfWeek += FRIDAY;
         }
         if (sharedPreferences.getBoolean("temp_saturday",false)) {
             daysOfWeek += Reminder.SATURDAY;
@@ -512,5 +521,84 @@ public class RepeatFragment extends PreferenceFragment  implements SharedPrefere
             setMonthlyTitle(monthlyTypePreference.findIndexOfValue(monthlyTypePreference.getValue()));
         }
         ((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
+    }
+
+    @Override
+    public void setup(Repeat model) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        SharedPreferences.Editor editor = sp.edit();
+
+        editor.putString("temp_repeat_type", Integer.toString(model.getRepeatType()));
+        editor.putString("temp_monthly_type", Integer.toString(model.getDateType()));
+        editor.putString("temp_days", Integer.toString(model.getRepeatPeriod()));
+        editor.putString("temp_weeks", Integer.toString(model.getRepeatPeriod()));
+        editor.putString("temp_months", Integer.toString(model.getRepeatPeriod()));
+        editor.putString("temp_years", Integer.toString(model.getRepeatPeriod()));
+        editor.putBoolean("temp_sunday", model.hasDayOfWeek(Repeat.DaysOfWeek.SUNDAY));
+        editor.putBoolean("temp_monday", model.hasDayOfWeek(Repeat.DaysOfWeek.MONDAY));
+        editor.putBoolean("temp_tuesday", model.hasDayOfWeek(Repeat.DaysOfWeek.TUESDAY));
+        editor.putBoolean("temp_wednesday", model.hasDayOfWeek(Repeat.DaysOfWeek.WEDNESDAY));
+        editor.putBoolean("temp_thursday", model.hasDayOfWeek(Repeat.DaysOfWeek.THURSDAY));
+        editor.putBoolean("temp_friday", model.hasDayOfWeek(Repeat.DaysOfWeek.FRIDAY));
+        editor.putBoolean("temp_saturday", model.hasDayOfWeek(Repeat.DaysOfWeek.SATURDAY));
+
+        editor.commit();
+        initSummaries();
+    }
+
+    @Override
+    public Repeat getValues() {
+        Repeat repeat = new Repeat();
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        @Repeat.RepeatType int repeatType = Integer.parseInt(sp.getString("temp_repeat_type",
+                Integer.toString(REPEAT_TYPE_DEFAULT)));
+        repeat.setRepeatType(repeatType);
+        @Repeat.DateType int dateType = Integer.parseInt(sp.getString("temp_monthly_type",
+                Integer.toString(REPEAT_DATE_TYPE_DEFAULT)));
+        repeat.setDateType(dateType);
+        switch (repeatType) {
+            case Repeat.RepeatType.ANNUALLY:
+                repeat.setRepeatPeriod(Integer.parseInt(sp.getString("temp_years",
+                        Integer.toString(REPEAT_PERIOD_DEFAULT))));
+                break;
+            case Repeat.RepeatType.DAILY:
+                repeat.setRepeatPeriod(Integer.parseInt(sp.getString("temp_days",
+                        Integer.toString(REPEAT_PERIOD_DEFAULT))));
+                break;
+            case Repeat.RepeatType.MONTHLY:
+                repeat.setRepeatPeriod(Integer.parseInt(sp.getString("temp_months",
+                        Integer.toString(REPEAT_PERIOD_DEFAULT))));
+                break;
+            case Repeat.RepeatType.NONE:
+                break;
+            case Repeat.RepeatType.WEEKLY:
+                repeat.setRepeatPeriod(Integer.parseInt(sp.getString("temp_weeks",
+                        Integer.toString(REPEAT_PERIOD_DEFAULT))));
+                break;
+        }
+        int daysOfWeek = 0;
+        if (sp.getBoolean("temp_sunday", false)) {
+            daysOfWeek |= Repeat.DaysOfWeek.SUNDAY;
+        }
+        if (sp.getBoolean("temp_moday", false)) {
+            daysOfWeek |= Repeat.DaysOfWeek.MONDAY;
+        }
+        if (sp.getBoolean("temp_tuesday", false)) {
+            daysOfWeek |= Repeat.DaysOfWeek.TUESDAY;
+        }
+        if (sp.getBoolean("temp_wednesday", false)) {
+            daysOfWeek |= Repeat.DaysOfWeek.WEDNESDAY;
+        }
+        if (sp.getBoolean("temp_thursday", false)) {
+            daysOfWeek |= Repeat.DaysOfWeek.THURSDAY;
+        }
+        if (sp.getBoolean("temp_friday", false)) {
+            daysOfWeek |= Repeat.DaysOfWeek.FRIDAY;
+        }
+        if (sp.getBoolean("temp_saturday", false)) {
+            daysOfWeek |= Repeat.DaysOfWeek.SATURDAY;
+        }
+        repeat.setDaysOfWeek(daysOfWeek);
+        return repeat;
     }
 }
