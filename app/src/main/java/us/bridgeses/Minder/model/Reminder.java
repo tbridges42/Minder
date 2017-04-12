@@ -62,10 +62,6 @@ public class Reminder implements Parcelable, Cloneable {
 		conditions = new Conditions();
 		persistence = new Persistence();
         name = NAMEDEFAULT;
-        repeatType = REPEATTYPEDEFAULT;
-        repeatLength = REPEATLENGTHDEFAULT;
-        daysOfWeek = DAYSOFWEEKDEFAULT;
-        monthType = MONTHTYPEDEFAULT;
         date = Calendar.getInstance();
         description = DESCRIPTIONDEFAULT;
         ringtone = RINGTONEDEFAULT;
@@ -86,10 +82,7 @@ public class Reminder implements Parcelable, Cloneable {
 		setName(cursor.getString(cursor.getColumnIndex(COLUMN_NAME)));
 		setDescription(cursor.getString(cursor.getColumnIndex(COLUMN_DESCRIPTION)));
 		setDate(cursor.getLong(cursor.getColumnIndex(COLUMN_DATE)) * 1000);
-		setDaysOfWeek((byte) cursor.getInt(cursor.getColumnIndex(COLUMN_DAYSOFWEEK)));
-		setMonthType((byte) cursor.getInt(cursor.getColumnIndex(COLUMN_MONTHTYPE)));
-		setRepeatLength(cursor.getInt(cursor.getColumnIndex(COLUMN_REPEATLENGTH)));
-		setRepeatType(cursor.getInt(cursor.getColumnIndex(COLUMN_REPEATTYPE)));
+		setRepeat(new Repeat(cursor));
 		setPersistence(new Persistence(cursor));
 		setStyle((byte) cursor.getInt(cursor.getColumnIndex(COLUMN_STYLE)));
 		setLedColor(cursor.getInt(cursor.getColumnIndex(COLUMN_LEDCOLOR)));
@@ -141,7 +134,7 @@ public class Reminder implements Parcelable, Cloneable {
 		return this.getName().equals(other.getName())
 				&& (this.getActive() == other.getActive())
 				&& this.getDescription().equals(other.getDescription())
-				&& this.repeatType == other.repeatType
+				&& this.getRepeat().equals(other.getRepeat())
 				&& this.date.equals(other.date);
 	}
 
@@ -160,23 +153,9 @@ public class Reminder implements Parcelable, Cloneable {
 	private boolean active;
     private String name;                       //User defined string representing name or title
     private String description;                //A user defined string intended to give more detail about the purpose of the reminder
-    private int repeatType;                    /*Number representing type of repeat to be used
-                                                 0 = Do not repeat
-                                                 1 = Daily
-                                                 2 = Weekly
-                                                 3 = Monthly
-                                                 4 = Annually*/
-    private int repeatLength;                  //Span between repeats. Units are set by {@link #repeatType}
-    private byte monthType;                    /*Number representing how to treat monthly repeats
-                                                 0: Monthly on this date (e.g. the 3rd of every month)
-                                                 1: Monthly on this day of week (e.g. the 2nd Thursday)
-                                                 2: Monthly this many days from the end of the month 
-                                                     (e.g. three days before the end of the month)
-                                                 3: Monthly on this day of week, counting from end of the month 
-                                                     (e.g. the last friday, not yet implemented)*/
-    private byte daysOfWeek;                   //Bitwise byte representing seven boolean values for the seven days of the week
     private Persistence persistence;
     private Conditions conditions;
+	private Repeat repeat;
     private byte style;                        //Bitwise byte representing an array of boolean values related to reminder Style
     private Calendar date;                     //The date and time at which the reminder should fire, truncated to second
     private int ledColor;                      //An int representing the hexadecimal color of the LED
@@ -295,13 +274,13 @@ public class Reminder implements Parcelable, Cloneable {
         this.conditions.setBtMacAddress(bluetooth);
     }
 
-	public byte getMonthType() {
-		return monthType;
+	public @Repeat.DateType int getMonthType() {
+		return getRepeat().getDateType();
 	}
 
-	public void setMonthType(byte monthType) {
+	public void setMonthType(@Repeat.DateType int monthType) {
 		if ((0 <= monthType) && (monthType <= 3)){
-			this.monthType = monthType;
+			this.getRepeat().setDateType(monthType);
 		}
 		else {
 			throw new IllegalArgumentException("Month Type must be between 0 and 3");
@@ -338,12 +317,12 @@ public class Reminder implements Parcelable, Cloneable {
 	}
 
 	public int getRepeatType() {
-		return repeatType;
+		return getRepeat().getRepeatType();
 	}
 
-	public void setRepeatType(int repeatType) {
+	public void setRepeatType(@Repeat.RepeatType int repeatType) {
 		if ((0 <= repeatType) && (repeatType <= 4)){
-			this.repeatType = repeatType;
+			getRepeat().setRepeatType(repeatType);
 		}
 		else {
 			throw new IllegalArgumentException("Repeat type must be between 0 and 4");
@@ -351,20 +330,20 @@ public class Reminder implements Parcelable, Cloneable {
 	}
 
 	public int getRepeatLength() {
-		return repeatLength;
+		return getRepeat().getRepeatPeriod();
 	}
 
 	public void setRepeatLength(int repeatLength) {
 		if (0 < repeatLength){
-			this.repeatLength = repeatLength;
+			getRepeat().setRepeatPeriod(repeatLength);
 		}
 		else {
 			throw new IllegalArgumentException("Repeat length must be greater than zero");
 		}
 	}
 
-	public byte getDaysOfWeek() {
-		return daysOfWeek;
+	public int getDaysOfWeek() {
+		return getRepeat().getDaysOfWeek();
 	}
 
 	//TODO: Move days of week text to getDaysOfWeekNames(int length) where length=1 > umtwrfs; length=2 > MoTuWeThFrSa (weekdays, weekends, every day);
@@ -372,34 +351,18 @@ public class Reminder implements Parcelable, Cloneable {
 
 	public void setDaysOfWeek(byte daysOfWeek) {
 		//TODO: Move daysOfWeek logic inside setter
-		this.daysOfWeek = daysOfWeek;
+		getRepeat().setDaysOfWeek(daysOfWeek);
 	}
 
 	public void setDaysOfWeek(boolean Sunday, boolean Monday, boolean Tuesday, boolean Wednesday,
 	                          boolean Thursday, boolean Friday, boolean Saturday){
-		byte tempDays = 0;
-		if (Sunday){
-			tempDays += SUNDAY;
-		}
-		if (Monday){
-			tempDays += MONDAY;
-		}
-		if (Tuesday){
-			tempDays += TUESDAY;
-		}
-		if (Wednesday){
-			tempDays += WEDNESDAY;
-		}
-		if (Thursday){
-			tempDays += THURSDAY;
-		}
-		if (Friday){
-			tempDays += FRIDAY;
-		}
-		if (Saturday){
-			tempDays += SATURDAY;
-		}
-		daysOfWeek = tempDays;
+		repeat.setDayOfWeek(Repeat.DaysOfWeek.SUNDAY, Sunday);
+		repeat.setDayOfWeek(Repeat.DaysOfWeek.MONDAY, Monday);
+		repeat.setDayOfWeek(Repeat.DaysOfWeek.TUESDAY, Tuesday);
+		repeat.setDayOfWeek(Repeat.DaysOfWeek.WEDNESDAY, Wednesday);
+		repeat.setDayOfWeek(Repeat.DaysOfWeek.THURSDAY, Thursday);
+		repeat.setDayOfWeek(Repeat.DaysOfWeek.FRIDAY, Friday);
+		repeat.setDayOfWeek(Repeat.DaysOfWeek.SATURDAY, Saturday);
 	}
 
 	public Calendar getDate() {
@@ -528,6 +491,14 @@ public class Reminder implements Parcelable, Cloneable {
 
 	public void setPersistence(Persistence persistence) {
 		this.persistence = persistence;
+	}
+
+	public Repeat getRepeat() {
+		return repeat;
+	}
+
+	public void setRepeat(Repeat repeat) {
+		this.repeat = repeat;
 	}
 
 	public byte getStyle(){
@@ -713,10 +684,6 @@ public class Reminder implements Parcelable, Cloneable {
     public void writeToParcel(Parcel out, int flags) {
         out.writeInt(id);
         out.writeString(name);
-        out.writeInt(repeatType);
-        out.writeInt(repeatLength);
-	    out.writeByte(monthType);
-        out.writeByte(daysOfWeek);
         out.writeSerializable(date);
         out.writeString(description);
         out.writeInt(ledColor);
@@ -727,15 +694,12 @@ public class Reminder implements Parcelable, Cloneable {
         out.writeInt(textColor);
 		out.writeParcelable(conditions, 0);
 		out.writeParcelable(persistence, 0);
+		out.writeParcelable(repeat, 0);
     }
 
     public void readFromParcel(Parcel in){
         id = in.readInt();
         name = in.readString();
-        repeatType = in.readInt();
-        repeatLength = in.readInt();
-	    monthType = in.readByte();
-        daysOfWeek = in.readByte();
         date = (Calendar) in.readSerializable();
         description = in.readString();
         ledColor = in.readInt();
@@ -746,6 +710,7 @@ public class Reminder implements Parcelable, Cloneable {
         textColor = in.readInt();
 		conditions = in.readParcelable(Conditions.class.getClassLoader());
 		persistence = in.readParcelable(Persistence.class.getClassLoader());
+		repeat = in.readParcelable(Repeat.class.getClassLoader());
     }
 
     @Override
@@ -756,7 +721,7 @@ public class Reminder implements Parcelable, Cloneable {
 	/********************************* Repeat Methods ****************************************/
 
     //Returns true if thisDay is in bitwise set daysOfWeek
-    public static boolean checkDayOfWeek(byte daysOfWeek, int thisDay) {	//Call with checkDayOfWeek(reminder.getDaysOfWeek,thisDay)
+    public static boolean checkDayOfWeek(int daysOfWeek, int thisDay) {	//Call with checkDayOfWeek(reminder.getDaysOfWeek,thisDay)
         int mask = 0;
         switch (thisDay) {
             case 1: {
@@ -791,7 +756,7 @@ public class Reminder implements Parcelable, Cloneable {
         return((daysOfWeek & mask) == mask);
     }
 
-    //Daily Repeat has no special use cases. adds RepeatLength days to Date
+    //Daily Repeat has no special use cases. adds RepeatType days to Date
     private static void nextDailyRepeat(Reminder reminder){
         Calendar date = reminder.getDate();
         date.add(Calendar.DAY_OF_MONTH,reminder.getRepeatLength());
@@ -837,7 +802,7 @@ public class Reminder implements Parcelable, Cloneable {
     private static void nextMonthlyRepeat(Reminder reminder) {
         Calendar date = reminder.getDate();
         int count = 0;              //Count checks for error conditions and prevents infinite loops
-        switch (reminder.monthType) {
+        switch (reminder.getMonthType()) {
             case 0: {				//Monthly on Date
                 int day = date.get(Calendar.DAY_OF_MONTH);
                 date.add(Calendar.MONTH,reminder.getRepeatLength());    //Skip months if desired
@@ -911,7 +876,7 @@ public class Reminder implements Parcelable, Cloneable {
     }
 
     //Yearly has no special use cases
-    //Set the next alarm to be RepeatLength years after last alarm
+    //Set the next alarm to be RepeatType years after last alarm
     private static void nextYearlyRepeat(Reminder reminder){
         Calendar date = reminder.getDate();
         date.add(Calendar.YEAR,reminder.getRepeatLength());
@@ -1057,7 +1022,7 @@ public class Reminder implements Parcelable, Cloneable {
 	    editor.putString("temp_years", Integer.toString(reminder.getRepeatLength()));
 	    editor.putString("snooze_number", Integer.toString(reminder.getSnoozeNumber()));
 	    
-        byte daysOfWeek = reminder.getDaysOfWeek();
+        int daysOfWeek = reminder.getDaysOfWeek();
         if (Reminder.checkDayOfWeek(daysOfWeek, 1)) {
             editor.putBoolean("temp_sunday",true);
         }
@@ -1101,8 +1066,10 @@ public class Reminder implements Parcelable, Cloneable {
     }
 
     public void setRepeat(SharedPreferences sharedPreferences) {
-        setRepeatType(Integer.parseInt(sharedPreferences.
-                getString("temp_repeat_type",Integer.toString(REPEATTYPEDEFAULT))));
+		@Repeat.RepeatType int repeatType = Integer.parseInt(sharedPreferences.
+				getString("temp_repeat_type",Integer.toString(REPEATTYPEDEFAULT)));
+		setRepeat(new Repeat());
+        setRepeatType(repeatType);
         switch (getRepeatType()) {
             case 1: {
                 setRepeatLength(Integer.parseInt(sharedPreferences
@@ -1118,8 +1085,9 @@ public class Reminder implements Parcelable, Cloneable {
             case 3: {
                 setRepeatLength(Integer.parseInt(sharedPreferences
                         .getString("temp_months", Integer.toString(REPEATLENGTHDEFAULT))));
-                setMonthType((byte) Integer.parseInt(sharedPreferences.
-                        getString("temp_monthly_type", Integer.toString(MONTHTYPEDEFAULT))));
+				@Repeat.DateType int dateType = Integer.parseInt(sharedPreferences.
+						getString("temp_monthly_type", Integer.toString(MONTHTYPEDEFAULT)));
+                setMonthType(dateType);
                 break;
             }
             case 4: {
@@ -1175,8 +1143,8 @@ public class Reminder implements Parcelable, Cloneable {
 	    reminder.setId(sharedPreferences.getInt("temp_id", IDDEFAULT));
 	    reminder.setName(sharedPreferences.getString("temp_name", NAMEDEFAULT));
         reminder.setDescription(sharedPreferences.getString("temp_description", DESCRIPTIONDEFAULT));
+		reminder.setRepeat(sharedPreferences);
         reminder.setDate(sharedPreferences, context);
-        reminder.setRepeat(sharedPreferences);
         reminder.setLocation(sharedPreferences);
         reminder.setRadius(sharedPreferences.getInt("radius", RADIUSDEFAULT));
         reminder.setVibrate(sharedPreferences.getBoolean("temp_vibrate", VIBRATEDEFAULT));

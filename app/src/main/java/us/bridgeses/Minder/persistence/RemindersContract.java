@@ -30,7 +30,7 @@ public class RemindersContract {
         public static final String COLUMN_ACTIVE = "Active";
         public static final String COLUMN_NAME = "Name";
         public static final String COLUMN_REPEATTYPE = "RepeatType";
-        public static final String COLUMN_REPEATLENGTH = "RepeatLength";
+        public static final String COLUMN_REPEATLENGTH = "RepeatType";
         public static final String COLUMN_DAYSOFWEEK = "DaysOfWeek";
         public static final String COLUMN_MONTHTYPE = "MonthType";
         public static final String COLUMN_PERSISTENCE = "Persistence";
