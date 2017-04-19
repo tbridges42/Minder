@@ -41,6 +41,9 @@ import us.bridgeses.Minder.model.Reminder;
 import us.bridgeses.Minder.util.vandy.LifecycleLoggingActivity;
 
 import static com.google.android.gms.common.GooglePlayServicesUtil.isGooglePlayServicesAvailable;
+import static us.bridgeses.Minder.model.Conditions.LATITUDE_DEFAULT;
+import static us.bridgeses.Minder.model.Conditions.LONGITUDE_DEFAULT;
+import static us.bridgeses.Minder.model.Conditions.RADIUS_DEFAULT;
 
 // TODO: 2/12/2017 Clean up deprecated calls
 // TODO: 2/12/2017 Handle poor connections better
@@ -92,9 +95,9 @@ public class MapsActivity extends LifecycleLoggingActivity implements GoogleMap.
         setContentView(R.layout.activity_maps);
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        location = new LatLng(sharedPreferences.getFloat("Latitude", (float) Reminder.LOCATIONDEFAULT.latitude),
-                sharedPreferences.getFloat("Longitude", (float) Reminder.LOCATIONDEFAULT.longitude));
-        radius = sharedPreferences.getInt("radius", Reminder.RADIUSDEFAULT);
+        location = new LatLng(sharedPreferences.getFloat("Latitude", LATITUDE_DEFAULT),
+                sharedPreferences.getFloat("Longitude", LONGITUDE_DEFAULT));
+        radius = sharedPreferences.getInt("radius", RADIUS_DEFAULT);
 
         if (isGoogleMapsInstalled()) {
             setUpLocationServices();

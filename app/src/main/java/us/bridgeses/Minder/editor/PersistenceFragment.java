@@ -29,6 +29,8 @@ import us.bridgeses.Minder.util.Scanner.BarcodeScanner;
 import us.bridgeses.Minder.util.SeekbarPreference;
 import us.bridgeses.Minder.views.interfaces.EditorView;
 
+import static us.bridgeses.Minder.model.Persistence.VOLUME_DEFAULT;
+
 /**
  * Displays options to the user that effect how the reminder is displayed
  * Uses the contents of the default preference file and the layout defined in persistence_preference.xml
@@ -210,7 +212,7 @@ public class PersistenceFragment extends PreferenceFragment implements
 		EditTextPreference snoozeLimitPreference = (EditTextPreference) super.findPreference("snooze_number");
 		EditTextPreference snoozeTimePreference = (EditTextPreference) super.findPreference("snooze_duration");
 		SeekbarPreference seekbarPreference = (SeekbarPreference) super.findPreference("volume");
-		seekbarPreference.setPosition(sharedPreferences.getInt("volume", Reminder.VOLUMEDEFAULT));
+		seekbarPreference.setPosition(sharedPreferences.getInt("volume",VOLUME_DEFAULT));
 		if (checkCamera()) {
 			codeButton.setEnabled(codeType.isChecked());
 			if (sharedPreferences.getString("button_code", "").equals("")) {

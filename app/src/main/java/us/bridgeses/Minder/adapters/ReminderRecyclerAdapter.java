@@ -153,7 +153,7 @@ public class ReminderRecyclerAdapter
         else {
             if (calendar.get(Calendar.DAY_OF_YEAR) - 6 <= now.get(Calendar.DAY_OF_YEAR)) {
                 if ((calendar.get(Calendar.DAY_OF_YEAR) == now.get(Calendar.DAY_OF_YEAR))||
-                        (calendar.getTimeInMillis()) - Reminder.HOUR * 16 <= now.getTimeInMillis()){
+                        (calendar.getTimeInMillis()) - 60 * 60 * 16 * 1000 <= now.getTimeInMillis()){
                     sdf = new SimpleDateFormat(context.getResources().getString(R.string.time_code));
                 }
                 else {

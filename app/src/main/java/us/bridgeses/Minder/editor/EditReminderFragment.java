@@ -25,6 +25,9 @@ import us.bridgeses.Minder.model.Reminder;
 import us.bridgeses.Minder.util.DatePreference;
 import us.bridgeses.Minder.util.TimePreference;
 
+import static us.bridgeses.Minder.model.Repeat.REPEAT_PERIOD_DEFAULT;
+import static us.bridgeses.Minder.model.Repeat.REPEAT_TYPE_DEFAULT;
+
 /**
  * Created by Tony on 8/27/2014.
  */
@@ -181,7 +184,7 @@ public class EditReminderFragment extends PreferenceFragment implements SharedPr
 		    sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
 	    }
         int repeatType = Integer.parseInt(sharedPreferences.getString("temp_repeat_type",
-                Integer.toString(Reminder.REPEATTYPEDEFAULT)));
+                Integer.toString(REPEAT_TYPE_DEFAULT)));
         switch (repeatType) {
             case 0: {
                 repeatScreenPreference.setSummary("Do not repeat");
@@ -190,49 +193,49 @@ public class EditReminderFragment extends PreferenceFragment implements SharedPr
             }
             case 1: {
                 if (sharedPreferences.getString("temp_days",
-                        Integer.toString(Reminder.REPEATLENGTHDEFAULT)).equals("1")) {
+                        Integer.toString(REPEAT_PERIOD_DEFAULT)).equals("1")) {
                     repeatScreenPreference.setSummary("Repeat every day");
                 }
                 else {
                     repeatScreenPreference.setSummary("Repeat every " +
-                            sharedPreferences.getString("temp_days", Integer.toString(Reminder.REPEATLENGTHDEFAULT)) + " days");
+                            sharedPreferences.getString("temp_days", Integer.toString(REPEAT_PERIOD_DEFAULT)) + " days");
                 }
                 ((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
                 break;
             }
             case 2: {
                 if (sharedPreferences.getString("temp_weeks",
-                        Integer.toString(Reminder.REPEATLENGTHDEFAULT)).equals("1")) {
+                        Integer.toString(REPEAT_PERIOD_DEFAULT)).equals("1")) {
                     repeatScreenPreference.setSummary("Repeat every week");
                 }
                 else {
                     repeatScreenPreference.setSummary("Repeat every " +
-                            sharedPreferences.getString("temp_weeks", Integer.toString(Reminder.REPEATLENGTHDEFAULT)) + " weeks");
+                            sharedPreferences.getString("temp_weeks", Integer.toString(REPEAT_PERIOD_DEFAULT)) + " weeks");
                 }
                 ((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
                 break;
             }
             case 3: {
                 if (sharedPreferences.getString("temp_months",
-                        Integer.toString(Reminder.REPEATLENGTHDEFAULT)).equals("1")) {
+                        Integer.toString(REPEAT_PERIOD_DEFAULT)).equals("1")) {
                     repeatScreenPreference.setSummary("Repeat every month");
                 }
                 else {
                     repeatScreenPreference.setSummary("Repeat every " +
-                            sharedPreferences.getString("temp_months", Integer.toString(Reminder.REPEATLENGTHDEFAULT)) + " months");
+                            sharedPreferences.getString("temp_months", Integer.toString(REPEAT_PERIOD_DEFAULT)) + " months");
                 }
                 ((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
                 break;
             }
             case 4: {
                 if (sharedPreferences.getString("temp_years",
-                        Integer.toString(Reminder.REPEATLENGTHDEFAULT)).equals("1")) {
+                        Integer.toString(REPEAT_PERIOD_DEFAULT)).equals("1")) {
                     repeatScreenPreference.setSummary("Repeat every year");
                 }
                 else {
                     repeatScreenPreference.setSummary("Repeat every " +
                             sharedPreferences.getString("temp_years",
-                                    Integer.toString(Reminder.REPEATLENGTHDEFAULT)) + " years");
+                                    Integer.toString(REPEAT_PERIOD_DEFAULT)) + " years");
                 }
                 ((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
                 break;

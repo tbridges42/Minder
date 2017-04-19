@@ -10,6 +10,10 @@ import android.widget.Toast;
 import us.bridgeses.Minder.R;
 import us.bridgeses.Minder.model.Reminder;
 
+import static us.bridgeses.Minder.model.Conditions.LATITUDE_DEFAULT;
+import static us.bridgeses.Minder.model.Conditions.LONGITUDE_DEFAULT;
+import static us.bridgeses.Minder.model.Conditions.SSID_DEFAULT;
+
 /**
  *  The activity for displaying, editing and saving options related to the conditions under which
  *  a reminder will fire
@@ -60,14 +64,14 @@ public class EditConditions extends EditorActivity {
 		editor.putString("location_type", saved.getString("location_type", "0"));
 		
 		editor.putFloat("Latitude",
-                saved.getFloat("Latitude",(float) Reminder.LOCATIONDEFAULT.latitude));
+                saved.getFloat("Latitude",LATITUDE_DEFAULT));
 		editor.putFloat("Longitude",
-                saved.getFloat("Longitude", (float) Reminder.LOCATIONDEFAULT.longitude));
+                saved.getFloat("Longitude", LONGITUDE_DEFAULT));
 
         editor.putBoolean("wifi",
-                saved.getBoolean("wifi", Reminder.WIFIDEFAULT));
+                saved.getBoolean("wifi", false));
         editor.putString("ssid",
-                saved.getString("ssid", Reminder.SSIDDEFAULT));
+                saved.getString("ssid", SSID_DEFAULT));
 		editor.apply();
 		Intent intent = new Intent();
 		setResult(RESULT_CANCELED, intent);
@@ -89,14 +93,14 @@ public class EditConditions extends EditorActivity {
 					sharedPreferences.getString("location_type", "0"));
 			
 			saved.putFloat("Latitude",
-					sharedPreferences.getFloat("Latitude", (float)Reminder.LOCATIONDEFAULT.latitude));
+					sharedPreferences.getFloat("Latitude", LATITUDE_DEFAULT));
 			saved.putFloat("Longitude",
-					sharedPreferences.getFloat("Longitude", (float)Reminder.LOCATIONDEFAULT.longitude));
+					sharedPreferences.getFloat("Longitude", LONGITUDE_DEFAULT));
 
             saved.putBoolean("wifi",
-                    sharedPreferences.getBoolean("wifi", Reminder.WIFIDEFAULT));
+                    sharedPreferences.getBoolean("wifi", false));
             saved.putString("ssid",
-                    sharedPreferences.getString("ssid",Reminder.SSIDDEFAULT));
+                    sharedPreferences.getString("ssid", SSID_DEFAULT));
 		}
 	}
 

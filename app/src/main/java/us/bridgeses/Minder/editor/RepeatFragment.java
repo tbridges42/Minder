@@ -24,13 +24,14 @@ import us.bridgeses.Minder.model.Reminder;
 import us.bridgeses.Minder.model.Repeat;
 import us.bridgeses.Minder.views.interfaces.EditorView;
 
-import static us.bridgeses.Minder.model.Reminder.FRIDAY;
-import static us.bridgeses.Minder.model.Reminder.MONDAY;
-import static us.bridgeses.Minder.model.Reminder.SATURDAY;
-import static us.bridgeses.Minder.model.Reminder.SUNDAY;
-import static us.bridgeses.Minder.model.Reminder.THURSDAY;
-import static us.bridgeses.Minder.model.Reminder.TUESDAY;
-import static us.bridgeses.Minder.model.Reminder.WEDNESDAY;
+import static us.bridgeses.Minder.model.Repeat.DaysOfWeek.FRIDAY;
+import static us.bridgeses.Minder.model.Repeat.DaysOfWeek.MONDAY;
+import static us.bridgeses.Minder.model.Repeat.DaysOfWeek.SATURDAY;
+import static us.bridgeses.Minder.model.Repeat.DaysOfWeek.SUNDAY;
+import static us.bridgeses.Minder.model.Repeat.DaysOfWeek.THURSDAY;
+import static us.bridgeses.Minder.model.Repeat.DaysOfWeek.TUESDAY;
+import static us.bridgeses.Minder.model.Repeat.DaysOfWeek.WEDNESDAY;
+import static us.bridgeses.Minder.model.Repeat.DaysOfWeek.WEEKEND;
 import static us.bridgeses.Minder.model.Repeat.REPEAT_DATE_TYPE_DEFAULT;
 import static us.bridgeses.Minder.model.Repeat.REPEAT_PERIOD_DEFAULT;
 import static us.bridgeses.Minder.model.Repeat.REPEAT_TYPE_DEFAULT;
@@ -68,17 +69,17 @@ public class RepeatFragment extends PreferenceFragment  implements
             numWeeksPreference.setTitle(title);
             return;
         }
-        if (daysOfWeek == Reminder.ALL_WEEK) {
+        if (daysOfWeek == Repeat.DaysOfWeek.ALL_WEEK) {
             title += " on each day";
             numWeeksPreference.setTitle(title);
             return;
         }
-        if (daysOfWeek == Reminder.WEEKDAYS) {
+        if (daysOfWeek == Repeat.DaysOfWeek.WEEKDAY) {
             title += " on weekdays";
             numWeeksPreference.setTitle(title);
             return;
         }
-        if (daysOfWeek == Reminder.WEEKENDS) {
+        if (daysOfWeek == WEEKEND) {
             title += " on weekends";
             numWeeksPreference.setTitle(title);
             return;
@@ -262,25 +263,25 @@ public class RepeatFragment extends PreferenceFragment  implements
     private byte setDaysOfWeek() {
         byte daysOfWeek = 0;
         if (sharedPreferences.getBoolean("temp_sunday",false)) {
-            daysOfWeek += SUNDAY;
+            daysOfWeek |= SUNDAY;
         }
         if (sharedPreferences.getBoolean("temp_monday",false)) {
-            daysOfWeek += Reminder.MONDAY;
+            daysOfWeek |= MONDAY;
         }
         if (sharedPreferences.getBoolean("temp_tuesday",false)) {
-            daysOfWeek += TUESDAY;
+            daysOfWeek |= TUESDAY;
         }
         if (sharedPreferences.getBoolean("temp_wednesday",false)) {
-            daysOfWeek += Reminder.WEDNESDAY;
+            daysOfWeek |= WEDNESDAY;
         }
         if (sharedPreferences.getBoolean("temp_thursday",false)) {
-            daysOfWeek += Reminder.THURSDAY;
+            daysOfWeek |= THURSDAY;
         }
         if (sharedPreferences.getBoolean("temp_friday",false)) {
-            daysOfWeek += FRIDAY;
+            daysOfWeek |= FRIDAY;
         }
         if (sharedPreferences.getBoolean("temp_saturday",false)) {
-            daysOfWeek += Reminder.SATURDAY;
+            daysOfWeek |= SATURDAY;
         }
         return daysOfWeek;
     }
@@ -534,13 +535,13 @@ public class RepeatFragment extends PreferenceFragment  implements
         editor.putString("temp_weeks", Integer.toString(model.getRepeatPeriod()));
         editor.putString("temp_months", Integer.toString(model.getRepeatPeriod()));
         editor.putString("temp_years", Integer.toString(model.getRepeatPeriod()));
-        editor.putBoolean("temp_sunday", model.hasDayOfWeek(Repeat.DaysOfWeek.SUNDAY));
-        editor.putBoolean("temp_monday", model.hasDayOfWeek(Repeat.DaysOfWeek.MONDAY));
-        editor.putBoolean("temp_tuesday", model.hasDayOfWeek(Repeat.DaysOfWeek.TUESDAY));
-        editor.putBoolean("temp_wednesday", model.hasDayOfWeek(Repeat.DaysOfWeek.WEDNESDAY));
-        editor.putBoolean("temp_thursday", model.hasDayOfWeek(Repeat.DaysOfWeek.THURSDAY));
-        editor.putBoolean("temp_friday", model.hasDayOfWeek(Repeat.DaysOfWeek.FRIDAY));
-        editor.putBoolean("temp_saturday", model.hasDayOfWeek(Repeat.DaysOfWeek.SATURDAY));
+        editor.putBoolean("temp_sunday", model.hasDayOfWeek(SUNDAY));
+        editor.putBoolean("temp_monday", model.hasDayOfWeek(MONDAY));
+        editor.putBoolean("temp_tuesday", model.hasDayOfWeek(TUESDAY));
+        editor.putBoolean("temp_wednesday", model.hasDayOfWeek(WEDNESDAY));
+        editor.putBoolean("temp_thursday", model.hasDayOfWeek(THURSDAY));
+        editor.putBoolean("temp_friday", model.hasDayOfWeek(FRIDAY));
+        editor.putBoolean("temp_saturday", model.hasDayOfWeek(SATURDAY));
 
         editor.commit();
         initSummaries();
@@ -578,25 +579,25 @@ public class RepeatFragment extends PreferenceFragment  implements
         }
         int daysOfWeek = 0;
         if (sp.getBoolean("temp_sunday", false)) {
-            daysOfWeek |= Repeat.DaysOfWeek.SUNDAY;
+            daysOfWeek |= SUNDAY;
         }
         if (sp.getBoolean("temp_moday", false)) {
-            daysOfWeek |= Repeat.DaysOfWeek.MONDAY;
+            daysOfWeek |= MONDAY;
         }
         if (sp.getBoolean("temp_tuesday", false)) {
-            daysOfWeek |= Repeat.DaysOfWeek.TUESDAY;
+            daysOfWeek |= TUESDAY;
         }
         if (sp.getBoolean("temp_wednesday", false)) {
-            daysOfWeek |= Repeat.DaysOfWeek.WEDNESDAY;
+            daysOfWeek |= WEDNESDAY;
         }
         if (sp.getBoolean("temp_thursday", false)) {
-            daysOfWeek |= Repeat.DaysOfWeek.THURSDAY;
+            daysOfWeek |= THURSDAY;
         }
         if (sp.getBoolean("temp_friday", false)) {
-            daysOfWeek |= Repeat.DaysOfWeek.FRIDAY;
+            daysOfWeek |= FRIDAY;
         }
         if (sp.getBoolean("temp_saturday", false)) {
-            daysOfWeek |= Repeat.DaysOfWeek.SATURDAY;
+            daysOfWeek |= SATURDAY;
         }
         repeat.setDaysOfWeek(daysOfWeek);
         return repeat;

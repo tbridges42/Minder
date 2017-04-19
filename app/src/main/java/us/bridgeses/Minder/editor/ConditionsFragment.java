@@ -39,9 +39,12 @@ import us.bridgeses.Minder.model.Conditions;
 import us.bridgeses.Minder.util.ActivityLoader;
 import us.bridgeses.Minder.views.interfaces.EditorView;
 
+import static us.bridgeses.Minder.model.Conditions.LATITUDE_DEFAULT;
+import static us.bridgeses.Minder.model.Conditions.LONGITUDE_DEFAULT;
 import static us.bridgeses.Minder.model.Conditions.LocationPreference.AT_LOCATION;
 import static us.bridgeses.Minder.model.Conditions.LocationPreference.AWAY_FROM_LOCATION;
 import static us.bridgeses.Minder.model.Conditions.LocationPreference.NONE;
+import static us.bridgeses.Minder.model.Conditions.SSID_DEFAULT;
 
 /**
  * Displays options to the user that effect under what conditions the reminder will fire
@@ -245,13 +248,13 @@ public class ConditionsFragment extends PreferenceFragment implements
 
 		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity);
 
-        wifiRequired.setChecked(sharedPreferences.getBoolean("wifi", Reminder.WIFIDEFAULT));
-        ssidButton.setSummary(sharedPreferences.getString("ssid",Reminder.SSIDDEFAULT));
+        wifiRequired.setChecked(sharedPreferences.getBoolean("wifi", false));
+        ssidButton.setSummary(sharedPreferences.getString("ssid",SSID_DEFAULT));
 
         Boolean isInvalidLocation = sharedPreferences.getFloat("Latitude",
-                (float)Reminder.LOCATIONDEFAULT.latitude)==(float)Reminder.LOCATIONDEFAULT.latitude;
+                LATITUDE_DEFAULT)==LATITUDE_DEFAULT;
         isInvalidLocation = isInvalidLocation || sharedPreferences.getFloat("Longitude",
-                (float)Reminder.LOCATIONDEFAULT.longitude)==(float)Reminder.LOCATIONDEFAULT.longitude;
+                LONGITUDE_DEFAULT)==LONGITUDE_DEFAULT;
 		if (isInvalidLocation){
 			super.findPreference("button_location_key").setSummary("");
 		}
@@ -393,7 +396,7 @@ public class ConditionsFragment extends PreferenceFragment implements
             conditions.setWifiPreference(Conditions.WifiPreference.NONE);
         }
         Log.d(TAG, "getValues: got " + conditions.getWifiPreference() + " for wifiPreference");
-        conditions.setSsid(sharedPreferences.getString("ssid", Conditions.SSID_DEFAULT));
+        conditions.setSsid(sharedPreferences.getString("ssid", SSID_DEFAULT));
         if (sharedPreferences.getBoolean("bluetooth", false)) {
             conditions.setBluetoothPreference(Conditions.BluetoothPreference.CONNECTED);
         }

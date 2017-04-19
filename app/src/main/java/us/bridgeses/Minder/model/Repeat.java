@@ -62,7 +62,7 @@ public class Repeat implements ReminderComponent, Parcelable, Cloneable {
     }
 
     @Retention(SOURCE)
-    @IntDef(flag = true, value = {NONE, SUNDAY, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY,
+    @IntDef(flag = true, value = {DaysOfWeek.NONE, SUNDAY, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY,
             WEEKEND, WEEKDAY, MWF, TTH, ALL_WEEK})
     public @interface DaysOfWeek {
         int NONE = 0;

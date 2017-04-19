@@ -28,6 +28,28 @@ import us.bridgeses.Minder.editor.EditStyle;
 import us.bridgeses.Minder.persistence.dao.DaoFactory;
 import us.bridgeses.Minder.persistence.dao.ReminderDAO;
 
+import static us.bridgeses.Minder.model.Conditions.BT_MAC_ADDRESS_DEFAULT;
+import static us.bridgeses.Minder.model.Conditions.LATITUDE_DEFAULT;
+import static us.bridgeses.Minder.model.Conditions.LONGITUDE_DEFAULT;
+import static us.bridgeses.Minder.model.Conditions.RADIUS_DEFAULT;
+import static us.bridgeses.Minder.model.Conditions.SSID_DEFAULT;
+import static us.bridgeses.Minder.model.Persistence.CODE_DEFAULT;
+import static us.bridgeses.Minder.model.Persistence.SNOOZE_LIMIT_DEFAULT;
+import static us.bridgeses.Minder.model.Persistence.SNOOZE_TIME_DEFAULT;
+import static us.bridgeses.Minder.model.Persistence.VOLUME_DEFAULT;
+import static us.bridgeses.Minder.model.Repeat.DaysOfWeek.FRIDAY;
+import static us.bridgeses.Minder.model.Repeat.DaysOfWeek.MONDAY;
+import static us.bridgeses.Minder.model.Repeat.DaysOfWeek.SATURDAY;
+import static us.bridgeses.Minder.model.Repeat.DaysOfWeek.SUNDAY;
+import static us.bridgeses.Minder.model.Repeat.DaysOfWeek.THURSDAY;
+import static us.bridgeses.Minder.model.Repeat.DaysOfWeek.TUESDAY;
+import static us.bridgeses.Minder.model.Repeat.DaysOfWeek.WEDNESDAY;
+import static us.bridgeses.Minder.model.Repeat.REPEAT_DATE_TYPE_DEFAULT;
+import static us.bridgeses.Minder.model.Repeat.REPEAT_PERIOD_DEFAULT;
+import static us.bridgeses.Minder.model.Repeat.REPEAT_TYPE_DEFAULT;
+import static us.bridgeses.Minder.model.Style.LED_COLOR_DEFAULT;
+import static us.bridgeses.Minder.model.Style.RINGTONE_DEFAULT;
+import static us.bridgeses.Minder.model.Style.TEXT_COLOR_DEFAULT;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_ACTIVE;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_DATE;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_DAYSOFWEEK;
@@ -64,13 +86,8 @@ public class Reminder implements Parcelable, Cloneable {
         name = NAMEDEFAULT;
         date = Calendar.getInstance();
         description = DESCRIPTIONDEFAULT;
-        ringtone = RINGTONEDEFAULT;
-        ledPattern = LEDPATTERNDEFAULT;
-        ledColor = LEDCOLORDEFAULT;
-        setLed(LEDDEFAULT);
         id = IDDEFAULT;
-        setImage(IMAGEDEFAULT);
-        setTextColor(TEXTCOLORDEFAULT);
+		style = new Style();
     }
 	
 	public Reminder(@NonNull Cursor cursor) {
@@ -84,18 +101,7 @@ public class Reminder implements Parcelable, Cloneable {
 		setDate(cursor.getLong(cursor.getColumnIndex(COLUMN_DATE)) * 1000);
 		setRepeat(new Repeat(cursor));
 		setPersistence(new Persistence(cursor));
-		setStyle((byte) cursor.getInt(cursor.getColumnIndex(COLUMN_STYLE)));
-		setLedColor(cursor.getInt(cursor.getColumnIndex(COLUMN_LEDCOLOR)));
-		setLedPattern(cursor.getInt(cursor.getColumnIndex(COLUMN_LEDPATTERN)));
-		try {
-			setRingtone(cursor.getString(cursor.getColumnIndex(COLUMN_RINGTONE)));
-		}
-		catch (NullPointerException e){
-			setRingtone("");
-		}
-		setLedColor(cursor.getInt(cursor.getColumnIndex(COLUMN_LEDCOLOR)));
-		setTextColor(cursor.getInt(cursor.getColumnIndex(COLUMN_TEXTCOLOR)));
-		setImage(cursor.getString(cursor.getColumnIndex(COLUMN_IMAGE)));
+		setStyle(new Style(cursor));
 		setConditions(new Conditions(cursor));
 	}
 
@@ -156,106 +162,31 @@ public class Reminder implements Parcelable, Cloneable {
     private Persistence persistence;
     private Conditions conditions;
 	private Repeat repeat;
-    private byte style;                        //Bitwise byte representing an array of boolean values related to reminder Style
+    private Style style;                        //Bitwise byte representing an array of boolean values related to reminder Style
     private Calendar date;                     //The date and time at which the reminder should fire, truncated to second
-    private int ledColor;                      //An int representing the hexadecimal color of the LED
-    private int ledPattern;                    //An int representing the pattern in which the LED should flash
-    private String ringtone;                   //A string representing a URI for a ringtone selected by the user, to be played when reminder fires
-	private String image;                      //A path to a background image
-    private int textColor;                     //A hexadecimal representation of font color
 
     //Default constants
     public static final boolean ACTIVEDEFAULT = true;
-    public static final LatLng LOCATIONDEFAULT = new LatLng(0,0);
     public static final String NAMEDEFAULT = "";
-    public static final int REPEATTYPEDEFAULT = 0;
-    public static final int REPEATLENGTHDEFAULT = 1;
-    public static final byte DAYSOFWEEKDEFAULT = 0;
-    public static final byte MONTHTYPEDEFAULT = 0;
-    public static final boolean ONLYATLOCATIONDEFAULT = false;
-    public static final boolean UNTILLOCATIONDEFAULT = false;
-    public static final boolean VOLUMEOVERRIDEDEFAULT = false;
-    public static final boolean DISPLAYSCREENDEFAULT = true;
-    public static final boolean WAKEUPDEFAULT = true;
     public static final String DESCRIPTIONDEFAULT = "";
-    public static final int SNOOZEDURATIONDEFAULT = 300000;
-    public static final String QRDEFAULT = "";
-	public static final boolean NEEDQRDEFAULT = false;
-    public static final boolean VIBRATEDEFAULT = false;
-    public static final String RINGTONEDEFAULT = "";
-    public static final boolean LEDDEFAULT = true;
-    public static final int LEDCOLORDEFAULT = 0xff000000;
-    public static final int LEDPATTERNDEFAULT = -1;
     public static final int IDDEFAULT = -1;
-    public static final int RADIUSDEFAULT = 200;
-    public static final String SSIDDEFAULT = "";
-    public static final String BTDEFAULT = "";
-    public static final boolean WIFIDEFAULT = false;
-    public static final boolean BTNEEDEDDEFAULT = false;
-	public static final boolean DISMISSDIALOGDEFAULT = false;
-	public static final boolean FADEDEFAULT = false;
-	public static final boolean VIBRATEREPEATDEFAULT = false;
-	public static final int VOLUMEDEFAULT = 80;
-	public static final boolean INSISTENTDEFAULT = true;
-	public static final int SNOOZENUMDEFAULT = -1;
-    public static final String IMAGEDEFAULT = "";
-    public static final int TEXTCOLORDEFAULT = 0xff000000;
-
-    //Time constants
-    public static final long MINUTE = TimeUnit.MILLISECONDS.convert(1L, TimeUnit.MINUTES);
-    public static final long HOUR = 60*MINUTE;
-    public static final long DAY = 24*HOUR;
-    public static final long WEEK = 7*DAY;
-    public static final byte SUNDAY = 64;
-    public static final byte MONDAY = 32;
-    public static final byte TUESDAY = 16;
-    public static final byte WEDNESDAY = 8;
-    public static final byte THURSDAY = 4;
-    public static final byte FRIDAY = 2;
-    public static final byte SATURDAY = 1;
-    public static final byte ALL_WEEK = 127;
-    public static final byte WEEKDAYS = 62;
-    public static final byte WEEKENDS = 65;
-    public static final byte MWF = MONDAY + WEDNESDAY + FRIDAY;
-    public static final byte TTH = TUESDAY + THURSDAY;
-
-	//Persistence constants
-	public static final byte VOLUME_OVERRIDE = 1;
-	public static final byte REQUIRE_CODE = 2;
-    public static final byte DISPLAY_SCREEN = 4;
-    public static final byte WAKE_UP = 8;
-	public static final byte DISMISS_DIALOG = 16;
-	public static final byte INSISTENT = 32;
-
-    //Conditions constants
-    public static final byte UNTIL_LOCATION = 1;
-    public static final byte ONLY_AT_LOCATION = 2;
-    public static final byte WIFINEEDED = 4;
-    public static final byte BLUETOOTHNEEDED = 8;
-    public static final byte ACTIVE = 16;
-
-    //Style constants
-    public static final byte LED = 1;
-    public static final byte VIBRATE = 2;
-	public static final byte VIBRATEREPEAT = 4;
-	public static final byte FADE = 8;
 
     public static final String PREFS_NAME = "ReminderPrefs";
 
     public void setImage(String image){
-        this.image = image;
+        style.setImagePath(image);
     }
 
     public String getImage(){
-        return image;
+        return style.getImagePath();
     }
 
     public void setTextColor(int textColor){
-        this.textColor = textColor;
+        style.setTextColor(textColor);
     }
 
     public int getTextColor(){
-        return textColor;
+        return style.getTextColor();
     }
 
     public void setSSID(String ssid){
@@ -356,10 +287,10 @@ public class Reminder implements Parcelable, Cloneable {
 
 	public void setDaysOfWeek(boolean Sunday, boolean Monday, boolean Tuesday, boolean Wednesday,
 	                          boolean Thursday, boolean Friday, boolean Saturday){
-		repeat.setDayOfWeek(Repeat.DaysOfWeek.SUNDAY, Sunday);
+		repeat.setDayOfWeek(SUNDAY, Sunday);
 		repeat.setDayOfWeek(Repeat.DaysOfWeek.MONDAY, Monday);
 		repeat.setDayOfWeek(Repeat.DaysOfWeek.TUESDAY, Tuesday);
-		repeat.setDayOfWeek(Repeat.DaysOfWeek.WEDNESDAY, Wednesday);
+		repeat.setDayOfWeek(WEDNESDAY, Wednesday);
 		repeat.setDayOfWeek(Repeat.DaysOfWeek.THURSDAY, Thursday);
 		repeat.setDayOfWeek(Repeat.DaysOfWeek.FRIDAY, Friday);
 		repeat.setDayOfWeek(Repeat.DaysOfWeek.SATURDAY, Saturday);
@@ -421,33 +352,27 @@ public class Reminder implements Parcelable, Cloneable {
 	}
 
 	public int getLedColor() {
-		return ledColor;
+		return style.getLedColor();
 	}
 
 	public void setLedColor(int ledColor) {
-        this.ledColor = ledColor;
+        style.setLedColor(ledColor);
 	}
 
 	public int getLedPattern() {
-		return ledPattern;
+		return style.getLedPattern();
 	}
 
 	public void setLedPattern(int ledPattern) {
-		if (0 <= ledPattern){
-			this.ledPattern = ledPattern;
-		}
-		else {
-			throw new IllegalArgumentException("LED Pattern must be positive");
-		}
+		style.setLedPattern(ledPattern);
 	}
 
 	public String getRingtone() {
-		return ringtone;
+		return style.getRingtone();
 	}
 
 	public void setRingtone(String ringtone) {
-		//TODO: Does this need sanitizing? Can this be sanitized?
-		this.ringtone = ringtone;
+		style.setRingtone(ringtone);
 	}
 
 	public void setRadius(int radius){
@@ -501,11 +426,11 @@ public class Reminder implements Parcelable, Cloneable {
 		this.repeat = repeat;
 	}
 
-	public byte getStyle(){
+	public Style getStyle(){
 		return style;
 	}
 
-	public void setStyle(byte style){
+	public void setStyle(Style style){
 		this.style = style;
 	}
     
@@ -590,35 +515,35 @@ public class Reminder implements Parcelable, Cloneable {
 	/*************************** Style bitwise getters and setters ************************/
 
 	public boolean getFadeVolume(){
-		return getBitwise(this.getStyle(),FADE);
+		return style.hasFlag(Style.StyleFlags.BUILD_VOLUME);
 	}
 
 	public void setFadeVolume(boolean fade){
-		this.setStyle(makeBitwise(this.getStyle(),FADE,fade));
+		style.setFlag(Style.StyleFlags.BUILD_VOLUME, fade);
 	}
 
 	public boolean getVibrate() {
-		return getBitwise(this.getStyle(),VIBRATE);
+		return style.hasFlag(Style.StyleFlags.VIBRATE);
 	}
 
 	public void setVibrate(boolean vibrate) {
-		this.setStyle(makeBitwise(this.getStyle(),VIBRATE,vibrate));
+		style.setFlag(Style.StyleFlags.VIBRATE, vibrate);
 	}
 
 	public boolean getLed() {
-		return getBitwise(this.getStyle(),LED);
+		return style.hasFlag(Style.StyleFlags.LED);
 	}
 
 	public void setLed(boolean led) {
-		this.setStyle(makeBitwise(this.getStyle(),LED,led));
+		style.setFlag(Style.StyleFlags.LED, led);
 	}
 	
 	public boolean getVibrateRepeat() {
-		return getBitwise(this.getStyle(),VIBRATEREPEAT);
+		return style.hasFlag(Style.StyleFlags.REPEAT_VIBRATE);
 	}
 
 	public void setVibrateRepeat(boolean vibrateRepeat) {
-		this.setStyle(makeBitwise(this.getStyle(), VIBRATEREPEAT, vibrateRepeat));
+		style.setFlag(Style.StyleFlags.REPEAT_VIBRATE, vibrateRepeat);
 	}
 
 	/***************************** Storage methods ********************************/
@@ -660,22 +585,10 @@ public class Reminder implements Parcelable, Cloneable {
 		values.put(COLUMN_NAME,getName());
 		values.put(COLUMN_DESCRIPTION,getDescription());
 		values.put(COLUMN_DATE,getDate().getTimeInMillis()/1000);
-		values.put(COLUMN_DAYSOFWEEK,getDaysOfWeek());
-		values.put(COLUMN_MONTHTYPE,getMonthType());
-		values.put(COLUMN_REPEATTYPE,getRepeatType());
-		values.put(COLUMN_REPEATLENGTH,getRepeatLength());
-		values.put(COLUMN_RINGTONE,getRingtone());
-		values.put(COLUMN_QR,getQr());
-		values.put(COLUMN_SNOOZEDURATION, getSnoozeDuration());
-		values.put(COLUMN_STYLE, getStyle());
-		values.put(COLUMN_VOLUME, getVolume());
-		values.put(COLUMN_SNOOZENUM, getSnoozeNumber());
-		values.put(COLUMN_LEDCOLOR, getLedColor());
-		values.put(COLUMN_TEXTCOLOR, getTextColor());
-		values.put(COLUMN_IMAGE, getImage());
 		conditions.toContentValues(values);
 		persistence.toContentValues(values);
 		repeat.toContentValues(values);
+		style.toContentValues(values);
 		return values;
 	}
 
@@ -687,15 +600,10 @@ public class Reminder implements Parcelable, Cloneable {
         out.writeString(name);
         out.writeSerializable(date);
         out.writeString(description);
-        out.writeInt(ledColor);
-        out.writeInt(ledPattern);
-        out.writeString(ringtone);
-        out.writeByte(style);
-        out.writeString(image);
-        out.writeInt(textColor);
 		out.writeParcelable(conditions, 0);
 		out.writeParcelable(persistence, 0);
 		out.writeParcelable(repeat, 0);
+		out.writeParcelable(style, 0);
     }
 
     public void readFromParcel(Parcel in){
@@ -703,15 +611,10 @@ public class Reminder implements Parcelable, Cloneable {
         name = in.readString();
         date = (Calendar) in.readSerializable();
         description = in.readString();
-        ledColor = in.readInt();
-        ledPattern = in.readInt();
-        ringtone = in.readString();
-        style = in.readByte();
-        image = in.readString();
-        textColor = in.readInt();
 		conditions = in.readParcelable(Conditions.class.getClassLoader());
 		persistence = in.readParcelable(Persistence.class.getClassLoader());
 		repeat = in.readParcelable(Repeat.class.getClassLoader());
+		style = in.readParcelable(Style.class.getClassLoader());
     }
 
     @Override
@@ -726,31 +629,31 @@ public class Reminder implements Parcelable, Cloneable {
         int mask = 0;
         switch (thisDay) {
             case 1: {
-                mask = Reminder.SUNDAY;
+                mask = SUNDAY;
                 break;
             }
             case 2: {
-                mask = Reminder.MONDAY;
+                mask = MONDAY;
                 break;
             }
             case 3: {
-                mask = Reminder.TUESDAY;
+                mask = TUESDAY;
                 break;
             }
             case 4: {
-                mask = Reminder.WEDNESDAY;
+                mask = WEDNESDAY;
                 break;
             }
             case 5: {
-                mask = Reminder.THURSDAY;
+                mask = THURSDAY;
                 break;
             }
             case 6: {
-                mask = Reminder.FRIDAY;
+                mask = FRIDAY;
                 break;
             }
             case 7: {
-                mask = Reminder.SATURDAY;
+                mask = SATURDAY;
                 break;
             }
         }
@@ -1068,32 +971,32 @@ public class Reminder implements Parcelable, Cloneable {
 
     public void setRepeat(SharedPreferences sharedPreferences) {
 		@Repeat.RepeatType int repeatType = Integer.parseInt(sharedPreferences.
-				getString("temp_repeat_type",Integer.toString(REPEATTYPEDEFAULT)));
+				getString("temp_repeat_type",Integer.toString(REPEAT_TYPE_DEFAULT)));
 		setRepeat(new Repeat());
         setRepeatType(repeatType);
         switch (getRepeatType()) {
             case 1: {
                 setRepeatLength(Integer.parseInt(sharedPreferences
-                        .getString("temp_days", Integer.toString(REPEATLENGTHDEFAULT))));
+                        .getString("temp_days", Integer.toString(REPEAT_PERIOD_DEFAULT))));
                 break;
             }
             case 2: {
                 setRepeatLength(Integer.parseInt(sharedPreferences
-                        .getString("temp_weeks", Integer.toString(REPEATLENGTHDEFAULT))));
+                        .getString("temp_weeks", Integer.toString(REPEAT_PERIOD_DEFAULT))));
                 setDaysOfWeek(sharedPreferences);
                 break;
             }
             case 3: {
                 setRepeatLength(Integer.parseInt(sharedPreferences
-                        .getString("temp_months", Integer.toString(REPEATLENGTHDEFAULT))));
+                        .getString("temp_months", Integer.toString(REPEAT_PERIOD_DEFAULT))));
 				@Repeat.DateType int dateType = Integer.parseInt(sharedPreferences.
-						getString("temp_monthly_type", Integer.toString(MONTHTYPEDEFAULT)));
+						getString("temp_monthly_type", Integer.toString(REPEAT_DATE_TYPE_DEFAULT)));
                 setMonthType(dateType);
                 break;
             }
             case 4: {
                 setRepeatLength(Integer.parseInt(sharedPreferences
-                        .getString("temp_years", Integer.toString(REPEATLENGTHDEFAULT))));
+                        .getString("temp_years", Integer.toString(REPEAT_PERIOD_DEFAULT))));
                 break;
             }
         }
@@ -1114,8 +1017,8 @@ public class Reminder implements Parcelable, Cloneable {
 				Integer.valueOf(sharedPreferences.getString("location_type", "-1"));
         conditions.setLocationPreference(locationType);
 
-        LatLng location = new LatLng(sharedPreferences.getFloat("Latitude",(float)LOCATIONDEFAULT.latitude),
-                sharedPreferences.getFloat("Longitude",(float)LOCATIONDEFAULT.longitude));
+        LatLng location = new LatLng(sharedPreferences.getFloat("Latitude",LATITUDE_DEFAULT),
+                sharedPreferences.getFloat("Longitude",LONGITUDE_DEFAULT));
         setLocation(location);
     }
 
@@ -1147,16 +1050,16 @@ public class Reminder implements Parcelable, Cloneable {
 		reminder.setRepeat(sharedPreferences);
         reminder.setDate(sharedPreferences, context);
         reminder.setLocation(sharedPreferences);
-        reminder.setRadius(sharedPreferences.getInt("radius", RADIUSDEFAULT));
-        reminder.setVibrate(sharedPreferences.getBoolean("temp_vibrate", VIBRATEDEFAULT));
-        reminder.setRingtone(sharedPreferences.getString("temp_ringtone", RINGTONEDEFAULT));
+        reminder.setRadius(sharedPreferences.getInt("radius", RADIUS_DEFAULT));
+        reminder.setVibrate(sharedPreferences.getBoolean("temp_vibrate", false));
+        reminder.setRingtone(sharedPreferences.getString("temp_ringtone", RINGTONE_DEFAULT));
         reminder.setActive(reminder.getDate().after(Calendar.getInstance()));
-        reminder.setQr(sharedPreferences.getString("temp_code", QRDEFAULT));
-        reminder.setNeedQr(sharedPreferences.getBoolean("code_type", NEEDQRDEFAULT));
-        reminder.setVolumeOverride(sharedPreferences.getBoolean("out_loud", VOLUMEOVERRIDEDEFAULT));
-        reminder.setDisplayScreen(sharedPreferences.getBoolean("display_screen", DISPLAYSCREENDEFAULT));
-        reminder.setWakeUp(sharedPreferences.getBoolean("wake_up", WAKEUPDEFAULT));
-        reminder.setSSID(sharedPreferences.getString("ssid", SSIDDEFAULT));
+        reminder.setQr(sharedPreferences.getString("temp_code", CODE_DEFAULT));
+        reminder.setNeedQr(sharedPreferences.getBoolean("code_type", false));
+        reminder.setVolumeOverride(sharedPreferences.getBoolean("out_loud", false));
+        reminder.setDisplayScreen(sharedPreferences.getBoolean("display_screen", true));
+        reminder.setWakeUp(sharedPreferences.getBoolean("wake_up", true));
+        reminder.setSSID(sharedPreferences.getString("ssid", SSID_DEFAULT));
 		Log.d(TAG, "preferenceToReminder: wifi checked " + sharedPreferences.getBoolean("wifi", false));
 		if (sharedPreferences.getBoolean("wifi", false)) {
 			reminder.getConditions().setWifiPreference(Conditions.WifiPreference.CONNECTED);
@@ -1171,17 +1074,17 @@ public class Reminder implements Parcelable, Cloneable {
 		else {
 			reminder.getConditions().setBluetoothPreference(Conditions.BluetoothPreference.NONE);
 		}
-        reminder.getConditions().setBtMacAddress(sharedPreferences.getString("bt_name", BTDEFAULT));
+        reminder.getConditions().setBtMacAddress(sharedPreferences.getString("bt_name", BT_MAC_ADDRESS_DEFAULT));
         reminder.setSnoozeDuration(Integer.parseInt(sharedPreferences
-                .getString("snooze_duration", Integer.toString(SNOOZEDURATIONDEFAULT))));
+                .getString("snooze_duration", Long.toString(SNOOZE_TIME_DEFAULT))));
 	    reminder.setSnoozeNumber(Integer.parseInt(sharedPreferences
-                .getString("snooze_number", Integer.toString(SNOOZENUMDEFAULT))));
-	    reminder.setFadeVolume(sharedPreferences.getBoolean("fade", FADEDEFAULT));
-	    reminder.setConfirmDismiss(sharedPreferences.getBoolean("dismiss_check", DISMISSDIALOGDEFAULT));
-	    reminder.setVibrateRepeat(sharedPreferences.getBoolean("vibrate_repeat", VIBRATEREPEATDEFAULT));
-	    reminder.setLed(sharedPreferences.getBoolean("led", LEDDEFAULT));
-	    reminder.setVolume(sharedPreferences.getInt("volume", VOLUMEDEFAULT));
-	    reminder.setInsistent(sharedPreferences.getBoolean("try_again", INSISTENTDEFAULT));
+                .getString("snooze_number", Integer.toString(SNOOZE_LIMIT_DEFAULT))));
+	    reminder.setFadeVolume(sharedPreferences.getBoolean("fade", false));
+	    reminder.setConfirmDismiss(sharedPreferences.getBoolean("dismiss_check", false));
+	    reminder.setVibrateRepeat(sharedPreferences.getBoolean("vibrate_repeat", false));
+	    reminder.setLed(sharedPreferences.getBoolean("led", false));
+	    reminder.setVolume(sharedPreferences.getInt("volume", VOLUME_DEFAULT));
+	    reminder.setInsistent(sharedPreferences.getBoolean("try_again", false));
         File file = new File(context.getExternalFilesDir(null), EditStyle.tempFile);
         File saveFile = new File(context.getFilesDir(), Integer.toString(reminder.getId()));
         if (saveFile.exists()){
@@ -1191,8 +1094,8 @@ public class Reminder implements Parcelable, Cloneable {
             Logger.d("Saveing image");
             file.renameTo(saveFile);
         }
-        reminder.setTextColor(sharedPreferences.getInt("font_color",TEXTCOLORDEFAULT));
-        reminder.setLedColor(sharedPreferences.getInt("led_color",LEDCOLORDEFAULT));
+        reminder.setTextColor(sharedPreferences.getInt("font_color",TEXT_COLOR_DEFAULT));
+        reminder.setLedColor(sharedPreferences.getInt("led_color",LED_COLOR_DEFAULT));
         return reminder;
     }
 

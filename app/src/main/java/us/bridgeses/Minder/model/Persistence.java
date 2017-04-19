@@ -12,6 +12,7 @@ import java.lang.annotation.Retention;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.annotation.RetentionPolicy.SOURCE;
+import static us.bridgeses.Minder.model.Persistence.PersistenceFlags.NONE;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_PERSISTENCE;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_QR;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_SNOOZEDURATION;
@@ -32,13 +33,14 @@ public class Persistence implements ReminderComponent, Serializable, Parcelable{
     // TODO: 4/11/2017 Consider finding a more extensible way to implement this. Decorators?
 
     @Retention(SOURCE)
-    @IntDef(flag=true, value = {REQUIRE_CODE,
+    @IntDef(flag=true, value = {NONE, REQUIRE_CODE,
             OVERRIDE_VOLUME,
             DISPLAY_SCREEN,
             WAKE_UP,
             CONFIRM_DISMISS,
             KEEP_TRYING})
     public @interface PersistenceFlags {
+        int NONE = 0;
         int REQUIRE_CODE = 1;
         int OVERRIDE_VOLUME = 1<<1;
         int DISPLAY_SCREEN = 1<<2;
@@ -47,7 +49,7 @@ public class Persistence implements ReminderComponent, Serializable, Parcelable{
         int KEEP_TRYING = 1<<5;
     }
 
-    public static final int FLAGS_DEFAULT = 0;
+    public static final int FLAGS_DEFAULT = DISPLAY_SCREEN|WAKE_UP;
     public static final String CODE_DEFAULT = "";
     public static final int VOLUME_DEFAULT = 75;
     public static final int SNOOZE_LIMIT_DEFAULT = -1;

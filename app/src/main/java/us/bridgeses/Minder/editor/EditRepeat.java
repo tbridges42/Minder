@@ -8,6 +8,10 @@ import android.view.View;
 
 import us.bridgeses.Minder.model.Reminder;
 
+import static us.bridgeses.Minder.model.Repeat.REPEAT_DATE_TYPE_DEFAULT;
+import static us.bridgeses.Minder.model.Repeat.REPEAT_PERIOD_DEFAULT;
+import static us.bridgeses.Minder.model.Repeat.REPEAT_TYPE_DEFAULT;
+
 /**
  * The activity for displaying, editing and saving options related to the pattern by which
  *  a reminder will repeat
@@ -26,19 +30,19 @@ public class EditRepeat extends EditorActivity{
 
 	    //These four are EditTextPreferences and must be handled as strings
 	    editor.putString("temp_days", saved.getString("temp_days",
-                Integer.toString(Reminder.REPEATLENGTHDEFAULT)));
+                Integer.toString(REPEAT_PERIOD_DEFAULT)));
 	    editor.putString("temp_weeks", saved.getString("temp_weeks",
-                Integer.toString(Reminder.REPEATLENGTHDEFAULT)));
+                Integer.toString(REPEAT_PERIOD_DEFAULT)));
 	    editor.putString("temp_months", saved.getString("temp_months",
-                Integer.toString(Reminder.REPEATLENGTHDEFAULT)));
+                Integer.toString(REPEAT_PERIOD_DEFAULT)));
 	    editor.putString("temp_years", saved.getString("temp_years",
-                Integer.toString(Reminder.REPEATLENGTHDEFAULT)));
+                Integer.toString(REPEAT_PERIOD_DEFAULT)));
 
 	    //These two are ListPreferences and must be handled as strings
 	    editor.putString("temp_repeat_type", saved.getString("temp_repeat_type",
-                Integer.toString(Reminder.REPEATTYPEDEFAULT)));
+                Integer.toString(REPEAT_TYPE_DEFAULT)));
 	    editor.putString("temp_monthly_type", saved.getString("temp_monthly_type",
-                Integer.toString(Reminder.MONTHTYPEDEFAULT)));
+                Integer.toString(REPEAT_DATE_TYPE_DEFAULT)));
 	    editor.apply();
 
         Intent intent = new Intent();
@@ -69,19 +73,19 @@ public class EditRepeat extends EditorActivity{
 
             //These four are EditTextPreferences and must be handled as strings
             saved.putString("temp_years", sharedPreferences.getString("temp_years",
-                    Integer.toString(Reminder.REPEATLENGTHDEFAULT)));
+                    Integer.toString(REPEAT_PERIOD_DEFAULT)));
             saved.putString("temp_days", sharedPreferences.getString("temp_days",
-                    Integer.toString(Reminder.REPEATLENGTHDEFAULT)));
+                    Integer.toString(REPEAT_PERIOD_DEFAULT)));
             saved.putString("temp_weeks", sharedPreferences.getString("temp_weeks",
-                    Integer.toString(Reminder.REPEATLENGTHDEFAULT)));
+                    Integer.toString(REPEAT_PERIOD_DEFAULT)));
             saved.putString("temp_months", sharedPreferences.getString("temp_months",
-                    Integer.toString(Reminder.REPEATLENGTHDEFAULT)));
+                    Integer.toString(REPEAT_PERIOD_DEFAULT)));
 
             //These two are ListPreferences and must be handled as strings
             saved.putString("temp_repeat_type", sharedPreferences.getString("temp_repeat_type",
-                    Integer.toString(Reminder.REPEATTYPEDEFAULT)));
+                    Integer.toString(REPEAT_TYPE_DEFAULT)));
             saved.putString("temp_monthly_type", sharedPreferences.getString("temp_monthly_type",
-                    Integer.toString(Reminder.MONTHTYPEDEFAULT)));
+                    Integer.toString(REPEAT_DATE_TYPE_DEFAULT)));
         }
     }
 

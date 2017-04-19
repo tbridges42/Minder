@@ -232,7 +232,7 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
             checkConditions();
         }
         else {
-            snooze((int) Reminder.MINUTE);
+            snooze(60 * 1000);
         }
     }
 
@@ -245,7 +245,7 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
 
         long timeDelta = Calendar.getInstance().getTimeInMillis() - mLastLocation.getTime();
 
-        if (timeDelta > (Reminder.MINUTE * 10)
+        if (timeDelta > (60 * 1000 * 10)
                 ||mLastLocation.getAccuracy() > 1.5*reminder.getRadius()){
             Logger.i("Location is stale");
             try {
@@ -267,7 +267,7 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
             checkConditions();
         }
         else {
-            snooze((int) Reminder.MINUTE);
+            snooze(60 * 1000);
         }
     }
 
@@ -313,7 +313,7 @@ public class AlarmClass implements Runnable, GoogleApiClient.ConnectionCallbacks
             }
         }
         else {
-            snooze((int) Reminder.MINUTE);
+            snooze(60 * 1000);
         }
     }
 

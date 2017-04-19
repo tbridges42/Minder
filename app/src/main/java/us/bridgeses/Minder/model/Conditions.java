@@ -15,9 +15,6 @@ import java.io.Serializable;
 import java.lang.annotation.Retention;
 
 import static java.lang.annotation.RetentionPolicy.SOURCE;
-import static us.bridgeses.Minder.model.Reminder.ONLY_AT_LOCATION;
-import static us.bridgeses.Minder.model.Reminder.UNTIL_LOCATION;
-import static us.bridgeses.Minder.model.Reminder.WIFINEEDED;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_BLUETOOTH_MAC_ADDRESS;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_BLUETOOTH_PREFERENCE;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_LATITUDE;
@@ -97,13 +94,13 @@ public final class Conditions implements ReminderComponent, Parcelable, Serializ
     }
 
     public Conditions(byte conditions) {
-        if (getBitwise(conditions, UNTIL_LOCATION)) {
+        if (getBitwise(conditions, 1)) {
             locationPreference = AWAY_FROM_LOCATION;
         }
-        if (getBitwise(conditions, ONLY_AT_LOCATION)) {
+        if (getBitwise(conditions, 2)) {
             locationPreference = AT_LOCATION;
         }
-        if (getBitwise(conditions, WIFINEEDED)) {
+        if (getBitwise(conditions, 4)) {
             wifiPreference = WifiPreference.CONNECTED;
         }
     }
@@ -176,7 +173,7 @@ public final class Conditions implements ReminderComponent, Parcelable, Serializ
         reminder.setConditions(new Conditions(this));
     }
 
-    private boolean getBitwise(byte store, byte key){
+    private boolean getBitwise(byte store, int key){
         return (store & key) == key;
     }
 

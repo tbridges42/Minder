@@ -10,6 +10,9 @@ import android.widget.Toast;
 import us.bridgeses.Minder.R;
 import us.bridgeses.Minder.model.Reminder;
 
+import static us.bridgeses.Minder.model.Persistence.CODE_DEFAULT;
+import static us.bridgeses.Minder.model.Persistence.VOLUME_DEFAULT;
+
 /**
  *  The activity for displaying, editing and saving options related to how persistent the reminder
  *  will be in getting the user's attention
@@ -47,13 +50,13 @@ public class EditPersistence extends EditorActivity {
 	public void cancel(View view) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("code_button", saved.getString("code_button", Reminder.QRDEFAULT));
-        editor.putBoolean("code_type", saved.getBoolean("code_type", Reminder.NEEDQRDEFAULT));
-        editor.putBoolean("out_loud", saved.getBoolean("out_loud", Reminder.VOLUMEOVERRIDEDEFAULT));
-        editor.putBoolean("display_screen", saved.getBoolean("display_screen", Reminder.DISPLAYSCREENDEFAULT));
-        editor.putBoolean("wake_up", saved.getBoolean("wake_up", Reminder.WAKEUPDEFAULT));
-        editor.putBoolean("fade", saved.getBoolean("fade", Reminder.FADEDEFAULT));
-		editor.putInt("volume", saved.getInt("volume", Reminder.VOLUMEDEFAULT));
+        editor.putString("code_button", saved.getString("code_button", CODE_DEFAULT));
+        editor.putBoolean("code_type", saved.getBoolean("code_type", false));
+        editor.putBoolean("out_loud", saved.getBoolean("out_loud", false));
+        editor.putBoolean("display_screen", saved.getBoolean("display_screen", true));
+        editor.putBoolean("wake_up", saved.getBoolean("wake_up", true));
+        editor.putBoolean("fade", saved.getBoolean("fade", false));
+		editor.putInt("volume", saved.getInt("volume", VOLUME_DEFAULT));
         editor.apply();
 		Intent intent = new Intent();
 		setResult(RESULT_CANCELED, intent);
@@ -70,18 +73,18 @@ public class EditPersistence extends EditorActivity {
 			saved = new Bundle();
 			SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 			saved.putString("button_code",
-					sharedPreferences.getString("button_code", Reminder.QRDEFAULT));
+					sharedPreferences.getString("button_code", CODE_DEFAULT));
 			saved.putBoolean("code_type",
-					sharedPreferences.getBoolean("code_type", Reminder.NEEDQRDEFAULT));
+					sharedPreferences.getBoolean("code_type", false));
 			saved.putBoolean("out_loud",
-					sharedPreferences.getBoolean("out_loud", Reminder.VOLUMEOVERRIDEDEFAULT));
+					sharedPreferences.getBoolean("out_loud", false));
 			saved.putBoolean("display_screen",
-					sharedPreferences.getBoolean("display_screen", Reminder.DISPLAYSCREENDEFAULT));
+					sharedPreferences.getBoolean("display_screen", true));
 			saved.putBoolean("wake_up",
-					sharedPreferences.getBoolean("wake_up", Reminder.WAKEUPDEFAULT));
+					sharedPreferences.getBoolean("wake_up", true));
 			saved.putBoolean("fade",
-					sharedPreferences.getBoolean("fade", Reminder.FADEDEFAULT));
-			saved.putInt("volume",sharedPreferences.getInt("volume", 80));
+					sharedPreferences.getBoolean("fade", false));
+			saved.putInt("volume",sharedPreferences.getInt("volume", VOLUME_DEFAULT));
 		}
 	}
 	

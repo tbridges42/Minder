@@ -8,6 +8,10 @@ import android.view.View;
 
 import us.bridgeses.Minder.model.Reminder;
 
+import static us.bridgeses.Minder.model.Style.IMAGE_PATH_DEFAULT;
+import static us.bridgeses.Minder.model.Style.LED_COLOR_DEFAULT;
+import static us.bridgeses.Minder.model.Style.TEXT_COLOR_DEFAULT;
+
 /**
  * The activity for displaying, editing and saving options related to the manner
  * in which the reminder is shown
@@ -39,12 +43,12 @@ public class EditStyle extends EditorActivity {
     public void cancel(View view) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-		editor.putBoolean("temp_vibrate", saved.getBoolean("temp_vibrate", Reminder.VIBRATEDEFAULT));
-		editor.putBoolean("vibrate_repeat", saved.getBoolean("vibrate_repeat", Reminder.VIBRATEREPEATDEFAULT));
-		editor.putBoolean("led", saved.getBoolean("led", Reminder.LEDDEFAULT));
-        editor.putInt("led_color", saved.getInt("led_color", Reminder.LEDCOLORDEFAULT));
-        editor.putString("image", saved.getString("image", Reminder.IMAGEDEFAULT));
-        editor.putInt("font_color", saved.getInt("font_color", Reminder.TEXTCOLORDEFAULT));
+		editor.putBoolean("temp_vibrate", saved.getBoolean("temp_vibrate", true));
+		editor.putBoolean("vibrate_repeat", saved.getBoolean("vibrate_repeat", false));
+		editor.putBoolean("led", saved.getBoolean("led", false));
+        editor.putInt("led_color", saved.getInt("led_color", LED_COLOR_DEFAULT));
+        editor.putString("image", saved.getString("image", IMAGE_PATH_DEFAULT));
+        editor.putInt("font_color", saved.getInt("font_color", TEXT_COLOR_DEFAULT));
         editor.apply();
         Reminder.loadImage(this, sharedPreferences.getInt("temp_id", -1));
         userEnded = true;
@@ -59,17 +63,17 @@ public class EditStyle extends EditorActivity {
 			saved = new Bundle();
 			SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 			saved.putBoolean("temp_vibrate",
-					sharedPreferences.getBoolean("temp_vibrate", Reminder.VIBRATEDEFAULT));
+					sharedPreferences.getBoolean("temp_vibrate", true));
 			saved.putBoolean("vibrate_repeat",
-					sharedPreferences.getBoolean("vibrate_repeat", Reminder.VIBRATEREPEATDEFAULT));
+					sharedPreferences.getBoolean("vibrate_repeat", false));
 			saved.putBoolean("led",
-					sharedPreferences.getBoolean("led", Reminder.LEDDEFAULT));
+					sharedPreferences.getBoolean("led", false));
             saved.putInt("led_color",
-                    sharedPreferences.getInt("led_color", Reminder.LEDCOLORDEFAULT));
+                    sharedPreferences.getInt("led_color", LED_COLOR_DEFAULT));
             saved.putString("image",
-                    sharedPreferences.getString("image", Reminder.IMAGEDEFAULT));
+                    sharedPreferences.getString("image", IMAGE_PATH_DEFAULT));
             saved.putInt("font_color",
-                    sharedPreferences.getInt("font_color", Reminder.TEXTCOLORDEFAULT));
+                    sharedPreferences.getInt("font_color", TEXT_COLOR_DEFAULT));
 		}
 	}
 
