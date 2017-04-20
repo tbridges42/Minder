@@ -21,16 +21,20 @@ import android.widget.BaseAdapter;
 import com.orhanobut.logger.Logger;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
 import us.bridgeses.Minder.R;
+import us.bridgeses.Minder.model.Style;
 import us.bridgeses.Minder.util.ImageHelper;
+import us.bridgeses.Minder.views.interfaces.EditorView;
+
+import static us.bridgeses.Minder.model.Style.IMAGE_PATH_DEFAULT;
 
 public class StyleFragment extends PreferenceFragment implements 
         SharedPreferences.OnSharedPreferenceChangeListener,
-        Preference.OnPreferenceClickListener {
+        Preference.OnPreferenceClickListener,
+        EditorView<Style>{
 
     PreferenceScreen imagePreference;
     SharedPreferences sharedPreferences;
@@ -142,5 +146,28 @@ public class StyleFragment extends PreferenceFragment implements
         super.onDestroy();
         getPreferenceScreen().getSharedPreferences()
                 .unregisterOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public void setup(Style model) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean("vibrate_repeat", model.hasFlag(Style.StyleFlags.REPEAT_VIBRATE));
+        editor.putBoolean("led", model.hasFlag(Style.StyleFlags.LED));
+        editor.putString("image", model.getImagePath());
+        editor.putBoolean("temp_vibrate", model.hasFlag(Style.StyleFlags.VIBRATE));
+        editor.commit();
+        initSummaries();
+    }
+
+    @Override
+    public Style getValues() {
+        Style style = new Style();
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        style.setFlag(Style.StyleFlags.REPEAT_VIBRATE, sp.getBoolean("vibrate_repeat", false));
+        style.setFlag(Style.StyleFlags.VIBRATE, sp.getBoolean("temp_vibrate", true));
+        style.setFlag(Style.StyleFlags.LED, sp.getBoolean("led", false));
+        style.setImagePath(sp.getString("image", IMAGE_PATH_DEFAULT));
+        return style;
     }
 }

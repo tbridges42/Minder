@@ -127,6 +127,7 @@ public class EditorController extends Fragment {
                 callback.launchEditor(reminder.getRepeat());
                 break;
             case STYLE:
+                callback.launchEditor(reminder.getStyle());
                 break;
         }
     }

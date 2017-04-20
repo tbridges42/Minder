@@ -122,9 +122,6 @@ public class Style implements ReminderComponent, Parcelable, Serializable {
     }
 
     public void setLedColor(int color){
-        if (color < 0){
-            throw new IllegalArgumentException("Color must be non-negative");
-        }
         this.ledColor = color;
     }
 
@@ -137,9 +134,6 @@ public class Style implements ReminderComponent, Parcelable, Serializable {
     }
 
     public void setTextColor(int color){
-        if (color < 0){
-            throw new IllegalArgumentException("Color must be non-negative");
-        }
         this.textColor = color;
     }
 
