@@ -43,10 +43,10 @@ public class ReminderDBHelper extends SQLiteOpenHelper {
 		            COLUMN_VOLUME + " INTEGER, " +
 		            COLUMN_SNOOZENUM + " INTEGER, " +
                     COLUMN_IMAGE + " TEXT, " +
-                    COLUMN_TEXTCOLOR + " INTEGER " +
-                    COLUMN_LOCATION_PREFERENCE + " TEXT" + 
-                    COLUMN_WIFI_PREFERENCE + " TEXT" + 
-                    COLUMN_BLUETOOTH_PREFERENCE + " TEXT" + 
+                    COLUMN_TEXTCOLOR + " INTEGER, " +
+                    COLUMN_LOCATION_PREFERENCE + " TEXT, " +
+                    COLUMN_WIFI_PREFERENCE + " TEXT, " +
+                    COLUMN_BLUETOOTH_PREFERENCE + " TEXT, " +
                     COLUMN_BLUETOOTH_MAC_ADDRESS+ " TEXT" +
                     ")";
 
