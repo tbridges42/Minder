@@ -124,7 +124,7 @@
         <service android:name=".util.AlertService"/>
 
         <provider
-            android:authorities="us.bridgeses.Minder.providers"
+            android:authorities="${applicationId}.providers"
             android:name=".persistence.provider.ReminderProvider" />
 
     </application>
