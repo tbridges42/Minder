@@ -1,5 +1,7 @@
 package us.bridgeses.Minder.views.interfaces;
 
+import android.app.Fragment;
+
 import us.bridgeses.Minder.controllers.EditorController;
 import us.bridgeses.Minder.model.ReminderComponent;
 
@@ -16,4 +18,6 @@ public interface EditorView<EditorType extends ReminderComponent> {
     void setup(EditorType model);
 
     EditorType getValues();
+
+    Fragment getFragment();
 }

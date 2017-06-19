@@ -1,6 +1,7 @@
 package us.bridgeses.Minder.editor;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -16,14 +17,20 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.preference.RingtonePreference;
+import android.util.Log;
 import android.widget.BaseAdapter;
 
+import com.orhanobut.logger.Logger;
+
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 import us.bridgeses.Minder.R;
 import us.bridgeses.Minder.model.Reminder;
 import us.bridgeses.Minder.util.DatePreference;
 import us.bridgeses.Minder.util.TimePreference;
+import us.bridgeses.Minder.views.interfaces.EditorView;
 
 import static us.bridgeses.Minder.model.Repeat.REPEAT_PERIOD_DEFAULT;
 import static us.bridgeses.Minder.model.Repeat.REPEAT_TYPE_DEFAULT;
@@ -32,7 +39,10 @@ import static us.bridgeses.Minder.model.Repeat.REPEAT_TYPE_DEFAULT;
  * Created by Tony on 8/27/2014.
  */
 
-public class EditReminderFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener, Preference.OnPreferenceClickListener {
+public class EditReminderFragment extends PreferenceFragment
+        implements SharedPreferences.OnSharedPreferenceChangeListener,
+        Preference.OnPreferenceClickListener,
+        EditorView<Reminder> {
 
     private Reminder reminder;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("EEEE, MMMM d, yyyy");
@@ -113,6 +123,11 @@ public class EditReminderFragment extends PreferenceFragment implements SharedPr
         Bundle args = new Bundle();
         args.putParcelable("Reminder", reminder);
         fragment.setArguments(args);
+        return fragment;
+    }
+
+    public static EditReminderFragment newInstance() {
+        EditReminderFragment fragment = new EditReminderFragment();
         return fragment;
     }
 
@@ -276,6 +291,44 @@ public class EditReminderFragment extends PreferenceFragment implements SharedPr
             }
         }
         ((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
+    }
+
+    @Override
+    public void setup(Reminder model) {
+        reminder = model;
+        initPreferences();
+        initSummaries();
+    }
+
+    @Override
+    public Reminder getValues() {
+        Reminder reminder = new Reminder();
+        reminder.setId(sharedPreferences.getInt("temp_id", Reminder.IDDEFAULT));
+        reminder.setName(sharedPreferences.getString("temp_name", Reminder.NAMEDEFAULT));
+        reminder.setDescription(sharedPreferences.getString("temp_description", Reminder.DESCRIPTIONDEFAULT));
+        Calendar date = Calendar.getInstance();
+        SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm aa EEEE, MMMM d, yyyy");
+        try {
+            String newDate = sharedPreferences.getString("temp_time", "") + " " + sharedPreferences.getString("temp_date", "");
+            if (!newDate.equals(" ")) {
+                Logger.d("Date set: "+newDate);
+                date.setTime(timeFormat.parse(newDate));
+            }
+        }
+        catch (ParseException e){
+            Log.e("Minder","Parse Error");
+        }
+        if ((!Reminder.checkDayOfWeek(reminder.getDaysOfWeek(),          //If initial day is not in
+                date.get(Calendar.DAY_OF_WEEK)))&&(reminder.getRepeatType()==2)){                       //repeat pattern, skip
+            Reminder.nextRepeat(reminder).save(getActivity());
+        }
+        reminder.setDate(date);                                         //Store reminder date + time
+        return reminder;
+    }
+
+    @Override
+    public Fragment getFragment() {
+        return this;
     }
 
     /**

@@ -3,6 +3,7 @@ package us.bridgeses.Minder.editor;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -79,7 +80,7 @@ public class ConditionsFragment extends PreferenceFragment implements
      * future modifications
      * @return a new ConditionsFragment
      */
-	protected static ConditionsFragment newInstance(){
+	public static ConditionsFragment newInstance(){
 		return new ConditionsFragment();
 	}
 
@@ -155,7 +156,7 @@ public class ConditionsFragment extends PreferenceFragment implements
 
     private void checkWifi(){
         activity.registerReceiver(wifiReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
-        wifiManager = (WifiManager) activity.getSystemService(Context.WIFI_SERVICE);
+        wifiManager = (WifiManager) activity.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         if (wifiManager.isWifiEnabled()){
             // If wifi is enabled, display ssid picker
             ssidDialog();
@@ -406,6 +407,11 @@ public class ConditionsFragment extends PreferenceFragment implements
         conditions.setBtMacAddress(sharedPreferences.getString("bt_name",
                 Conditions.BT_MAC_ADDRESS_DEFAULT));
         return conditions;
+    }
+
+    @Override
+    public Fragment getFragment() {
+        return this;
     }
 
     /**

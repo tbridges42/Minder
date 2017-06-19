@@ -2,6 +2,7 @@ package us.bridgeses.Minder.editor;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -50,7 +51,7 @@ public class PersistenceFragment extends PreferenceFragment implements
 	 * future modifications
 	 * @return a new PersistenceFragment
 	 */
-	public static PreferenceFragment newInstance(){
+	public static PersistenceFragment newInstance(){
 		return new PersistenceFragment();
 	}
 
@@ -266,7 +267,7 @@ public class PersistenceFragment extends PreferenceFragment implements
 		editor.putBoolean("wake_up", model.hasFlag(Persistence.PersistenceFlags.WAKE_UP));
 		editor.putInt("volume", model.getVolume());
 		editor.putInt("snooze_number", model.getSnoozeLimit());
-		editor.putFloat("snooze_duration", model.getSnoozeTime());
+		editor.putLong("snooze_duration", model.getSnoozeTime());
 
 		editor.commit();
 		initSummaries();
@@ -274,6 +275,24 @@ public class PersistenceFragment extends PreferenceFragment implements
 
 	@Override
 	public Persistence getValues() {
-		return null;
+		Persistence persistence = new Persistence();
+		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+		persistence.setFlag(Persistence.PersistenceFlags.REQUIRE_CODE, sp.getBoolean("code_type",
+				false));
+		persistence.setCode(sp.getString("temp_code", Persistence.CODE_DEFAULT));
+		persistence.setFlag(Persistence.PersistenceFlags.OVERRIDE_VOLUME, sp.getBoolean("out_loud",
+				false));
+		persistence.setFlag(Persistence.PersistenceFlags.DISPLAY_SCREEN, sp.getBoolean("display_screen",
+				false));
+		persistence.setFlag(Persistence.PersistenceFlags.WAKE_UP, sp.getBoolean("wake_up", false));
+		persistence.setVolume(sp.getInt("volume", Persistence.VOLUME_DEFAULT));
+		persistence.setSnoozeLimit(sp.getInt("snooze_number", Persistence.SNOOZE_LIMIT_DEFAULT));
+		persistence.setSnoozeTime(sp.getLong("snooze_duration", Persistence.SNOOZE_TIME_DEFAULT));
+		return persistence;
+	}
+
+	@Override
+	public Fragment getFragment() {
+		return this;
 	}
 }

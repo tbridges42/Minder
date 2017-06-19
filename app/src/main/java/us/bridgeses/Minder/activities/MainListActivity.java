@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -24,25 +25,35 @@ import us.bridgeses.Minder.AboutFragment;
 import us.bridgeses.Minder.AdHandler;
 import us.bridgeses.Minder.R;
 import us.bridgeses.Minder.controllers.DataController;
+import us.bridgeses.Minder.controllers.EditorController;
 import us.bridgeses.Minder.controllers.TrackingController;
 import us.bridgeses.Minder.editor.EditReminder;
+import us.bridgeses.Minder.editor.EditorFragmentFactory;
+import us.bridgeses.Minder.model.ReminderComponent;
 import us.bridgeses.Minder.util.vandy.LifecycleLoggingActivity;
+import us.bridgeses.Minder.views.EditorViewFactory;
 import us.bridgeses.Minder.views.ReminderListViewFragment;
+import us.bridgeses.Minder.views.interfaces.EditorView;
 import us.bridgeses.Minder.views.interfaces.ReminderListView;
 
 /**
  * The main Activity of Minder. Controls and provides Fragments
  */
 public class MainListActivity extends LifecycleLoggingActivity implements
-        DataController.ActivityCallback, ReminderListView.ViewCallback, CompoundButton.OnCheckedChangeListener {
+        DataController.ActivityCallback,
+        ReminderListView.ViewCallback,
+        CompoundButton.OnCheckedChangeListener,
+        EditorController.ActivityCallback {
 
     private static final String TAG_ASYNC_FRAGMENT = "Async_fragment";
     private static final String TAG_ABOUT_FRAGMENT = "About_fragment";
     public static final String TAG_DATA_FRAGMENT = "Data_fragment";
     private static final String TAG_AD_FRAGMENT = "Ad_fragment";
+    public static final String TAG_EDITOR_FRAGMENT = "Editor_fragment";
     // TODO: 2/21/2017 Does retaining these here result in leaks?
     private ReminderListViewFragment mReminderListFragment;
 	private Fragment mAboutFragment;
+    private EditorView editorView;
     private DataController dataController;
     private TrackingController trackingController;
     private FragmentManager fragmentManager;
@@ -70,10 +81,45 @@ public class MainListActivity extends LifecycleLoggingActivity implements
     }
     //</editor-fold>
 
+    @Override
+    public EditorView launchEditor(@EditorController.EditorType int type,
+                                   ReminderComponent component) {
+        editorView = EditorViewFactory.getInstance(type);
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        ft.add(editorView.getFragment(), TAG_EDITOR_FRAGMENT);
+        ft.addToBackStack(null);
+        ft.commit();
+        return editorView;
+    }
+
+    @Override
+    public EditorView dismissEditor() {
+        fragmentManager = getFragmentManager();
+        fragmentManager.popBackStack();
+        Fragment fragment = fragmentManager.findFragmentByTag(TAG_EDITOR_FRAGMENT);
+        if (fragment instanceof EditorView) {
+            editorView = (EditorView) fragment;
+        }
+        else {
+            editorView = null;
+        }
+        return editorView;
+    }
+
+    @Override
+    public EditorView getCurrentEditor() {
+        return editorView;
+    }
+
     //<editor-fold desc="ReminderListViewFragment.ViewCallback Methods">
     @Override
     public DataController getDataController() {
         return dataController;
+    }
+
+    @Override
+    public Fragment doneEditing() {
+        return null;
     }
 
     @Override

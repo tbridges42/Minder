@@ -26,7 +26,7 @@ public class EditorController extends Fragment {
     private ActivityCallback callback;
 
     public interface ActivityCallback {
-        EditorView launchEditor(ReminderComponent component);
+        EditorView launchEditor(@EditorType int type, ReminderComponent component);
         EditorView dismissEditor();
         EditorView getCurrentEditor();
         DataController getDataController();
@@ -116,18 +116,19 @@ public class EditorController extends Fragment {
     public void onEditButtonClicked(@EditorType int type) {
         switch (type) {
             case CONDITIONS:
-                callback.launchEditor(reminder.getConditions());
+                callback.launchEditor(type, reminder.getConditions());
                 break;
             case MAIN:
+                callback.launchEditor(type, reminder);
                 break;
             case PERSISTENCE:
-                callback.launchEditor(reminder.getPersistence());
+                callback.launchEditor(type, reminder.getPersistence());
                 break;
             case REPEAT:
-                callback.launchEditor(reminder.getRepeat());
+                callback.launchEditor(type, reminder.getRepeat());
                 break;
             case STYLE:
-                callback.launchEditor(reminder.getStyle());
+                callback.launchEditor(type, reminder.getStyle());
                 break;
         }
     }

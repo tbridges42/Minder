@@ -1,5 +1,6 @@
 package us.bridgeses.Minder.editor;
 
+import android.app.Fragment;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
@@ -601,5 +602,10 @@ public class RepeatFragment extends PreferenceFragment  implements
         }
         repeat.setDaysOfWeek(daysOfWeek);
         return repeat;
+    }
+
+    @Override
+    public Fragment getFragment() {
+        return this;
     }
 }

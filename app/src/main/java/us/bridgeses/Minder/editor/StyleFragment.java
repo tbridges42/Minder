@@ -1,6 +1,7 @@
 package us.bridgeses.Minder.editor;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -40,7 +41,7 @@ public class StyleFragment extends PreferenceFragment implements
     SharedPreferences sharedPreferences;
     Point size = new Point();
 
-    public static PreferenceFragment newInstance(){
+    public static StyleFragment newInstance(){
         return new StyleFragment();
     }
 
@@ -156,6 +157,8 @@ public class StyleFragment extends PreferenceFragment implements
         editor.putBoolean("led", model.hasFlag(Style.StyleFlags.LED));
         editor.putString("image", model.getImagePath());
         editor.putBoolean("temp_vibrate", model.hasFlag(Style.StyleFlags.VIBRATE));
+        editor.putInt("font_color",model.getTextColor());
+        editor.putInt("led_color",model.getLedColor());
         editor.commit();
         initSummaries();
     }
@@ -169,5 +172,10 @@ public class StyleFragment extends PreferenceFragment implements
         style.setFlag(Style.StyleFlags.LED, sp.getBoolean("led", false));
         style.setImagePath(sp.getString("image", IMAGE_PATH_DEFAULT));
         return style;
+    }
+
+    @Override
+    public Fragment getFragment() {
+        return this;
     }
 }
