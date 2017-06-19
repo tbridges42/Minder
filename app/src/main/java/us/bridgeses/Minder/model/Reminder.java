@@ -22,7 +22,6 @@ import java.io.OutputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.concurrent.TimeUnit;
 
 import us.bridgeses.Minder.editor.EditStyle;
 import us.bridgeses.Minder.persistence.dao.DaoFactory;
@@ -52,29 +51,15 @@ import static us.bridgeses.Minder.model.Style.RINGTONE_DEFAULT;
 import static us.bridgeses.Minder.model.Style.TEXT_COLOR_DEFAULT;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_ACTIVE;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_DATE;
-import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_DAYSOFWEEK;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_DESCRIPTION;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_ID;
-import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_IMAGE;
-import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_LEDCOLOR;
-import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_LEDPATTERN;
-import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_MONTHTYPE;
 import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_NAME;
-import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_QR;
-import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_REPEATLENGTH;
-import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_REPEATTYPE;
-import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_RINGTONE;
-import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_SNOOZEDURATION;
-import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_SNOOZENUM;
-import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_STYLE;
-import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_TEXTCOLOR;
-import static us.bridgeses.Minder.persistence.RemindersContract.Reminder.COLUMN_VOLUME;
 
 /**
  * Model class for a Reminder
  */
 
-public class Reminder implements Parcelable, Cloneable {
+public class Reminder implements Parcelable, Cloneable, ReminderComponent {
 
 	private static final String TAG = "Reminder";
 // TODO: 1/3/2017  break this up!!!
@@ -88,6 +73,9 @@ public class Reminder implements Parcelable, Cloneable {
         description = DESCRIPTIONDEFAULT;
         id = IDDEFAULT;
 		style = new Style();
+        repeat = new Repeat();
+        conditions = new Conditions();
+        persistence = new Persistence();
     }
 	
 	public Reminder(@NonNull Cursor cursor) {
@@ -248,7 +236,12 @@ public class Reminder implements Parcelable, Cloneable {
 	}
 
 	public int getRepeatType() {
-		return getRepeat().getRepeatType();
+        if (repeat != null) {
+            return getRepeat().getRepeatType();
+        }
+        else {
+            return Repeat.RepeatType.NONE;
+        }
 	}
 
 	public void setRepeatType(@Repeat.RepeatType int repeatType) {
@@ -1110,4 +1103,13 @@ public class Reminder implements Parcelable, Cloneable {
 		}
 		return null;
 	}
+
+    @Override
+    public void addTo(Reminder reminder) {
+        reminder.setId(reminder.getId());
+        reminder.setActive(reminder.getActive());
+        reminder.setName(reminder.getName());
+        reminder.setDescription(reminder.getDescription());
+        reminder.setDate(reminder.getDate());
+    }
 }
