@@ -9,7 +9,6 @@ import android.support.annotation.NonNull;
 
 import java.io.Serializable;
 import java.lang.annotation.Retention;
-import java.util.EnumSet;
 
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 import static us.bridgeses.Minder.model.Style.StyleFlags.BUILD_VOLUME;
@@ -40,11 +39,11 @@ public class Style implements ReminderComponent, Parcelable, Serializable {
     }
 
     public static final int FLAGS_DEFAULT = NONE;
-    public static final int LED_COLOR_DEFAULT = 0xFF0000;
+    public static final int LED_COLOR_DEFAULT = 0xFFFF0000;
     public static final int LED_PATTERN_DEFAULT = 0;
     public static final String RINGTONE_DEFAULT = "";
     public static final String IMAGE_PATH_DEFAULT = "";
-    public static final int TEXT_COLOR_DEFAULT = 0xffffff;
+    public static final int TEXT_COLOR_DEFAULT = 0xFF000000;
 
     private int flags = FLAGS_DEFAULT;
     private int ledColor = LED_COLOR_DEFAULT;
